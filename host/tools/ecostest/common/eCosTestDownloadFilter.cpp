@@ -53,7 +53,6 @@
 #include "eCosStd.h"
 #include "eCosTrace.h"
 
-#define DL_FILTER_VER "$Id$"
 #include "eCosTestDownloadFilter.h"
 
 CeCosTestDownloadFilter::CeCosTestDownloadFilter():

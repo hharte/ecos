@@ -51,7 +51,6 @@
 
 #include "eCosStd.h"
 
-#define SER_FILTER_VER "$Id$"
 #include "eCosTestSerialFilter.h"
 #include "eCosThreadUtils.h"
 
