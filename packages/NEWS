@@ -1,3 +1,4 @@
+* SNMP code now works with the FreeBSD stack
 * Port added for IDT MIPS IDT79RC32334 reference platform, including Flash,
   ethernet, and serial drivers as well as RedBoot support. Contributed by
   Tim Michals working for IDT.
