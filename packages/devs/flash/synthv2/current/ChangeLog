@@ -1,3 +1,8 @@
+2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/flash[23].c: Removed calls to cyg_flash_get_block_info()
+	and cyg_flash_get_limits() which have been removed. 
+
 2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_synth.cdl: Indicate we use the V2 device API.
