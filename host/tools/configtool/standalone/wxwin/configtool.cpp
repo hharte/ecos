@@ -223,15 +223,6 @@ bool ecApp::OnInit()
         wxPoint(GetSettings().m_frameSize.x, GetSettings().m_frameSize.y),
         wxSize(GetSettings().m_frameSize.width, GetSettings().m_frameSize.height));
 
-#if 0
-    // TODO: eCos.hhp/hhc/hhk will eventually be generated as the app starts up.
-    if ( !GetHelpController().Initialize(GetFullAppPath(wxT("eCos"))) )
-    {
-        //wxMessageBox(_("Cannot initialize the help system, aborting."));
-        //return FALSE;
-    }
-#endif
-
     m_mainFrame = frame;
     SetTopWindow(frame);
     frame->Show(TRUE);
@@ -548,6 +539,9 @@ int ecApp::OnExit(void)
 
     {
         wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+        if (config.HasGroup(wxT("FileHistory")))
+            config.DeleteGroup(wxT("FileHistory"));
+	config.SetPath(wxT("FileHistory/"));
         m_docManager->FileHistorySave(config);
     }
 
@@ -936,7 +930,10 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
             wxString oldPath(wxGetenv(wxT("PATH")));
             wxString path(strBinDir);
             if (!oldPath.IsEmpty())
+	    {
+		path += wxT(":");
                 path += oldPath;
+	    }
             wxSetEnv(wxT("PATH"), path);
         }
         (* cmdLine) += wxString(wxT("unset GDBTK_LIBRARY; ")) ;

@@ -133,8 +133,10 @@ public:
 
 //// Operations
     bool OpenRepository(const wxString& pszRepository = wxEmptyString, bool bPromptInitially=FALSE) ;
-    bool OpenRepository (const ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir);
+    bool OpenRepository (ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir);
     void CloseRepository() ;
+    // Find a valid repository given a directory name
+    bool FindRepository (ecFileName& repositoryIn, ecFileName& repositoryOut) const;
     void EnableCallbacks (bool bEnable=TRUE);
     void AddContents (const CdlContainer container, ecConfigItem *pParent);
     void AddAllItems();

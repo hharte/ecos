@@ -281,6 +281,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     // Load file history
     {
         wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+	config.SetPath(wxT("FileHistory/"));
         wxGetApp().GetDocManager()->FileHistoryLoad(config);
     }
     

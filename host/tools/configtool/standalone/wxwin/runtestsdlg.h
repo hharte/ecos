@@ -56,6 +56,20 @@
 #include "eCosTest.h"
 #include "Properties.h"
 
+/*
+ * ecRunTestsTimer
+ * Just to force idle processing now and again while
+ * the tests are runnin
+ */
+
+class ecRunTestsTimer: public wxTimer
+{
+public:
+    ecRunTestsTimer() {}
+
+    virtual void Notify() ;
+};
+
 //----------------------------------------------------------------------------
 // ecRunTestsDialog
 //----------------------------------------------------------------------------
@@ -73,7 +87,8 @@ enum ecRunStatus { ecRunning, ecStopping, ecStopped };
 class ecRunTestsDialog: public wxDialog
 {
 DECLARE_CLASS(ecRunTestsDialog)
-friend class ecResetThread;
+    friend class ecResetThread;
+    friend class ecRunTestsTimer; 
 public:
     ecRunTestsDialog(wxWindow* parent);
     ~ecRunTestsDialog();
@@ -107,6 +122,10 @@ public:
     static void CALLBACK RunRemoteFunc(void *pParam);
 	static void CALLBACK TestOutputCallback(void *pParam,LPCTSTR psz);
 
+    // Helpers
+    // Translate from Windows to Unix serial port nomenclature
+    wxString TranslatePort(const wxString& port) const;
+	
 protected:
 
     ecRunTestsExecutablesDialog*            m_executables;
@@ -128,6 +147,7 @@ protected:
     // OnIdle pick it up
     wxString                                m_outputBuffer;
     bool                                    m_outputBufferPresent;
+    ecRunTestsTimer                         m_timer;
 DECLARE_EVENT_TABLE()
 };
 
