@@ -86,17 +86,17 @@ extern void *memcpy( void *, const void *, size_t );
 // in RAM.
 static size_t
 strata_query_hwr (struct cyg_flash_dev *dev, void * data,
-                  const size_t len)
+                  size_t len)
      __attribute__ ((section (".2ram.flash_query")));
 
 static int strata_erase_block (struct cyg_flash_dev *dev,
-                               const cyg_flashaddr_t block)
+                               cyg_flashaddr_t block)
      __attribute__ ((section (".2ram.flash_erase_block")));
 
 static int strata_program_buf (struct cyg_flash_dev *dev,
                                cyg_flashaddr_t base,
                                const void* data,
-                               const size_t len)
+                               size_t len)
      __attribute__ ((section (".2ram.flash_program_buf")));
 
 #ifdef CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING
@@ -232,7 +232,7 @@ static int strata_hwr_map_error (struct cyg_flash_dev *dev, int err)
 #define CNT 20*1000*10  // Approx 20ms
 
 static size_t
-strata_query_hwr (struct cyg_flash_dev *dev, void *data_dst, const size_t len)
+strata_query_hwr (struct cyg_flash_dev *dev, void *data_dst, size_t len)
 {
     volatile flash_t *ROM;
     int i, cnt;
@@ -272,7 +272,7 @@ strata_query_hwr (struct cyg_flash_dev *dev, void *data_dst, const size_t len)
 
 //----------------------------------------------------------------------------
 static int strata_erase_block (struct cyg_flash_dev *dev,
-                               const cyg_flashaddr_t block_base)
+                               cyg_flashaddr_t block_base)
 {
     volatile flash_t *ROM;
     flash_t stat = 0;
@@ -335,7 +335,7 @@ static int
 strata_program_buf (struct cyg_flash_dev *dev,
                     cyg_flashaddr_t base_addr,
                     const void* data_addr,
-                    const size_t total_len)
+                    size_t total_len)
 {
     struct cyg_flash_strata_v2_priv *priv = dev->priv;
     volatile flash_t *ROM;

@@ -1,5 +1,7 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_strata_v2.inl: adjust const parameters as per
+	change to generic flash package
 	* include/flash_strata_v2.inl: rename cyg_block_info to
 	cyg_flash_block_info
 
