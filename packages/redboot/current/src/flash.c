@@ -202,6 +202,24 @@ _show_invalid_flash_address(CYG_ADDRESS flash_addr, int stat)
     } while (ret != CYG_FLASH_ERR_INVALID);
 }
 
+// Avoid overwriting the current executable. This is not a complete
+// implementation, there may be code outside the text region, but it
+// is generally good enough. If either the start of the text region or
+// the end of the text region is within the specified range then at
+// least some of the code is in the area of flash about to be erased
+// or programmed.
+static cyg_bool
+check_code_overlaps(cyg_flashaddr_t start, cyg_flashaddr_t end)
+{
+  extern char _stext[], _etext[];
+  
+  return ((((unsigned long)&_stext >= (unsigned long)start) &&
+           ((unsigned long)&_stext < (unsigned long)end))
+          ||
+          (((unsigned long)&_etext >= (unsigned long)start) &&
+           ((unsigned long)&_etext < (unsigned long)end)));
+}
+
 #ifdef CYGOPT_REDBOOT_FIS
 struct fis_image_desc *
 fis_lookup(char *name, int *num)
@@ -902,7 +920,7 @@ fis_create(int argc, char *argv[])
     }
     if (!no_copy) {
         // Safety check - make sure the address range is not within the code we're running
-        if (cyg_flash_code_overlaps(flash_addr, (flash_addr+img_size-1))) {
+        if (check_code_overlaps(flash_addr, (flash_addr+img_size-1))) {
             diag_printf("Can't program this region - contains code in use!\n");
             return;
         }
@@ -1170,7 +1188,7 @@ fis_write(int argc, char *argv[])
         diag_printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
     }
     // Safety check - make sure the address range is not within the code we're running
-    if (cyg_flash_code_overlaps(flash_addr, (flash_addr+length-1))) {
+    if (check_code_overlaps(flash_addr, (flash_addr+length-1))) {
         diag_printf("Can't program this region - contains code in use!\n");
         return;
     }
@@ -1236,7 +1254,7 @@ fis_erase(int argc, char *argv[])
         return;
     }
     // Safety check - make sure the address range is not within the code we're running
-    if (cyg_flash_code_overlaps(flash_addr, (flash_addr+length-1))) {
+    if (check_code_overlaps(flash_addr, (flash_addr+length-1))) {
         diag_printf("Can't erase this region - contains code in use!\n");
         return;
     }

@@ -1,3 +1,8 @@
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (check_code_overlaps): cyg_flash_code_overlaps() has
+	been removed, so use a RedBoot-specific function instead
+
 2004-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/flash.c (do_flash_init): info.end already holds the last

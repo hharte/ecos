@@ -145,7 +145,6 @@ The following five functions return information about the FLASH.
 __externC int cyg_flash_get_info(cyg_uint32 devno, cyg_flash_info_t * info);
 __externC int cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info);
 __externC int cyg_flash_verify_addr(const flashaddr_t address);
-__externC int cyg_flash_code_overlaps(const flashaddr_t start, const flashaddr_t end);
 __extern size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
 
 typedef struct cyg_block_info
@@ -174,14 +173,7 @@ information about the flash device at the given address.
 block at the given address.  <FUNCTION>cyg_flash_verify_addr()
 </FUNCTION> tests if the target addresses is within one of the FLASH
 devices, returning <LITERAL>CYG_FLASH_ERR_OK </LITERAL> if so.
-<FUNCTION> cyg_flash_code_overlaps() </FUNCTION> checks if the
-executing code is resident in the section of flash indicated by
-<PARAMETER>start</PARAMETER> and <PARAMETER> end </PARAMETER>.  If
-this function returns <LITERAL>CYG_FLASH_ERR_OK</LITERAL> the code is
-inside the address refion given. Erase and program operations within
-this range are very likely to cause the target to crash and burn
-horribly. Note the FLASH library does allow you to shoot yourself in
-the foot in this way.</PARA>
+</PARA>
 </SECT2>
  <SECT2>
 
@@ -294,8 +286,8 @@ __externC int cyg_flash_mutex_unlock(const flashaddr_t *from, const size_t len);
 
 <TITLE>Return values and errors</TITLE>
 
-<PARA>All the functions above, except <FUNCTION>cyg_flash_code_overlaps()
-</FUNCTION> return one of the following return values.</PARA>
+<PARA>All the functions above return one of the following return
+values.</PARA>
 
 <PROGRAMLISTING>
 CYG_FLASH_ERR_OK              No error - operation complete

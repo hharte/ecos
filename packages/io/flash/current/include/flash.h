@@ -86,8 +86,6 @@ __externC int cyg_flash_get_info(cyg_uint32 devno,
 __externC int cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, 
                                       cyg_flash_info_t * info);
 __externC int cyg_flash_verify_addr(const cyg_flashaddr_t address);
-__externC bool cyg_flash_code_overlaps(const cyg_flashaddr_t start, 
-                                       const cyg_flashaddr_t end);
 __externC size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
 __externC int cyg_flash_read(cyg_flashaddr_t flash_base, 
                              const void *ram_base, 

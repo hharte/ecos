@@ -1,5 +1,7 @@
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash.h, src/flash.c, doc/flash.sgml: remove
+	cyg_flash_code_overlaps()
 	* include/flash_priv.h, include/flash.h:
 	CYGSEM_IO_FLASH_LEGACY_DEVICE_API has been removed, test
 	CYGHWR_IO_FLASH_DEVICE_LEGACY instead 

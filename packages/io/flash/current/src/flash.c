@@ -234,18 +234,6 @@ cyg_flash_verify_addr(const cyg_flashaddr_t address)
   return CYG_FLASH_ERR_INVALID;
 }
 
-// See if a range of FLASH addresses overlaps currently running code
-__externC bool cyg_flash_code_overlaps(const cyg_flashaddr_t start, 
-                                       const cyg_flashaddr_t end)
-{
-  extern char _stext[], _etext[];
-  
-  return ((((unsigned long)&_stext >= (unsigned long)start) &&
-           ((unsigned long)&_stext < (unsigned long)end)) ||
-          (((unsigned long)&_etext >= (unsigned long)start) &&
-           ((unsigned long)&_etext < (unsigned long)end)));
-}
-
 // Return information about the Nth driver
 __externC int
 cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)
