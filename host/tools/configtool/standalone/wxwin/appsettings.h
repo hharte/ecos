@@ -166,7 +166,8 @@ public:
 
     const ecFileName& DefaultExternalBrowser() ;
 
-    const wxString& GetUserToolsDir() const { return m_userToolsDir; }  
+    const wxString& GetUserToolsDir() const { return m_userToolsDir; }
+    const wxString& GetBuildToolsDir() const { return m_buildToolsDir; }  /* Only used if no other clues */
 
     wxStringToStringMap& GetBinDirs() { return m_arstrBinDirs; }
 
@@ -210,6 +211,7 @@ public:
     bool                    m_bHex;
 
     ecFileName              m_userToolsDir;
+    ecFileName              m_buildToolsDir; /* Only used if no other clues */
 
     wxString                m_strMakeOptions;
 

@@ -181,7 +181,7 @@ bool ecApp::OnInit()
     m_docManager = new wxDocManager;
 
     // Create a template relating documents to their views
-    (void) new wxDocTemplate(m_docManager, "Configtool", "*.ecc", "", "ecc", "Configtool Doc", "Configtool View",
+    wxDocTemplate* templ = new wxDocTemplate(m_docManager, "Configtool", "*.ecc", "", "ecc", "Configtool Doc", "Configtool View",
         CLASSINFO(ecConfigToolDoc), CLASSINFO(ecConfigToolView));
 
     // If we've only got one window, we only get to edit
@@ -198,6 +198,10 @@ bool ecApp::OnInit()
 
     // Load config settings
     m_settings.LoadConfig();
+
+    // Set the default directory for opening/saving files
+    if (!m_settings.m_lastFilename.IsEmpty())
+        templ->SetDirectory(wxPathOnly(m_settings.m_lastFilename));
 
 #ifdef __WXMSW__
     wxBitmap bitmap(wxBITMAP(splash));
@@ -613,11 +617,11 @@ void ecApp::Log(const wxString& msg)
     ecMainFrame* frame = (ecMainFrame*) GetTopWindow();
     if (frame)
     {
-        // TODO is SetInsertionPointEnd necessary?
-        frame->GetOutputWindow()->SetInsertionPointEnd();
         frame->GetOutputWindow()->AppendText(msg /* + wxT("\n") */ );
         if ((msg == wxEmptyString) || (msg.Last() != wxT('\n')))
             frame->GetOutputWindow()->AppendText(wxT("\n"));
+
+        frame->GetOutputWindow()->ShowPosition(frame->GetOutputWindow()->GetLastPosition());
     }
 }
 
@@ -807,10 +811,20 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
     bool rc = FALSE;
 
     rc=(! bWithBuildTools) || GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
-    if(!rc){
-        wxCommandEvent event;
-        GetMainFrame()->OnBuildToolsPath(event);
-        rc = GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
+    if(!rc)
+    {
+        // Use fallback of previously-entered build tools directory, if available
+        if (!GetSettings().m_buildToolsDir.IsEmpty())
+        {
+            strBinDir = GetSettings().m_buildToolsDir ;
+            rc = TRUE;
+        }
+        else
+        {
+            wxCommandEvent event;
+            GetMainFrame()->OnBuildToolsPath(event);
+            rc = GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
+        }
     }
     
     if (rc)
@@ -896,10 +910,20 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
     bool rc = FALSE;
 
     rc=(! bWithBuildTools) || GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
-    if(!rc){
-        wxCommandEvent event;
-        GetMainFrame()->OnBuildToolsPath(event);
-        rc = GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
+    if(!rc)
+    {
+        // Use fallback of previously-entered build tools directory, if available
+        if (!GetSettings().m_buildToolsDir.IsEmpty())
+        {
+            strBinDir = GetSettings().m_buildToolsDir ;
+            rc = TRUE;
+        }
+        else
+        {
+            wxCommandEvent event;
+            GetMainFrame()->OnBuildToolsPath(event);
+            rc = GetSettings().m_arstrBinDirs.Find(strPrefix, strBinDir);
+        }
     }
     
     if (rc)

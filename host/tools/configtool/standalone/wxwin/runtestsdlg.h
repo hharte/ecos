@@ -85,6 +85,7 @@ public:
     void OnPageChange(wxNotebookEvent& event);
     void OnSize(wxSizeEvent& event);
     void OnIdle(wxIdleEvent& event);
+    void OnCloseWindow(wxCloseEvent& event);
 
     virtual bool TransferDataToWindow();
     virtual bool TransferDataFromWindow();
