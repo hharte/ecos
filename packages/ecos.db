@@ -3242,6 +3242,48 @@ package CYGPKG_DEVS_ETH_FRV_FRV400 {
 # ==========================================================================
 
 # --------------------------------------------------------------------------
+# i386 targets
+target pc {
+        alias		{ "i386 PC target" }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+			  CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+	                  CYGPKG_IO_SERIAL_I386_PC
+			  CYGPKG_DEVS_ETH_INTEL_I82559
+			  CYGPKG_DEVS_ETH_I386_PC_I82559
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
+        }
+        description "
+    	    The pc target provides the
+    	    packages needed to run eCos binaries on a standard i386
+    	    PC motherboard."
+}
+
+target pc_giga {
+        alias		{ "i386 PC target with Gigabit ethernet" }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+			  CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+	                  CYGPKG_IO_SERIAL_I386_PC
+			  CYGPKG_DEVS_ETH_INTEL_I82544
+			  CYGPKG_DEVS_ETH_I386_PC_I82544
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
+        }
+        description "
+    	    The pc target provides the packages needed to run eCos binaries
+            on a standard i386 PC motherboard with an Intel 82543/82544 based
+            Gigabit ethernet interface."
+}
+
+# --------------------------------------------------------------------------
 # FRV targets
 target frv400 {
 	alias { "Fujitsu development board (FR-V 400)" FRV400 }
@@ -3257,8 +3299,6 @@ target frv400 {
 The frv400 target provides the packages needed to run eCos on a Fujistu
 development board (FR-V 400)."
 }
-
-
 
 # --------------------------------------------------------------------------
 # ARM Targets
@@ -3786,48 +3826,6 @@ target dreamcast {
 }
 
 # --------------------------------------------------------------------------
-# i386 targets
-target pc {
-        alias		{ "i386 PC target" }
-	packages        { CYGPKG_HAL_I386
-                          CYGPKG_HAL_I386_GENERIC
-                          CYGPKG_HAL_I386_PC
-                          CYGPKG_HAL_I386_PCMB
-			  CYGPKG_IO_PCI
-                          CYGPKG_IO_SERIAL_GENERIC_16X5X
-	                  CYGPKG_IO_SERIAL_I386_PC
-			  CYGPKG_DEVS_ETH_INTEL_I82559
-			  CYGPKG_DEVS_ETH_I386_PC_I82559
-                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
-                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
-        }
-        description "
-    	    The pc target provides the 
-    	    packages needed to run eCos binaries on a standard i386
-    	    PC motherboard."
-}
-
-target pc_giga {
-        alias		{ "i386 PC target with Gigabit ethernet" }
-	packages        { CYGPKG_HAL_I386
-                          CYGPKG_HAL_I386_GENERIC
-                          CYGPKG_HAL_I386_PC
-                          CYGPKG_HAL_I386_PCMB
-			  CYGPKG_IO_PCI
-                          CYGPKG_IO_SERIAL_GENERIC_16X5X
-	                  CYGPKG_IO_SERIAL_I386_PC
-			  CYGPKG_DEVS_ETH_INTEL_I82544
-			  CYGPKG_DEVS_ETH_I386_PC_I82544
-                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
-                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
-        }
-        description "
-    	    The pc target provides the packages needed to run eCos binaries
-            on a standard i386 PC motherboard with an Intel 82543/82544 based
-            Gigabit ethernet interface."
-}
-
-# --------------------------------------------------------------------------
 # Synthetic targets.
 target linux {
         alias		{ "Linux synthetic target" i386linux }
@@ -3838,7 +3836,7 @@ target linux {
                           CYGPKG_DEVS_WATCHDOG_SYNTH
         }
         description "
-    	    The linux target provides the 
+    	    The linux target provides the
     	    packages needed to run eCos binaries on top of the i386
     	    Linux kernel."
 }
@@ -3882,7 +3880,7 @@ target sparc_erc32 {
 
 target sparc_leon {
 	alias		{ "LEON processor" leon }
-	packages        { CYGPKG_HAL_SPARC 
+	packages        { CYGPKG_HAL_SPARC
                           CYGPKG_HAL_SPARC_LEON
         }
         description "

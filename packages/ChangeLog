@@ -1,3 +1,8 @@
+2003-02-23  John Dallaway  <jld@ecoscentric.com>
+
+	* ecos.db: Re-order targets to make 'pc' the default target
+	in the configtool.
+
 2003-02-14  Tim Michals  <t.michals@attbi.com>
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
