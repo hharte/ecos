@@ -1,3 +1,8 @@
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/flash_am29xxxxx_v2.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is now
+	implicit
+
 2004-11-05  Bart Veer  <bartv@ecoscentric.com>
 
 	* New AM29xxxxx flash driver created

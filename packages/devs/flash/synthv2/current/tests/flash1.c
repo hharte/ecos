@@ -94,7 +94,7 @@ void cyg_user_start(void)
   
     CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_init");
 
-#ifdef CYGSEM_IO_FLASH_LEGACY_DEVICE_API
+#ifdef CYGHWR_IO_FLASH_DEVICE_LEGACY
     //Strictly speaking, this is a device driver call, not a user API call.
     flash_dev_query(data);
     CYG_TEST_PASS_FAIL(!strncmp(data,"Linux Synthetic Flash",sizeof(data)),

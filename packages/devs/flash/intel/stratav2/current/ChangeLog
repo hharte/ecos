@@ -1,3 +1,8 @@
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/flash_strata_v2.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is now
+	implicit
+
 2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flash_strata_v2.inl: Return the end address which is the

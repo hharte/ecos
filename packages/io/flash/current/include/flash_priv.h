@@ -120,7 +120,7 @@ struct cyg_flash_dev name CYG_HAL_TABLE_ENTRY(cyg_flashdev) = {       \
    .start = _start,                                                   \
 };
 
-#ifdef CYGSEM_IO_FLASH_LEGACY_DEVICE_API
+#ifdef CYGHWR_IO_FLASH_DEVICE_LEGACY
 struct flash_info {
   int   block_size;   // Assuming fixed size "blocks"
   int   blocks;       // Number of blocks
@@ -135,7 +135,7 @@ externC struct flash_info flash_info;
 externC int  flash_hwr_init(void);
 externC int  flash_hwr_map_error(int err);
 externC void flash_dev_query(void *data);
-#endif // CYGSEM_IO_FLASH_LEGACY_DEVICE_API
+#endif // CYGHWR_IO_FLASH_DEVICE_LEGACY
 // 
 // Some FLASH devices may require additional support, e.g. to turn on
 // appropriate voltage drivers, before any operation.

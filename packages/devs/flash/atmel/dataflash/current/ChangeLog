@@ -1,3 +1,8 @@
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/devs_flash_atmel_dataflash.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is
+	now implicit
+
 2004-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/devs_flash_atmel_dataflash.cdl: data flash requires indirect

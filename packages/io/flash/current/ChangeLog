@@ -1,5 +1,9 @@
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_priv.h, include/flash.h:
+	CYGSEM_IO_FLASH_LEGACY_DEVICE_API has been removed, test
+	CYGHWR_IO_FLASH_DEVICE_LEGACY instead 
+	* cdl/io_flash.cdl: lots of clean-ups
 	* src/legacy_dev.c (legacy_flash_read): only needed if the
 	underlying legacy driver required indirect reads.
 	* src/flash.c: encapsulate various optional bits of code in

@@ -49,7 +49,6 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 {
     parent	CYGPKG_IO_FLASH
     active_if	CYGPKG_IO_FLASH
     implements	CYGHWR_IO_FLASH_DEVICE
-    implements	CYGHWR_IO_FLASH_DEVICE_V2
     include_dir	cyg/io
     compile	am29xxxxx.c
 

@@ -61,7 +61,6 @@ cdl_package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
         flavor          bool
         active_if       CYGPKG_IO_FLASH
         implements      CYGHWR_IO_FLASH_DEVICE
-        implements      CYGHWR_IO_FLASH_DEVICE_V2
 	implements	CYGHWR_IO_FLASH_INDIRECT_READS
         compile         devs_flash_atmel_dataflash_flash_dev_funs.c     
         description     "This option will be enabled by platforms which

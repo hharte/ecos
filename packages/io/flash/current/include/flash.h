@@ -151,7 +151,7 @@ externC bool flash_code_overlaps(void *start, void *end);
 externC char *flash_errmsg(int err);
 #endif // CYGSEM_IO_FLASH_LEGACY_API
 
-#if defined(CYGSEM_IO_FLASH_LEGACY_API) || defined(CYGSEM_IO_FLASH_LEGACY_DEVICE_API)
+#if defined(CYGSEM_IO_FLASH_LEGACY_API) || defined(CYGHWR_IO_FLASH_DEVICE_LEGACY)
 #define FLASH_ERR_OK              CYG_FLASH_ERR_OK              
 #define FLASH_ERR_INVALID         CYG_FLASH_ERR_INVALID         
 #define FLASH_ERR_ERASE           CYG_FLASH_ERR_ERASE           
