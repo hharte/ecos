@@ -201,6 +201,14 @@ package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
            flash memory devices."
 }
 
+package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
+    alias       { "Atmel DataFlash support" flash_dataflash dataflash }
+    directory   devs/flash/atmel/dataflash
+    script      devs_flash_atmel_dataflash.cdl
+    hardware
+    description "This package contains hardware support for Atmel DataFlash."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid
@@ -3928,7 +3936,10 @@ target eb55 {
                    CYGPKG_HAL_ARM_AT91_EB55
                    CYGPKG_DEVS_FLASH_EB55
                    CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                   CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH
                    CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_SPI_ARM_EB55
+                   CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
         }
         description "
