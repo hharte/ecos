@@ -1,3 +1,4 @@
+* New Flash API with lots of new goodies.
 * Added support for the AIM711 contributed by Roland Cassebohm.
 * Added the lwIP TCP/IP stack. 
 * Added PPP network support. Contributed by Nick Garnett of eCosCentric.

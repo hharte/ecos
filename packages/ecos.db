@@ -711,6 +711,15 @@ package CYGPKG_DEVS_FLASH_SYNTH {
         FLASH memory device support for Synthetic target"
 }
 
+package CYGPKG_DEVS_FLASH_SYNTH_V2 {
+    alias               { "Synthetic FLASH memory support" synth_flashv2 flash_synthv2 }
+    directory           devs/flash/synthv2
+    script              flash_synth.cdl
+    hardware
+    description   "
+        FLASH memory device support for Synthetic target using the new API"
+}
+
 package CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX {
 	alias 		{ "Support for Toshiba TC58xxx flash memory" flash_toshiba_tc58xxx }
 	directory	devs/flash/toshiba/tc58xxx
