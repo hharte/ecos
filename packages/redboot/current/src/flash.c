@@ -1397,7 +1397,7 @@ do_flash_init(void)
              return false;
         }
         flash_start = info.start;
-        flash_end = info.end -1;
+        flash_end = info.end;
 
         // No bootblock support yet, so we merge any bootblocks we might
         // find into full size blocks
