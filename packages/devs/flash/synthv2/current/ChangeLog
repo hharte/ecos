@@ -1,3 +1,8 @@
+2004-09-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash_synth.c: Allow the use of arbitary sized block.
+	* test/flash3.c: Allow the use of small blocks
+
 2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/flash[23].c: Removed calls to cyg_flash_get_block_info()

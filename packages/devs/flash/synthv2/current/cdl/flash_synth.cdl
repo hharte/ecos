@@ -80,8 +80,7 @@ cdl_package CYGPKG_DEVS_FLASH_SYNTH_V2 {
 	display        "Size of one block of synth flash"
 	flavor	       data
 	default_value  65536
-        legal_values   4096 to 999999
-        requires       { (CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE % 4096) == 0 }
+        legal_values   512 to 999999
 	description    "
 	        This controls the size of one block of flash. This is 
 		the minimum size that can be erased."

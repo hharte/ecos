@@ -60,6 +60,10 @@
 #include <cyg/io/flash.h>
 #include <cyg/flash/synth.h>
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y) ? (x) : (y))
+#endif
+
 /* Helper function. The Linux system call cannot pass 6 parameters. Instead
    a structure is filled in and passed as one parameter */
 static int 
@@ -208,8 +212,8 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
 #endif
     struct cyg_flash_synth_priv *priv = dev->priv;
     int offset = (int)block_base;
-    size_t block_size;
-    int i;
+    size_t remaining;
+    int write_size;
 
     offset -= dev->start;
     
@@ -223,17 +227,15 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
 
     CYG_ASSERT(sizeof(empty) < config->block_size,
                "Eckk! Can't work with such small blocks");
-    CYG_ASSERT((config->block_size % sizeof(empty)) == 0,
-               "Eckk! Can't work with that odd size block");
     CYG_ASSERT(config->boot_blocks && sizeof(empty) < config->boot_block_size,
                "Eckk! Can't work with such small blocks");
-    CYG_ASSERT((config->boot_blocks && config->block_size % sizeof(empty)) == 0,
-               "Eckk! Can't work with that odd size block");
     
-    block_size = flash_block_size(dev, block_base);
+    remaining = flash_block_size(dev, block_base);
 
-    for (i=0; (i * sizeof(empty)) < block_size; i++) {
-        cyg_hal_sys_write(priv->flashfd, empty, sizeof(empty));
+    while (remaining) {
+      write_size = MIN(remaining, sizeof(empty));
+      cyg_hal_sys_write(priv->flashfd, empty, write_size);
+      remaining -= write_size;
     }
     return CYG_FLASH_ERR_OK;
 }

@@ -105,7 +105,8 @@ void cyg_user_start(void)
     int block_size=0, blocks=0;
     cyg_flashaddr_t prog_start;
     unsigned char * ptr;
-
+    size_t copyright_len;
+    
     CYG_TEST_INIT();
 
     // Reference the flash dev so the linker does not throw it away
@@ -151,16 +152,25 @@ void cyg_user_start(void)
   
     CYG_TEST_PASS_FAIL((ret == 0),"flash empty check");
 
-    ret = cyg_flash_program(flash_start,&copyright,sizeof(copyright),NULL);
+    // With small blocks we have to use less of the copyright messages
+    // Since we make assumptions about fitting the message into a
+    // block.
+    if (block_size < sizeof(copyright)*2/3) {
+      copyright_len = block_size / 3;
+    } else {
+      copyright_len = sizeof(copyright);
+    }
+    
+    ret = cyg_flash_program(flash_start,&copyright,copyright_len,NULL);
     CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_program1");
   
     /* Check the contents made it into the flash */
     CYG_TEST_PASS_FAIL(!strncmp((void *)flash_start,
-                                copyright,sizeof(copyright)),
+                                copyright,copyright_len),
                        "flash program contents");
 
     /* .. and check nothing else changed */
-    for (ptr=(unsigned char *)flash_start+sizeof(copyright),ret=0; 
+    for (ptr=(unsigned char *)flash_start+copyright_len,ret=0; 
          ptr < (unsigned char *)flash_end; ptr++) {
         if (*ptr != 0xff) {
             ret++;
@@ -169,24 +179,23 @@ void cyg_user_start(void)
   
     CYG_TEST_PASS_FAIL((ret == 0),"flash program overrun check");
 
-    /* Program over a block boundary */
-    prog_start = flash_start + block_size - sizeof(copyright)/2;
-    ret = cyg_flash_program(prog_start,&copyright,sizeof(copyright),NULL);
+    prog_start = flash_start + block_size - copyright_len/2;
+    ret = cyg_flash_program(prog_start,&copyright,copyright_len,NULL);
     CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_program2");
   
     /* Check the first version is still OK */
     CYG_TEST_PASS_FAIL(!strncmp((void *)flash_start,
                                 copyright,
-                                sizeof(copyright)),
+                                copyright_len),
                        "Original contents");
   
     CYG_TEST_PASS_FAIL(!strncmp((void *)prog_start,
                                 copyright,
-                                sizeof(copyright)),
+                                copyright_len),
                        "New program contents");
 
     /* Check the bit in between is still erased */
-    for (ptr=(unsigned char *)flash_start+sizeof(copyright),ret=0; 
+    for (ptr=(unsigned char *)flash_start+copyright_len,ret=0; 
          ptr < (unsigned char *)prog_start; ptr++) {
         if (*ptr != 0xff) {
             ret++;
@@ -212,7 +221,7 @@ void cyg_user_start(void)
     /* Lastly check the first half of the copyright message is still there */
     CYG_TEST_PASS_FAIL(!strncmp((void *)prog_start,
                                 copyright,
-                                sizeof(copyright)/2),
+                                copyright_len/2),
                        "Block 1 OK");
 
 #if 0
