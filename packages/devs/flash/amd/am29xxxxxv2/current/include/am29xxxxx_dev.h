@@ -82,21 +82,21 @@ externC int cyg_am29xxxxx_init_cfi_8888(  struct cyg_flash_dev*);
 externC int cyg_am29xxxxx_init_cfi_1616(  struct cyg_flash_dev*);
 externC int cyg_am29xxxxx_init_cfi_16as8( struct cyg_flash_dev*);
 
-externC int cyg_am29xxxxx_erase_8(     struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_16(    struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_32(    struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_88(    struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_8888(  struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_1616(  struct cyg_flash_dev*, const cyg_flashaddr_t);
-externC int cyg_am29xxxxx_erase_16as8( struct cyg_flash_dev*, const cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_8(     struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_16(    struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_32(    struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_88(    struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_8888(  struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_1616(  struct cyg_flash_dev*, cyg_flashaddr_t);
+externC int cyg_am29xxxxx_erase_16as8( struct cyg_flash_dev*, cyg_flashaddr_t);
 
-externC int cyg_am29xxxxx_program_8(     struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_16(    struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_32(    struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_88(    struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_8888(  struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_1616(  struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
-externC int cyg_am29xxxxx_program_16as8( struct cyg_flash_dev*, const cyg_flashaddr_t, const void*, const size_t);
+externC int cyg_am29xxxxx_program_8(     struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_16(    struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_32(    struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_88(    struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_8888(  struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_1616(  struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
+externC int cyg_am29xxxxx_program_16as8( struct cyg_flash_dev*, cyg_flashaddr_t, const void*, size_t);
 
 // FIXME: add program_buffered() support as per e.g. the AM29LV128
 // FIXME: add software lock/unlock support as per e.g. the AM29BDS640

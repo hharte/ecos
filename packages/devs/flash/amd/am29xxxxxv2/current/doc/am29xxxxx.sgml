@@ -126,14 +126,14 @@ the one supported by the platform HAL and uses a different flash chip.
       <funcprototype>
         <funcdef>int <function>cyg_am29xxxxx_erase_XX</function></funcdef>
         <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
-        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+        <paramdef>cyg_flashaddr_t <parameter>addr</parameter></paramdef>
       </funcprototype>
       <funcprototype>
         <funcdef>int <function>cyg_am29xxxxx_program_XX</function></funcdef>
         <paramdef>struct cyg_flash_dev* <parameter>device</parameter></paramdef>
-        <paramdef>const cyg_flashaddr_t <parameter>addr</parameter></paramdef>
+        <paramdef>cyg_flashaddr_t <parameter>addr</parameter></paramdef>
         <paramdef>const void* <parameter>data</parameter></paramdef>
-        <paramdef>const size_t <parameter>len</parameter></paramdef>
+        <paramdef>size_t <parameter>len</parameter></paramdef>
       </funcprototype>
       <funcprototype>
         <funcdef>int <function>cyg_am29xxxxx_query_nop</function></funcdef>
@@ -303,7 +303,7 @@ static const CYG_FLASH_FUNS(hal_alaia_flash_amd_funs,
     &amp;cyg_am29xxxxx_query_nop,
     &amp;cyg_am29xxxxx_erase_16,
     &amp;cyg_am29xxxxx_program_16,
-    (int (*)(struct cyg_flash_dev*, const cyg_flashaddr_t, void*, const size_t))0,
+    (int (*)(struct cyg_flash_dev*, const cyg_flashaddr_t, void*, size_t))0,
     &amp;cyg_am29xxxxx_hwr_map_error_nop,
     &amp;cyg_am29xxxxx_lock_nop,
     &amp;cyg_am29xxxxx_unlock_nop);
@@ -318,14 +318,15 @@ static const cyg_am29xxxxx_dev hal_alaia_flash_priv = {
     }
 };
 
-struct cyg_flash_dev hal_alaia_flash CYG_HAL_TABLE_ENTRY(cyg_flashdev) = {
-    .funs               = &amp;hal_alaia_flash_amd_funs,
-    .start              = 0xFFE00000,
-    .end                = 0xFFFFFFFF,
-    .num_block_infos    = 4,
-    .block_info         = hal_alaia_flash_priv.block_info,
-    .priv               = &amp;hal_alaia_flash_priv
-};
+CYG_FLASH_DRIVER(hal_alaia_flash,
+                 &amp;hal_alaia_flash_amd_funs,
+                 0,
+                 0xFFE00000,
+                 0xFFFFFFFF,
+                 4,
+                 hal_alaia_flash_priv.block_info,
+                 &amp;hal_alaia_flash_priv
+);
 #endif
     </programlisting>
     <para>
@@ -459,7 +460,7 @@ platform-specific erase function would look like this:
       </para>
       <programlisting width=72>
 static int
-alaia_flash_erase(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
+alaia_flash_erase(struct cyg_flash_dev* dev, cyg_flashaddr_t addr)
 {
     int result;
     &hellip;  // Set up the hardware for an erase

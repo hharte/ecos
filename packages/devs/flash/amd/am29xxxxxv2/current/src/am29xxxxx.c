@@ -207,7 +207,7 @@ cyg_am29xxxxx_init_nop(struct cyg_flash_dev* dev)
 // A dummy query routine. The implementation of this is specific to
 // each device driver, and I choose to do as little as possible.
 size_t
-cyg_am29xxxxx_query_nop(struct cyg_flash_dev* dev, void* data, const size_t len)
+cyg_am29xxxxx_query_nop(struct cyg_flash_dev* dev, void* data, size_t len)
 {
     CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
     CYG_UNUSED_PARAM(void*, data);

@@ -377,7 +377,7 @@ AM29_FNNAME(cyg_am29xxxxx_init_cfi)(struct cyg_flash_dev* dev)
     int                 result;
     
     CYG_CHECK_DATA_PTR(dev, "valid flash device pointer required");
-    am29_dev    = (cyg_am29xxxxx_dev*) dev->priv;
+    am29_dev    = (cyg_am29xxxxx_dev*) dev->priv;    // Remove const, only place where this is needed.
     addr        = AM29_P2V(dev->start);
     cfi_fn      = (int (*)(struct cyg_flash_dev*, cyg_am29xxxxx_dev*, volatile AM29_TYPE*))
         am29_anonymizer( & AM29_FNNAME(am29_hw_cfi));
@@ -399,7 +399,7 @@ AM29_FNNAME(cyg_am29xxxxx_init_cfi)(struct cyg_flash_dev* dev)
 // Erase a single block. The calling code will have supplied a pointer
 // aligned to a block boundary.
 int
-AM29_FNNAME(cyg_am29xxxxx_erase)(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
+AM29_FNNAME(cyg_am29xxxxx_erase)(struct cyg_flash_dev* dev, cyg_flashaddr_t addr)
 {
     void                (*erase_fn)(volatile AM29_TYPE*);
     volatile AM29_TYPE* block;
@@ -435,7 +435,7 @@ AM29_FNNAME(cyg_am29xxxxx_erase)(struct cyg_flash_dev* dev, const cyg_flashaddr_
 // Write some data to the flash. The destination must be aligned
 // appropriately for the bus width (not the device width).
 int
-AM29_FNNAME(cyg_am29xxxxx_program)(struct cyg_flash_dev* dev, const cyg_flashaddr_t dest, const void* src, const size_t len)
+AM29_FNNAME(cyg_am29xxxxx_program)(struct cyg_flash_dev* dev, cyg_flashaddr_t dest, const void* src, size_t len)
 {
     void                (*program_fn)(volatile AM29_TYPE*, volatile AM29_TYPE*, const cyg_uint8*, cyg_uint32);
     volatile AM29_TYPE* block;
