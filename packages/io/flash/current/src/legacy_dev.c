@@ -181,14 +181,14 @@ legacy_flash_read (struct cyg_flash_dev *dev,
                    void* data, const size_t len)
 {
 #ifdef CYGSEM_IO_FLASH_READ_INDIRECT
-  typedef int code_fun(void *, void *, int, unsigned long, int);
+  typedef int code_fun(const cyg_flashaddr_t, void *, int, unsigned long, int);
   code_fun *_flash_read_buf;
   size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
 
   _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
   
-  return = (*_flash_read_buf)(base, data, len, block_mask, buffer_size);
+  return (*_flash_read_buf)(base, data, len, block_mask, block_size);
 #else
   memcpy(data,(void *)base, len);
   return CYG_FLASH_ERR_OK;

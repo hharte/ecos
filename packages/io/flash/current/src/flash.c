@@ -514,7 +514,7 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
     if (size > block_size) size = block_size;
     
     // Writing from the middle of a block?
-    offset = (size_t)addr % block_size;
+    offset = (size_t)(addr - dev->start) % block_size;
     if (offset)
       size = MIN(block_size - offset, size);
     stat = dev->funs->flash_program(dev, addr, ram, size);
@@ -602,7 +602,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
     if (size > block_size) size = block_size;
     
     // Reading from the middle of a block?
-    offset = (size_t)addr % block_size;
+    offset = (size_t)(addr - dev->start) % block_size;
     if (offset)
       size = MIN(block_size - offset, size);
     if (dev->funs->flash_read) {

@@ -1,3 +1,9 @@
+2004-09-30  Savin Zlobec <savin@elatec.si>
+
+	* src/flash.c: Offset into the block is not calculated correctly
+	when the flash start is not aligned on a flash block.
+	* src/legacy_dev.c (legacy_flash_read): Fixed typo.
+
 2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (cyg_flash_init): Add assert checking that the
