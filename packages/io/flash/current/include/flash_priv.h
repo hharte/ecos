@@ -64,83 +64,101 @@ struct cyg_flash_dev;
 
 // Structure of pointers to functions in the device driver
 struct cyg_flash_dev_funs {
-  int (*flash_init) (struct cyg_flash_dev *dev);
-  size_t (*flash_query) (struct cyg_flash_dev *dev, void * data, 
-                         const size_t len);
-  int (*flash_erase_block) (struct cyg_flash_dev *dev, 
-                            const cyg_flashaddr_t block_base);
-  int (*flash_program) (struct cyg_flash_dev *dev, 
-                        cyg_flashaddr_t base, 
-                        const void* data, const size_t len);
-  int (*flash_read) (struct cyg_flash_dev *dev, 
-                     const cyg_flashaddr_t base, 
-                     void* data, const size_t len);
-  int (*flash_hwr_map_error) (struct cyg_flash_dev *dev, int err);
-  int (*flash_block_lock) (struct cyg_flash_dev *dev, 
-                           const cyg_flashaddr_t block_base);
-  int (*flash_block_unlock) (struct cyg_flash_dev *dev, 
-                             const cyg_flashaddr_t block_base);
+  int     (*flash_init) (struct cyg_flash_dev *dev);
+  size_t  (*flash_query) (struct cyg_flash_dev *dev,
+                          void * data, size_t len);
+  int     (*flash_erase_block) (struct cyg_flash_dev *dev, 
+                                cyg_flashaddr_t block_base);
+  int     (*flash_program) (struct cyg_flash_dev *dev, 
+                            cyg_flashaddr_t base, 
+                            const void* data, size_t len);
+  int     (*flash_read) (struct cyg_flash_dev *dev, 
+                         const cyg_flashaddr_t base, 
+                         void* data, size_t len);
+  int     (*flash_hwr_map_error) (struct cyg_flash_dev *dev, int err);
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING    
+  int     (*flash_block_lock) (struct cyg_flash_dev *dev, 
+                               const cyg_flashaddr_t block_base);
+  int     (*flash_block_unlock) (struct cyg_flash_dev *dev, 
+                                 const cyg_flashaddr_t block_base);
+#endif    
 };
 
 // Structure each device places in the HAL table
 struct cyg_flash_dev {
-  struct cyg_flash_dev_funs   *funs;           // Function pointers
-  cyg_flashaddr_t             start;           // First address
-  cyg_flashaddr_t             end;             // Last address
-  cyg_uint32                  num_block_infos; // Number of entries
-  cyg_flash_block_info_t      *block_info;     // Info about one block size
+  const struct cyg_flash_dev_funs *funs;            // Function pointers
+  cyg_uint32                      flags;            // Device characteristics
+  cyg_flashaddr_t                 start;            // First address
+  cyg_flashaddr_t                 end;              // Last address
+  cyg_uint32                      num_block_infos;  // Number of entries
+  const cyg_flash_block_info_t    *block_info;      // Info about one block size
 
-  void                        *priv;           // Devices private data
-  void                        *config;         // Configuration info
+  const void                      *priv;            // Devices private data
 
-// The following are only written to by the FLASH IO layer.
-  cyg_flash_printf            *pf;             // Pointer to diagnostic printf
-  bool                        init;            // Device has been initialised
+  // The following are only written to by the FLASH IO layer.
+  cyg_flash_printf                *pf;              // Pointer to diagnostic printf
+  bool                            init;             // Device has been initialised
 #ifdef CYGPKG_KERNEL
-  cyg_mutex_t                 mutex;           // Mutex for thread safeness
+  cyg_mutex_t                     mutex;            // Mutex for thread safeness
 #endif
 #if (CYGHWR_IO_FLASH_DEVICE > 1)    
-  struct cyg_flash_dev        *next;           // Pointer to next device
+  struct cyg_flash_dev            *next;            // Pointer to next device
 #endif    
 } CYG_HAL_TABLE_TYPE;
 
-#define CYG_FLASH_FUNS(funs,init,query,erase,prog,read,map,lock,unlock)\
-struct cyg_flash_dev_funs funs = \
-  {                                     \
-    init,                               \
-    query,                              \
-    erase,                              \
-    prog,                               \
-    read,                               \
-    map,                                \
-    lock,                               \
-    unlock                              \
-  };
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _map_, _lock_, _unlock_) \
+struct cyg_flash_dev_funs _funs_ =      \
+{										\
+	.flash_init             = _init_,   \
+	.flash_query            = _query_,  \
+	.flash_erase_block      = _erase_,  \
+	.flash_program          = _prog_,   \
+	.flash_read             = _read_,   \
+	.flash_hwr_map_error    = _map_,    \
+	.flash_block_lock       = _lock_,   \
+	.flash_block_unlock     = _unlock_  \
+}
+#else
+# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _map_, _lock_, _unlock_) \
+struct cyg_flash_dev_funs _funs_ =      \
+{										\
+	.flash_init             = _init_,   \
+	.flash_query            = _query_,  \
+	.flash_erase_block      = _erase_,  \
+	.flash_program          = _prog_,   \
+	.flash_read             = _read_,   \
+	.flash_hwr_map_error    = _map_     \
+}
+#endif
 
 // We assume HAL tables are placed into RAM.
-#define CYG_FLASH_DRIVER(name, _funs, _config, _start, _priv_size)    \
-static char priv_ ## name [_priv_size];                               \
-struct cyg_flash_dev name CYG_HAL_TABLE_ENTRY(cyg_flashdev) = {       \
-   .funs = _funs,                                                     \
-   .config = _config,                                                 \
-   .priv = priv_ ## name,                                             \
-   .start = _start,                                                   \
-};
+#define CYG_FLASH_DRIVER(_name_, _funs_, _flags_, _start_, _end_, _num_block_infos_, _block_info_, _priv_)  \
+struct cyg_flash_dev _name_ CYG_HAL_TABLE_ENTRY(cyg_flashdev) = \
+{                                                               \
+    .funs               = _funs_,                               \
+    .flags              = _flags_,                              \
+    .start              = _start_,                              \
+    .end                = _end_,                                \
+    .num_block_infos    = _num_block_infos_,                    \
+    .block_info         = _block_info_,                         \
+    .priv               = _priv_                                \
+}
 
 #ifdef CYGHWR_IO_FLASH_DEVICE_LEGACY
 struct flash_info {
-  int   block_size;   // Assuming fixed size "blocks"
-  int   blocks;       // Number of blocks
-  int   buffer_size;  // Size of write buffer (only defined for some devices)
+  int	block_size;	  // Assuming fixed size "blocks"
+  int	blocks;		  // Number of blocks
+  int	buffer_size;  // Size of write buffer (only defined for some devices)
   unsigned long block_mask;
   void *start, *end;  // Address range
-  int   init;
+  int	init;
   cyg_flash_printf *pf;
 };
 
 externC struct flash_info flash_info;
-externC int  flash_hwr_init(void);
-externC int  flash_hwr_map_error(int err);
+externC int	 flash_hwr_init(void);
+externC int	 flash_hwr_map_error(int err);
 externC void flash_dev_query(void *data);
 #endif // CYGHWR_IO_FLASH_DEVICE_LEGACY
 

@@ -1,5 +1,7 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_priv.h, src/legacy_dev.c: clean up the interface
+	between the generic flash code and the device drivers
 	* include/flash_priv, src/flash_legacy.h, src/flash.c,
 	src/legacy_dev.c: move cache stuff andother legacy macros
 	to an internal header.

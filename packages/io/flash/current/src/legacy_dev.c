@@ -133,12 +133,12 @@ legacy_flash_query (struct cyg_flash_dev *dev,
 
 static int 
 legacy_flash_erase_block (struct cyg_flash_dev *dev, 
-                          const cyg_flashaddr_t block_base)
+                          cyg_flashaddr_t block_base)
      __attribute__ ((section (".2ram.flash_program_buf")));
 
 static int 
 legacy_flash_erase_block (struct cyg_flash_dev *dev, 
-                          const cyg_flashaddr_t block_base)
+                          cyg_flashaddr_t block_base)
 {
   typedef int code_fun(cyg_flashaddr_t, unsigned int);
   code_fun *_flash_erase_block;
@@ -158,7 +158,7 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 static int
 legacy_flash_program(struct cyg_flash_dev *dev, 
                      cyg_flashaddr_t base, 
-                     const void* data, const size_t len)
+                     const void* data, size_t len)
 {
   typedef int code_fun(cyg_flashaddr_t, const void *, int, unsigned long, int);
   code_fun *_flash_program_buf;
@@ -174,13 +174,13 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 static int 
 legacy_flash_read (struct cyg_flash_dev *dev, 
                    const cyg_flashaddr_t base, 
-                   void* data, const size_t len)
+                   void* data, size_t len)
      __attribute__ ((section (".2ram.flash_program_buf")));
      
 static int 
 legacy_flash_read (struct cyg_flash_dev *dev, 
                    const cyg_flashaddr_t base, 
-                   void* data, const size_t len)
+                   void* data, size_t len)
 {
   typedef int code_fun(const cyg_flashaddr_t, void *, int, unsigned long, int);
   code_fun *_flash_read_buf;
@@ -198,6 +198,7 @@ legacy_flash_read (struct cyg_flash_dev *dev,
 #endif
 
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 static int 
 legacy_flash_block_lock (struct cyg_flash_dev *dev, 
                          const cyg_flashaddr_t block_base)
@@ -207,16 +208,12 @@ static int
 legacy_flash_block_lock (struct cyg_flash_dev *dev, 
                          const cyg_flashaddr_t block_base)
 {
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
   typedef int code_fun(cyg_flashaddr_t);
   code_fun *_flash_lock_block;
   
   _flash_lock_block = (code_fun*) __anonymizer(&flash_lock_block);
 
   return (*_flash_lock_block)(block_base);
-#else
-  return CYG_FLASH_ERR_INVALID;
-#endif
 }
 
 static int 
@@ -228,7 +225,6 @@ static int
 legacy_flash_block_unlock (struct cyg_flash_dev *dev, 
                            const cyg_flashaddr_t block_base)
 {
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
   typedef int code_fun(cyg_flashaddr_t, int, int);
   code_fun *_flash_unlock_block;
   size_t block_size = dev->block_info[0].block_size;
@@ -237,10 +233,8 @@ legacy_flash_block_unlock (struct cyg_flash_dev *dev,
   _flash_unlock_block = (code_fun*) __anonymizer(&flash_unlock_block);
   
   return (*_flash_unlock_block)(block_base, block_size, blocks);
-#else
-  return CYG_FLASH_ERR_INVALID;
-#endif
 }
+#endif
 
 // Map a hardware status to a package error
 static int 
@@ -267,20 +261,23 @@ flash_dev_query(void* data)
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
 }
 
-CYG_FLASH_FUNS(cyg_legacy_funs, 
-               legacy_flash_init,
-               legacy_flash_query,
-               legacy_flash_erase_block,
-               legacy_flash_program,
-               LEGACY_FLASH_READ,
-               legacy_flash_hwr_map_error,
-               legacy_flash_block_lock,
-               legacy_flash_block_unlock
-);
+static const CYG_FLASH_FUNS(cyg_legacy_funs, 
+                            legacy_flash_init,
+                            legacy_flash_query,
+                            legacy_flash_erase_block,
+                            legacy_flash_program,
+                            LEGACY_FLASH_READ,
+                            legacy_flash_hwr_map_error,
+                            legacy_flash_block_lock,
+                            legacy_flash_block_unlock
+    );
 
-CYG_FLASH_DRIVER(cyg_zzlegacy_flashdev, // zz so that it probably comes last.
+CYG_FLASH_DRIVER(cyg_zzlegacy_flashdev,
                  &cyg_legacy_funs,
-                 NULL,  // Pointer to config structure
-                 0,     // Start address of flash
-                 0);    // Size of private structure
-
+                 0,     // Flags
+                 0,     // Start address, filled in by init
+                 0,     // End address, filled in by init
+                 0,     // Number of block infos, filled in by init
+                 NULL,  // Block infos, again filled in by init
+                 NULL   // Driver private data, none needed
+    );
