@@ -44,11 +44,6 @@
 /*                                                                          */
 /* Use:         mon960                                                      */
 /*                                                                          */
-/* $Source$      */
-/* $Revision$                                                        */
-/* Last $Author$                                                  */
-/* $Date$                                             */
-/*                                                                          */
 /* Purpose:  PCI BIOS Routines                                              */
 /*                                                                          */
 /* Remarks:  Conforming to the Revision 2.1 PCI BIOS Specfication           */
