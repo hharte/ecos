@@ -59,6 +59,21 @@
 
 //----------------------------------------------------------------------------
 
+enum {
+    CYG_DATAFLASH_ERR_OK         = 0, // No error
+    CYG_DATAFLASH_ERR_INVALID    = 1, // Invalid address error
+    CYG_DATAFLASH_ERR_WRONG_PART = 2, // Unsupported device error
+    CYG_DATAFLASH_ERR_TIMEOUT    = 3, // Operation timeout error
+    CYG_DATAFLASH_ERR_COMPARE    = 4  // Buffer - main memory compare error
+};
+
+enum {
+    CYG_DATAFLASH_STATE_IDLE = 0,
+    CYG_DATAFLASH_STATE_BUSY = 1
+};
+
+//----------------------------------------------------------------------------
+
 typedef struct cyg_dataflash_dev_info_s
 {
     cyg_uint8  device_id;        // Device ID 
@@ -72,10 +87,13 @@ typedef struct cyg_dataflash_dev_info_s
 
 typedef struct cyg_dataflash_device_s
 {
-    const cyg_dataflash_dev_info_t *info;    // DataFlash device info
-    cyg_spi_device                 *spi_dev; // SPI device
-    cyg_bool                        polled;  // Polled mode flag
-    cyg_drv_mutex_t                 lock;    // Access lock 
+    const cyg_dataflash_dev_info_t *info;     // DataFlash device info
+    cyg_spi_device                 *spi_dev;  // SPI device
+    cyg_drv_mutex_t                 lock;     // Access lock 
+    cyg_bool                        polled;   // Polled mode flag
+    cyg_bool                        blocking; // Blocking mode flag 
+    int                             state;    // Current state (IDLE, BUSY, ...)
+    cyg_uint8                       busy_buf; // Current busy buffer number
 } cyg_dataflash_device_t;
 
 //----------------------------------------------------------------------------
@@ -96,7 +114,6 @@ typedef struct cyg_dataflash_flash_dev_priv_s
     cyg_dataflash_device_t dev;            // DataFlash device
     cyg_uint32             start_page;     // Start page of flash driver space
     cyg_uint32             end_page;       // End page of flash driver space
-    cyg_uint32             page_2size_log; // Page (2^n) size log
 } cyg_dataflash_flash_dev_priv_t;
 
 externC struct cyg_flash_dev_funs cyg_dataflash_flash_dev_funs;
@@ -158,68 +175,73 @@ cyg_dataflash_set_polled_operation(cyg_dataflash_device_t *dev, cyg_bool polled)
     dev->polled = polled;
 }
 
-externC cyg_bool cyg_dataflash_init(cyg_spi_device         *spi_dev, 
-                                    cyg_bool                polled,
-                                    cyg_dataflash_device_t *dev);
+static inline void
+cyg_dataflash_set_blocking_operation(cyg_dataflash_device_t *dev, cyg_bool block)
+{
+    dev->blocking = block;
+} 
 
-externC void cyg_dataflash_aquire(cyg_dataflash_device_t *dev);
+//----------------------------------------------------------------------------
 
-externC void cyg_dataflash_release(cyg_dataflash_device_t *dev);
+externC int cyg_dataflash_init(cyg_spi_device         *spi_dev, 
+                               cyg_bool                polled,
+                               cyg_dataflash_device_t *dev);
+
+externC int cyg_dataflash_aquire(cyg_dataflash_device_t *dev);
+
+externC int cyg_dataflash_release(cyg_dataflash_device_t *dev);
 
 externC cyg_uint16 cyg_dataflash_get_sector_start(cyg_dataflash_device_t *dev,
                                                   cyg_uint16 sector_num);
 
-externC void cyg_dataflash_read_buf(cyg_dataflash_device_t *dev,
-                                    cyg_uint8               buf_num,
-                                    cyg_uint8              *buf, 
-                                    cyg_uint32              len, 
-                                    cyg_uint32              pos); 
-                       
-externC void cyg_dataflash_write_buf(cyg_dataflash_device_t *dev,
-                                     cyg_uint8               buf_num,
-                                     const cyg_uint8        *buf,
-                                     cyg_uint32              len,
-                                     cyg_uint32              pos);
+externC int cyg_dataflash_wait_ready(cyg_dataflash_device_t *dev);
 
-externC void cyg_dataflash_mem_to_buf(cyg_dataflash_device_t *dev,
+externC int cyg_dataflash_read_buf(cyg_dataflash_device_t *dev,
+                                   cyg_uint8               buf_num,
+                                   cyg_uint8              *buf, 
+                                   cyg_uint32              len, 
+                                   cyg_uint32              pos); 
+                       
+externC int cyg_dataflash_write_buf(cyg_dataflash_device_t *dev,
+                                    cyg_uint8               buf_num,
+                                    const cyg_uint8        *buf,
+                                    cyg_uint32              len,
+                                    cyg_uint32              pos);
+
+externC int cyg_dataflash_mem_to_buf(cyg_dataflash_device_t *dev,
+                                     cyg_uint8               buf_num,
+                                     cyg_uint32              page_num);
+
+externC int cyg_dataflash_program_buf(cyg_dataflash_device_t *dev,
                                       cyg_uint8               buf_num,
                                       cyg_uint32              page_num,
-                                      cyg_bool                wait); 
+                                      cyg_bool                erase);
 
-externC void cyg_dataflash_program_buf(cyg_dataflash_device_t *dev,
+externC int cyg_dataflash_compare_buf(cyg_dataflash_device_t *dev,
+                                      cyg_uint8               buf_num,
+                                      cyg_uint32              page_num);
+
+externC int cyg_dataflash_erase(cyg_dataflash_device_t *dev,
+                                cyg_uint32              page_num);
+
+externC int cyg_dataflash_erase_block(cyg_dataflash_device_t *dev,
+                                      cyg_uint32              block_num);
+
+externC int cyg_dataflash_auto_rewrite(cyg_dataflash_device_t *dev,
                                        cyg_uint8               buf_num,
-                                       cyg_uint32              page_num,
-                                       cyg_bool                erase,
-                                       cyg_bool                wait);
+                                       cyg_uint32              page_num);
 
-externC cyg_bool cyg_dataflash_compare_buf(cyg_dataflash_device_t *dev,
-                                           cyg_uint8               buf_num,
-                                           cyg_uint32              page_num);
+externC int cyg_dataflash_read(cyg_dataflash_device_t *dev, 
+                               cyg_uint8              *buf, 
+                               cyg_uint32              len, 
+                               cyg_uint32              pos);
 
-externC void cyg_dataflash_erase(cyg_dataflash_device_t *dev,
-                                 cyg_uint32              page_num,
-                                 cyg_bool                wait);
-
-externC void cyg_dataflash_erase_block(cyg_dataflash_device_t *dev,
-                                       cyg_uint32              block_num,
-                                       cyg_bool                wait);
-
-externC void cyg_dataflash_auto_rewrite(cyg_dataflash_device_t *dev,
-                                        cyg_uint8               buf_num,
-                                        cyg_uint32              page_num,
-                                        cyg_bool                wait);
-
-externC void cyg_dataflash_read(cyg_dataflash_device_t *dev, 
-                                cyg_uint8              *buf, 
-                                cyg_uint32              len, 
-                                cyg_uint32              pos);
-
-externC cyg_bool cyg_dataflash_program(cyg_dataflash_device_t *dev, 
-                                       const cyg_uint8        *buf, 
-                                       cyg_uint32             *len, 
-                                       cyg_uint32              pos,
-                                       cyg_bool                erase,
-                                       cyg_bool                verify);
+externC int cyg_dataflash_program(cyg_dataflash_device_t *dev, 
+                                  const cyg_uint8        *buf, 
+                                  cyg_uint32             *len, 
+                                  cyg_uint32              pos,
+                                  cyg_bool                erase,
+                                  cyg_bool                verify);
 
 //----------------------------------------------------------------------------
 

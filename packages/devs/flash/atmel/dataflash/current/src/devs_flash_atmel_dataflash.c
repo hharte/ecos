@@ -90,6 +90,11 @@
 
 //----------------------------------------------------------------------------
 
+#define DATA_BUF_NONE 0x00 // Data buffer number for no buffer
+#define DATA_BUF_ALL  0xFF // Data buffer number for all buffers
+
+//----------------------------------------------------------------------------
+
 typedef struct df_status_s
 {
     cyg_uint8 reserved:2;
@@ -206,15 +211,51 @@ df_read_status(cyg_dataflash_device_t *dev)
     return *status;    
 }
 
-static void 
-df_wait_ready(cyg_dataflash_device_t *dev)
+static void
+df_set_busy_buf(cyg_dataflash_device_t *dev, cyg_uint8 buf_num)
+{
+    dev->state    = CYG_DATAFLASH_STATE_BUSY;
+    dev->busy_buf = buf_num;
+}
+
+static void
+df_set_busy(cyg_dataflash_device_t *dev)
+{
+    df_set_busy_buf(dev, DATA_BUF_ALL);
+}
+
+static int
+df_wait_ready_buf(cyg_dataflash_device_t *dev, cyg_uint8 buf_num)
 {
     df_status_t status;
-   
-    do 
+  
+    if (CYG_DATAFLASH_STATE_IDLE == dev->state)
+        return CYG_DATAFLASH_ERR_OK;
+    
+    if (DATA_BUF_ALL  == buf_num       || 
+        DATA_BUF_ALL  == dev->busy_buf || 
+        dev->busy_buf == buf_num)
     {
-        status = df_read_status(dev);
-    } while (0 == status.ready); 
+        // REMIND: this loop should have an timeout 
+        // in case of device malfunction
+
+        do 
+        {
+            status = df_read_status(dev);
+        } while (0 == status.ready); 
+
+        dev->state    = CYG_DATAFLASH_STATE_IDLE;
+        dev->busy_buf = DATA_BUF_NONE;
+    }
+    
+    return CYG_DATAFLASH_ERR_OK;  
+   
+}
+
+static int
+df_wait_ready(cyg_dataflash_device_t *dev)
+{
+    return df_wait_ready_buf(dev, DATA_BUF_ALL);
 }
 
 static void 
@@ -234,9 +275,6 @@ df_detect_device(cyg_dataflash_device_t *dev)
     {
         if (status.device_id == dev_info->device_id)
         {
-//            diag_printf("Detected DataFlash id = %d page_size=%d page_count=%d\n", 
-//                        status.device_id, dev_info->page_size, dev_info->page_count); 
-
             dev->info = dev_info;
             return;
         }
@@ -248,22 +286,50 @@ df_detect_device(cyg_dataflash_device_t *dev)
 //----------------------------------------------------------------------------
 // cyg_dataflash_init()
 
-cyg_bool 
+int
 cyg_dataflash_init(cyg_spi_device         *spi_dev, 
                    cyg_bool                polled,
                    cyg_dataflash_device_t *dev)
 {
-    dev->spi_dev = spi_dev;
-    dev->polled  = polled;
-    
+    dev->spi_dev  = spi_dev;
+    dev->polled   = polled;
+    dev->blocking = false;
+    dev->state    = CYG_DATAFLASH_STATE_IDLE;
+    dev->busy_buf = DATA_BUF_NONE;
+
     cyg_drv_mutex_init(&dev->lock);
 
     df_detect_device(dev);
 
     if (NULL == dev->info)
-        return false;
+        return CYG_DATAFLASH_ERR_WRONG_PART;
     else
-        return true;
+        return CYG_DATAFLASH_ERR_OK;
+}
+
+//----------------------------------------------------------------------------
+// cyg_dataflash_aquire()
+
+int
+cyg_dataflash_aquire(cyg_dataflash_device_t *dev)
+{
+    while (!cyg_drv_mutex_lock(&dev->lock));
+    return CYG_DATAFLASH_ERR_OK; 
+}
+
+//----------------------------------------------------------------------------
+// cyg_dataflash_release()
+
+int
+cyg_dataflash_release(cyg_dataflash_device_t *dev)
+{
+    int err;
+
+    err = df_wait_ready(dev); 
+        
+    cyg_drv_mutex_unlock(&dev->lock);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
@@ -286,27 +352,18 @@ cyg_dataflash_get_sector_start(cyg_dataflash_device_t *dev,
 }
 
 //----------------------------------------------------------------------------
-// cyg_dataflash_aquire()
+// cyg_dataflash_wait_ready()
 
-void
-cyg_dataflash_aquire(cyg_dataflash_device_t *dev)
+int 
+cyg_dataflash_wait_ready(cyg_dataflash_device_t *dev)
 {
-    while (!cyg_drv_mutex_lock(&dev->lock));
-}
-
-//----------------------------------------------------------------------------
-// cyg_dataflash_release()
-
-void
-cyg_dataflash_release(cyg_dataflash_device_t *dev)
-{
-    cyg_drv_mutex_unlock(&dev->lock);
+    return df_wait_ready(dev);
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_read_buf()
 
-void
+int
 cyg_dataflash_read_buf(cyg_dataflash_device_t *dev,
                        cyg_uint8               buf_num,
                        cyg_uint8              *buf, 
@@ -315,27 +372,44 @@ cyg_dataflash_read_buf(cyg_dataflash_device_t *dev,
                        
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[5];
 
-    pos %= dev->info->page_size;
+    // Check if the position is inside the page 
+    if (pos >= dev->info->page_size)
+        return CYG_DATAFLASH_ERR_INVALID;
+
+    // Compose DataFlash command
 
     if (1 == buf_num)      cmd_buf[0] = DF_BUF1_READ_CMD;
     else if (2 == buf_num) cmd_buf[0] = DF_BUF2_READ_CMD;
     else 
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
 
     df_compose_addr(dev, cmd_buf, 0, pos);
 
     cyg_spi_transaction_begin(spi_dev);
-    cyg_spi_transaction_transfer(spi_dev, true, 5, cmd_buf, NULL, false);
-    cyg_spi_transaction_transfer(spi_dev, dev->polled, len, buf, buf, true);
+
+    // Wait for the target buffer to become ready
+    err = df_wait_ready_buf(dev, buf_num);
+
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send command and read data
+
+        cyg_spi_transaction_transfer(spi_dev, true, 5, cmd_buf, NULL, false);
+        cyg_spi_transaction_transfer(spi_dev, dev->polled, len, buf, buf, true);
+    }
+    
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_write_buf()
 
-void
+int
 cyg_dataflash_write_buf(cyg_dataflash_device_t *dev,
                         cyg_uint8               buf_num,
                         const cyg_uint8        *buf,
@@ -343,259 +417,387 @@ cyg_dataflash_write_buf(cyg_dataflash_device_t *dev,
                         cyg_uint32              pos)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
+ 
+    // Check if the position is inside the page 
+    if (pos >= dev->info->page_size)
+        return CYG_DATAFLASH_ERR_INVALID;
 
-    pos %= dev->info->page_size;
+    // Compose DataFlash command
 
     if (1 == buf_num)      cmd_buf[0] = DF_BUF1_WRITE_CMD;
     else if (2 == buf_num) cmd_buf[0] = DF_BUF2_WRITE_CMD;
     else 
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
 
     df_compose_addr(dev, cmd_buf, 0, pos);
 
     cyg_spi_transaction_begin(spi_dev);
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, false);
-    cyg_spi_transaction_transfer(spi_dev, dev->polled, len, buf, NULL, true);
+
+    // Wait for the target buffer to become ready
+    err = df_wait_ready_buf(dev, buf_num);
+    
+    if (CYG_DATAFLASH_ERR_OK == err)
+    { 
+        // Send command and data
+
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, false);
+        cyg_spi_transaction_transfer(spi_dev, dev->polled, 
+                                     len, buf, NULL, true);
+    }
+
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_mem_to_buf()
 
-void
+int
 cyg_dataflash_mem_to_buf(cyg_dataflash_device_t *dev,
                          cyg_uint8               buf_num,
-                         cyg_uint32              page_num,
-                         cyg_bool                wait) 
+                         cyg_uint32              page_num)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
-
-    if (page_num >= dev->info->page_count)
-        return;
     
+    // Check if the page number is inside the flash
+    if (page_num >= dev->info->page_count)
+        return CYG_DATAFLASH_ERR_INVALID;
+    
+    // Compose DataFlash command
+
     if (1 == buf_num)      cmd_buf[0] = DF_TRANSFER_TO_BUF1_CMD;
     else if (2 == buf_num) cmd_buf[0] = DF_TRANSFER_TO_BUF2_CMD;
     else 
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
 
     df_compose_addr(dev, cmd_buf, page_num, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
 
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
 
-    if (wait)
-        df_wait_ready(dev);
+        // Mark the target buffer as busy
+        df_set_busy_buf(dev, buf_num);
+
+        // Wait if in blocking mode     
+        if (dev->blocking)
+            err = df_wait_ready(dev);
+    }
 
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_program_buf()
 
-void
+int
 cyg_dataflash_program_buf(cyg_dataflash_device_t *dev,
                           cyg_uint8               buf_num,
                           cyg_uint32              page_num,
-                          cyg_bool                erase,
-                          cyg_bool                wait)
+                          cyg_bool                erase)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
-
-    if (page_num >= dev->info->page_count)
-        return;
     
+    // Check if the page number is inside the flash
+    if (page_num >= dev->info->page_count)
+        return CYG_DATAFLASH_ERR_INVALID;
+    
+    // Compose DataFlash command
+
     if (erase)
     {
         if (1 == buf_num)      cmd_buf[0] = DF_BUF1_PROG_W_ERASE_CMD;
         else if (2 == buf_num) cmd_buf[0] = DF_BUF2_PROG_W_ERASE_CMD; 
         else 
-            return;
+            return CYG_DATAFLASH_ERR_INVALID;
     }
     else
     {
         if (1 == buf_num)      cmd_buf[0] = DF_BUF1_PROG_WO_ERASE_CMD;
         else if (2 == buf_num) cmd_buf[0] = DF_BUF2_PROG_WO_ERASE_CMD; 
         else 
-            return;
+            return CYG_DATAFLASH_ERR_INVALID;
     }
     
     df_compose_addr(dev, cmd_buf, page_num, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
-
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
     
-    if (wait)
-        df_wait_ready(dev);
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
 
+        // Mark the target buffer as busy    
+        df_set_busy_buf(dev, buf_num);
+
+        // Wait if in blocking mode
+        if (dev->blocking)
+            err = df_wait_ready(dev);
+    }
+    
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_compare_buf()
 
-cyg_bool
+int
 cyg_dataflash_compare_buf(cyg_dataflash_device_t *dev,
                           cyg_uint8               buf_num,
                           cyg_uint32              page_num)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
     df_status_t     status;
 
+    // Check if the page number is inside the flash
     if (page_num >= dev->info->page_count)
-        return false;
+        return CYG_DATAFLASH_ERR_INVALID;
+
+    // Compose DataFlash command
 
     if (1 == buf_num)      cmd_buf[0] = DF_BUF1_COMPARE_CMD;
     else if (2 == buf_num) cmd_buf[0] = DF_BUF2_COMPARE_CMD; 
     else 
-        return false;
+        return CYG_DATAFLASH_ERR_INVALID;
 
     df_compose_addr(dev, cmd_buf, page_num, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
-    df_wait_ready(dev);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
+   
+    if (CYG_DATAFLASH_ERR_OK == err)
+    { 
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
+
+        // Wait for the device to become ready
+        df_set_busy(dev);
+        err = df_wait_ready(dev);
     
-    status = df_read_status(dev);
+        // Read the result of memory compare
+
+        if (CYG_DATAFLASH_ERR_OK == err)
+        {
+            status = df_read_status(dev);
+            if (status.compare_err)
+                err = CYG_DATAFLASH_ERR_COMPARE;
+        }
+    }
 
     cyg_spi_transaction_end(spi_dev);
 
-    return (!status.compare_err);
+    return err; 
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_erase()
 
-void
+int
 cyg_dataflash_erase(cyg_dataflash_device_t *dev,
-                    cyg_uint32              page_num,
-                    cyg_bool                wait)
+                    cyg_uint32              page_num)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
 
+    // Check if the page number is inside the flash
     if (page_num >= dev->info->page_count)
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
+
+    // Compose DataFlash command
 
     cmd_buf[0] = DF_PAGE_ERASE_CMD;
     df_compose_addr(dev, cmd_buf, page_num, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
+    
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
 
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
-
-    if (wait)
-        df_wait_ready(dev);
+        // Set device state to busy
+        df_set_busy_buf(dev, DATA_BUF_NONE);
+        
+        // Wait if in blocking mode
+        if (dev->blocking)
+            err = df_wait_ready(dev);
+    }
     
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_erase_block()
 
-void
+int
 cyg_dataflash_erase_block(cyg_dataflash_device_t *dev,
-                          cyg_uint32              block_num,
-                          cyg_bool                wait)
+                          cyg_uint32              block_num)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
 
+    // Check if the block number is inside the flash
     if (block_num >= (dev->info->page_count >> 3))
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
+
+    // Compose DataFlash command
 
     cmd_buf[0] = DF_BLOCK_ERASE_CMD;
     df_compose_addr(dev, cmd_buf, block_num << 3, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
 
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
 
-    if (wait)
-        df_wait_ready(dev);
-
+        // Set device state to busy
+        df_set_busy_buf(dev, DATA_BUF_NONE);
+ 
+        // Wait if in blocking mode
+        if (dev->blocking)
+            err = df_wait_ready(dev);
+    }
+    
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_auto_rewrite()
 
-void
+int
 cyg_dataflash_auto_rewrite(cyg_dataflash_device_t *dev,
                            cyg_uint8               buf_num,
-                           cyg_uint32              page_num,
-                           cyg_bool                wait)
+                           cyg_uint32              page_num)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
 
+    // Check if the page number is inside the flash
     if (page_num >= dev->info->page_count)
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
+
+    // Compose DataFlash command
 
     if (1 == buf_num)      cmd_buf[0] = DF_AUTO_REWRITE_THROUGH_BUF1_CMD;
     else if (2 == buf_num) cmd_buf[0] = DF_AUTO_REWRITE_THROUGH_BUF2_CMD; 
     else 
-        return;
+        return CYG_DATAFLASH_ERR_INVALID;
 
     df_compose_addr(dev, cmd_buf, page_num, 0);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
 
-    cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {
+        // Send the command 
+        cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
 
-    if (wait)
-        df_wait_ready(dev);
+        // Mark the target buffer as busy
+        df_set_busy_buf(dev, buf_num);
+
+        // Wait if in blocking mode
+        if (dev->blocking)
+            err = df_wait_ready(dev);
+    }
     
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_read()
 
-void
+int
 cyg_dataflash_read(cyg_dataflash_device_t *dev, 
                    cyg_uint8              *buf, 
                    cyg_uint32              len, 
                    cyg_uint32              pos)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[8];
     cyg_uint32      page_num, page_pos;
 
+    // Calculate page number and position from given absolute position
+
     page_num = pos / dev->info->page_size;
     page_pos = pos % dev->info->page_size;
+
+    // Check if the page number is inside the flash
+    if (page_num >= dev->info->page_count) 
+        return CYG_DATAFLASH_ERR_INVALID;
+    
+    // Compose DataFlash command
 
     cmd_buf[0] = DF_CONT_ARRAY_READ_CMD;
     df_compose_addr(dev, cmd_buf, page_num, page_pos);
 
     cyg_spi_transaction_begin(spi_dev);
-    df_wait_ready(dev);
-    cyg_spi_transaction_transfer(spi_dev, true, 8, cmd_buf, NULL, false);
-    cyg_spi_transaction_transfer(spi_dev, dev->polled, len, buf, buf, true);
+
+    // Wait for the device to become ready
+    err = df_wait_ready(dev);
+
+    if (CYG_DATAFLASH_ERR_OK == err)
+    {    
+        // Send the command and read data from DataFlash main memory
+        
+        cyg_spi_transaction_transfer(spi_dev, true, 8, cmd_buf, NULL, false);
+        cyg_spi_transaction_transfer(spi_dev, dev->polled, len, buf, buf, true);
+    }
+    
     cyg_spi_transaction_end(spi_dev);
+
+    return err;
 }
 
 //----------------------------------------------------------------------------
 // cyg_dataflash_program()
 
-cyg_bool
+int
 cyg_dataflash_program(cyg_dataflash_device_t *dev, 
                       const cyg_uint8        *buf, 
                       cyg_uint32             *len, 
@@ -604,68 +806,106 @@ cyg_dataflash_program(cyg_dataflash_device_t *dev,
                       cyg_bool                verify)
 {
     cyg_spi_device *spi_dev = dev->spi_dev;
+    int             err     = CYG_DATAFLASH_ERR_OK;
     cyg_uint8       cmd_buf[4];
     cyg_uint32      count, page_num, page_pos;
-    cyg_bool        res = true;
-    
+   
+    // Calculate page number and position from given absolute position
+
     page_num = pos / dev->info->page_size;
     page_pos = pos % dev->info->page_size;
     count    = *len;
-    
-//    diag_printf("\nWrite start at page=%d pos=%d size=%d\n", page_num, page_pos, *len);
 
     cyg_spi_transaction_begin(spi_dev);
 
-    df_wait_ready(dev);
+    // Wait for device to become ready
+    err = df_wait_ready(dev);
+    if (CYG_DATAFLASH_ERR_OK != err)
+        goto out;
+   
+    // Loop until count bytes written
 
     while (count > 0)
     { 
         df_status_t status;
         cyg_uint32  size;
 
+        // Check if the current page number is inside the flash 
+        if (page_num >= dev->info->page_count)
+        {
+            err = CYG_DATAFLASH_ERR_INVALID;
+            goto out;
+        }
+       
+        // Calculate the number of bytes to write to the current page
         if ((page_pos + count) > dev->info->page_size)
             size = dev->info->page_size - page_pos;
         else
             size = count;
         
-//        diag_printf("Writing page=%d size=%d [%02X]\n", page_num, size, *buf);
-    
+        // Compose DataFlash command address
         df_compose_addr(dev, cmd_buf, page_num, page_pos);
-        
+       
+        // If we are not rewritting the whole page, then first 
+        // read the old data from main memory to the target buffer
+
         if (page_pos > 0 || size < dev->info->page_size)
         {
             cmd_buf[0] = DF_TRANSFER_TO_BUF1_CMD;
             cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
-            df_wait_ready(dev);
+            df_set_busy(dev);
+            err = df_wait_ready(dev);
+            if (CYG_DATAFLASH_ERR_OK != err)
+                goto out;
         }
-        
+       
+        // Write data to the target buffer
+
         cmd_buf[0] = DF_BUF1_WRITE_CMD;
         cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, false);
-        cyg_spi_transaction_transfer(spi_dev, dev->polled, size, buf, NULL, true);
-        df_wait_ready(dev);
-
+        cyg_spi_transaction_transfer(spi_dev, dev->polled, 
+                                     size, buf, NULL, true);
+        df_set_busy(dev);
+        err = df_wait_ready(dev);
+        if (CYG_DATAFLASH_ERR_OK != err)
+            goto out;
+       
+        // Program data from the target buffer to main memory 
+        // and perform an erase before if requested
+        
         if (erase)
             cmd_buf[0] = DF_BUF1_PROG_W_ERASE_CMD;
         else
             cmd_buf[0] = DF_BUF1_PROG_WO_ERASE_CMD;
 
         cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
-        df_wait_ready(dev);
-   
+        df_set_busy(dev);
+        err = df_wait_ready(dev);
+        if (CYG_DATAFLASH_ERR_OK != err)
+            goto out;
+        
+        // Compare the target buffer contents with the freshly 
+        // written main memory page (if requested)
+        
         if (verify)
         { 
             cmd_buf[0] = DF_BUF1_COMPARE_CMD;
             cyg_spi_transaction_transfer(spi_dev, true, 4, cmd_buf, NULL, true);
-            df_wait_ready(dev);
-    
+            df_set_busy(dev);
+            err = df_wait_ready(dev);
+            if (CYG_DATAFLASH_ERR_OK != err)
+                goto out;
+            
             status = df_read_status(dev);
 
             if (status.compare_err)
             {
-                res = false;
-                break;
+                err = CYG_DATAFLASH_ERR_COMPARE;
+                goto out;
             }
         }
+
+        // Adjust running values
 
         page_pos  = 0;
         page_num += 1;
@@ -673,11 +913,12 @@ cyg_dataflash_program(cyg_dataflash_device_t *dev,
         buf      += size;
     }
 
+out:
     cyg_spi_transaction_end(spi_dev);
 
     *len -= count;
     
-    return res; 
+    return err; 
 }
 
 //----------------------------------------------------------------------------

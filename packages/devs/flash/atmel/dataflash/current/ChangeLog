@@ -1,3 +1,13 @@
+2004-10-07  Savin Zlobec  <savin@elatec.si> 
+
+        * include/dataflash.h:
+        * src/devs_flash_atmel_dataflash.c:
+        Changed the API to be more consistent, included error
+        reporting and added blocking/non blocking mode of operation.
+        * src/devs_flash_atmel_dataflash_flash_dev_funs.c:
+        Synced with new API and set the block size to DataFlash's
+        native page size.
+
 2004-10-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/devs_flash_atmel_dataflash.cdl: Remove
