@@ -169,6 +169,7 @@ legacy_flash_program(struct cyg_flash_dev *dev,
   return (*_flash_program_buf)(base, data, len, block_mask ,block_size);
 }
 
+#ifdef CYGSEM_IO_FLASH_READ_INDIRECT
 static int 
 legacy_flash_read (struct cyg_flash_dev *dev, 
                    const cyg_flashaddr_t base, 
@@ -180,7 +181,6 @@ legacy_flash_read (struct cyg_flash_dev *dev,
                    const cyg_flashaddr_t base, 
                    void* data, const size_t len)
 {
-#ifdef CYGSEM_IO_FLASH_READ_INDIRECT
   typedef int code_fun(const cyg_flashaddr_t, void *, int, unsigned long, int);
   code_fun *_flash_read_buf;
   size_t block_size = dev->block_info[0].block_size;
@@ -189,11 +189,12 @@ legacy_flash_read (struct cyg_flash_dev *dev,
   _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
   
   return (*_flash_read_buf)(base, data, len, block_mask, block_size);
-#else
-  memcpy(data,(void *)base, len);
-  return CYG_FLASH_ERR_OK;
-#endif
 }
+
+# define LEGACY_FLASH_READ  legacy_flash_read
+#else
+# define LEGACY_FLASH_READ  ((int (*)(struct cyg_flash_dev*, const cyg_flashaddr_t, void*, const size_t))0)
+#endif
 
 
 static int 
@@ -270,7 +271,7 @@ CYG_FLASH_FUNS(cyg_legacy_funs,
                legacy_flash_query,
                legacy_flash_erase_block,
                legacy_flash_program,
-               legacy_flash_read,
+               LEGACY_FLASH_READ,
                legacy_flash_hwr_map_error,
                legacy_flash_block_lock,
                legacy_flash_block_unlock

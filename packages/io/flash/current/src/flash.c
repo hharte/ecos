@@ -618,6 +618,9 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
 #ifndef CYGHWR_IO_FLASH_INDIRECT_READS
       CYG_FAIL("read function supplied but indirect reads not enabled");
       stat = CYG_FLASH_ERR_PROTOCOL;
+      if (err_address) {
+          *err_address = addr;
+      }
 #else
       // We have to indirect through the device driver.
       // The first read may be in the middle of a block. Do the necessary

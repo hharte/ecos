@@ -1,5 +1,7 @@
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
+	* src/legacy_dev.c (legacy_flash_read): only needed if the
+	underlying legacy driver required indirect reads.
 	* src/flash.c: encapsulate various optional bits of code in
 	macros, to cut down on the #ifdef's in the main code
 
