@@ -1373,8 +1373,10 @@ bool
 do_flash_init(void)
 {
     int stat, i;
-    cyg_flashaddr_t err_addr;
     cyg_flash_info_t info;
+#ifdef CYGOPT_REDBOOT_FIS
+    cyg_flashaddr_t err_addr;
+#endif
 
     if (!__flash_init) {
         __flash_init = 1;
