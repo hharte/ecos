@@ -1,3 +1,9 @@
+2004-11-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_strata_v2.inl: Correct the usage of const
+	parameters. strata_init() needs to be able to modify priv.
+	strata_program_buf() does not need to modify priv.
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/flash_strata_v2.inl: adjust const parameters as per

@@ -122,7 +122,9 @@ strata_init (struct cyg_flash_dev *dev)
 {
     struct FLASH_query data, *qp;
     int num_regions, region_size, buffer_size;
-    struct cyg_flash_strata_v2_priv *priv = dev->priv;
+    // remove const property. We need to change the block_info and num_blocks      
+    struct cyg_flash_strata_v2_priv *priv = 
+        (struct cyg_flash_strata_v2_priv *)dev->priv;
 
     dev->funs->flash_query(dev, &data, sizeof(data));
     qp = &data;
@@ -337,7 +339,7 @@ strata_program_buf (struct cyg_flash_dev *dev,
                     const void* data_addr,
                     size_t total_len)
 {
-    struct cyg_flash_strata_v2_priv *priv = dev->priv;
+    const struct cyg_flash_strata_v2_priv *priv = dev->priv;
     volatile flash_t *ROM;
     volatile flash_t *BA, *addr;
     flash_t * data = (flash_t *)data_addr;
