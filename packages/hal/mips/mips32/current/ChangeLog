@@ -1,3 +1,14 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/mips_mips32.ld:
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.	
+
+2003-04-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_mips32.ld:
+        Fix .gnulinkonce.s -> .gnu.linkonce.s typo.
+
 2003-02-27  Nick Garnett  <nickg@calivar.com>
 
 	* cdl/hal_mips_mips32.cdl: Changed CYGPKG_HAL_MIPS_GDB_REPORT_CP0

@@ -1,3 +1,14 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/mips_idt32334.ld: 
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.
+
+2003-04-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_idt32334.ld:
+        Fix .gnulinkonce.s -> .gnu.linkonce.s typo.
+
 2003-02-13  Tim Michals  <t.michals@attbi.com>
 2003-02-13  Jonathan Larmour  <jifl@eCosCentric.com>
 

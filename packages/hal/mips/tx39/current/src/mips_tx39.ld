@@ -50,7 +50,11 @@ ENTRY(reset_vector)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 /* FIXME: The MLT should pass in the required alignment since it must be
  * the same as the VMA's alignment. As a result of this bug, all the JMR3904
@@ -299,7 +303,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_sdata(_region_, _vma_, _lma_)                 \
   .sdata _vma_ : _lma_                                        \
     {                                                         \
-      FORCE_OUTPUT; *(.sdata) *(.sdata.*) *(.gnulinkonce.s*)  \
+      FORCE_OUTPUT; *(.sdata) *(.sdata.*) *(.gnu.linkonce.s*)  \
     } > _region_
 
 #define SECTION_lit8(_region_, _vma_, _lma_)    \

@@ -1,3 +1,8 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/sh.ld:
+	Added entry for .stack section in data section.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code
