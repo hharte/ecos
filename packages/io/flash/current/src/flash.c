@@ -154,21 +154,24 @@ static bool flash_sort_and_check(void)
   bool moved;
   struct cyg_flash_dev *dev, **previous_next;
 
-  // Place all devices on the list, unsorted for now.
+  // Place all devices that initialised on the list, unsorted for now.
   for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
-    dev->next  = flash_head;
-    flash_head = dev;
+    if (dev->init) {
+      dev->next  = flash_head;
+      flash_head = dev;
+    }
   }
   
-  // If there are no devices, abort. This should not happen because of
-  // the constraints on CYGHWR_IO_FLASH_DEVICE.
+  // If there are no devices, abort. This could happen because none
+  // of the devices initialised. 
   if (flash_head == NULL) {
     return false;
   }
 
   // Sort the linked list into ascending order of flash address. Use a
   // primitive ripple sort, but since we don't expect to have many
-  // devices this should be OK.
+  // devices this should be OK. This loop may run safely with just one
+  // entry on the list.
   do {
     moved=false;
     for (dev=flash_head, previous_next=&flash_head; 
@@ -204,10 +207,6 @@ find_dev(cyg_flashaddr_t addr, int* stat)
   }
   for (dev = flash_head; dev; dev = dev->next) {
     if ((dev->start <= addr) && (addr <= dev->end)) {
-      if (! dev->init) {
-        *stat = CYG_FLASH_ERR_NOT_INIT;
-        return NULL;
-      }
       return dev;
     }
   }
@@ -299,15 +298,16 @@ cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
 #if (1 == CYGHWR_IO_FLASH_DEVICE)
-  if (0 == Nth) {
+  if ((0 == Nth) && cyg_flashdevtab[0].init) {
       dev = &(cyg_flashdevtab[0]);
   } else {
       return CYG_FLASH_ERR_INVALID;
   }
 #else
+  // Only initialized devices are on the list.
   for (dev = flash_head; dev && Nth; dev=dev->next, Nth--)
     ;
-  if (!dev || !dev->init) {
+  if (!dev) {
       return CYG_FLASH_ERR_INVALID;
   }
 #endif

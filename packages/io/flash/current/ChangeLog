@@ -1,3 +1,17 @@
+2004-11-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c (flash_sort_and_check): previous patch would have
+	resulted in init failure if only one device initialized.
+	(cyg_flash_get_info): handle per-device init flag
+
+2004-11-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (flash_sort_and_check): Don't add devices which
+	failed to initialise onto the list. Don't bother sorting the
+	list if its empty or only has one entry.
+	* src/flash.c (find_dev): All devices on the list are initialised so
+	don't both checking the init flag.
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/legacy_dev.c: remove .2ram attributes. These functions do
