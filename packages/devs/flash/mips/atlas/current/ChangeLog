@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_atlas.cdl: Indicate we need the legacy device API
+
 2003-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_atlas.cdl: Added requirements for strncmp.

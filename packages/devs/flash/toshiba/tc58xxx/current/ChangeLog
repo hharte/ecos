@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_toshiba_tc58xxx.cdl: Indicate we need the legacy device API
+
 2004-03-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_tc58xxx.inl: Page addressing was wrong for large (> 32MB) devices.

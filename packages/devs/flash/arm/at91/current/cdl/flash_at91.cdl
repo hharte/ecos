@@ -57,6 +57,7 @@ cdl_package CYGPKG_DEVS_FLASH_AT91 {
     requires	  CYGPKG_HAL_ARM_AT91
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_LEGACY
     implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
 
     include_dir   .

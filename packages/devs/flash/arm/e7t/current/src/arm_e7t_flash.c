@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2003 Andrew Lunn
+// Copyright (C) 2003, 2004 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Chris Garry <cgarry@sweeneydesign.co.uk>
-// Contributors:
+// Contributors: andrew.lunn@ascom.ch
 // Date:         2003-04-21
 // Purpose:
 // Description:
@@ -70,6 +70,12 @@
 // Now include the driver code.
 #ifdef CYGINT_DEVS_FLASH_SST_39VFXXX_REQUIRED
 #include "cyg/io/flash_sst_39vfxxx.inl"
+
+CYG_FLASH_DRIVER(cyg_flash_sst_flashdev,
+                 &cyg_sst_funs,
+                 NULL,
+                 CYGNUM_FLASH_BASE,
+                 sizeof(struct cyg_flash_sst_priv));
 #endif
 
 #ifdef CYGINT_DEVS_FLASH_AMD_AM29XXXXX_REQUIRED

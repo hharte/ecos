@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_sst_39vf400.cdl: Indicate we need the legacy device API.
+
 2003-07-24  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* include/flash_sst_39vf400.inl: 

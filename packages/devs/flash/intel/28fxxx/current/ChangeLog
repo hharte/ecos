@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_intel_28fxxx.cdl: Indicate we need the legacy device API
+
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 

@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_amd_am29xxxxx.cdl: Indicate we need the legacy device API.
+
 2004-04-21  Sebastien Couret  <sebastien.couret@elios-informatique.com>
 
 	* include/flash_am29xxxxx.inl: Minor changes to silence warnings.

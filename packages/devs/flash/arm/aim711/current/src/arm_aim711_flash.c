@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov, rcassebohm
-// Contributors: jskov, rcassebohm
+// Contributors: jskov, rcassebohm, andrew lunn
 // Date:         2001-02-21
 // Purpose:      
 // Description:  
@@ -59,8 +60,6 @@
 #define CYGNUM_FLASH_SERIES	(1)
 #define CYGNUM_FLASH_BASE 	(0x2000000u)
 
-#include "cyg/io/flash_sst_39vfxxx.inl"
-
 #elif (CYGNUM_DEVS_FLASH_ARM_AIM711_SIZE == 2)
 
 #define CYGPKG_DEVS_FLASH_SST_39VF016
@@ -68,9 +67,15 @@
 #define CYGNUM_FLASH_SERIES	(1)
 #define CYGNUM_FLASH_BASE 	(0x2000000u)
 
+#endif
+
 #include "cyg/io/flash_sst_39vfxxx.inl"
 
-#endif
+CYG_FLASH_DRIVER(cyg_flash_sst_flashdev,
+                 &cyg_sst_funs,
+                 NULL,
+                 CYGNUM_FLASH_BASE,
+                 sizeof(struct cyg_flash_sst_priv));
 
 // ------------------------------------------------------------------------
 // EOF arm_aim711_flash.c

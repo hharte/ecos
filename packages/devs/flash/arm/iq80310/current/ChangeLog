@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_iq80310.cdl: Indicate we need the legacy device API
+
 2003-09-16  Jani Monoses <jani@iv.ro>
 
 	* src/flash_lock_block.c (flash_lock_block): 

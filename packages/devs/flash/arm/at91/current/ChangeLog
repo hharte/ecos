@@ -1,3 +1,7 @@
+2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_at91.cdl: Indicate we need the legacy device API.
+
 2001-07-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash_program_buf.c: Fix - needs to have A16 set.

@@ -57,7 +57,8 @@ cdl_package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
     active_if     CYGINT_DEVS_FLASH_ATMEL_AT49XXXX_REQUIRED
 
     implements    CYGHWR_IO_FLASH_DEVICE
-
+    implements    CYGHDR_IO_FLASH_DEVICE_LEGACY
+    
     include_dir   cyg/io
     
     cdl_option    CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND {
