@@ -101,33 +101,33 @@ typedef struct cyg_dataflash_device_s
 #ifdef _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
-typedef struct cyg_dataflash_flash_dev_config_s
-{
-    cyg_spi_device  **spi_dev;           // SPI device
-    cyg_uint32        address;           // Memory address (flash driver)
-    cyg_int16         start_sector;      // Start sector of flash driver space
-    cyg_int16         end_sector;        // End sector of flash driver space
-} cyg_dataflash_flash_dev_config_t;
-
 typedef struct cyg_dataflash_flash_dev_priv_s
 {
-    cyg_dataflash_device_t dev;            // DataFlash device
-    cyg_uint32             start_page;     // Start page of flash driver space
-    cyg_uint32             end_page;       // End page of flash driver space
+    cyg_int16               start_sector;   // Start sector of flash driver space
+    cyg_int16               end_sector;     // End sector of flash driver space
+    cyg_dataflash_device_t  dev;            // DataFlash device
+    cyg_uint32              start_page;     // Start page of flash driver space
+    cyg_uint32              end_page;       // End page of flash driver space
+    cyg_flash_block_info_t  block_info[1];
 } cyg_dataflash_flash_dev_priv_t;
 
 externC struct cyg_flash_dev_funs cyg_dataflash_flash_dev_funs;
 
-#define CYG_DATAFLASH_FLASH_DRIVER(name, _sdev, _addr, _start, _end)    \
-    static cyg_dataflash_flash_dev_config_t config_ ## name = {         \
-        .spi_dev      = &_sdev,                                         \
-        .address      = _addr,                                          \
-        .start_sector = _start,                                         \
-        .end_sector   = _end                                            \
-    };                                                                  \
-    CYG_FLASH_DRIVER(name, &cyg_dataflash_flash_dev_funs,               \
-                     &config_ ## name, 0,                               \
-                     sizeof(cyg_dataflash_flash_dev_priv_t))
+#define CYG_DATAFLASH_FLASH_DRIVER(name, _sdev, _addr, _start, _end)            \
+    static cyg_dataflash_flash_dev_priv_t cyg_dataflash_priv_ ## name = {       \
+        .start_sector = _start,                                                 \
+        .end_sector   = _end,                                                   \
+        .dev.spi_dev  = _sdev,                                                  \
+    };                                                                          \
+    CYG_FLASH_DRIVER(name,                                                      \
+                     &cyg_dataflash_flash_dev_funs,                             \
+                     0,                                                         \
+                     _addr,                                                     \
+                     0,                                                         \
+                     1,                                                         \
+                     cyg_dataflash_priv_ ## name.block_info,                    \
+                     & cyg_dataflash_priv_ ## name                              \
+        )
 
 #endif // _FLASH_PRIVATE_
     
@@ -183,8 +183,7 @@ cyg_dataflash_set_blocking_operation(cyg_dataflash_device_t *dev, cyg_bool block
 
 //----------------------------------------------------------------------------
 
-externC int cyg_dataflash_init(cyg_spi_device         *spi_dev, 
-                               cyg_bool                polled,
+externC int cyg_dataflash_init(cyg_bool                polled,
                                cyg_dataflash_device_t *dev);
 
 externC int cyg_dataflash_aquire(cyg_dataflash_device_t *dev);

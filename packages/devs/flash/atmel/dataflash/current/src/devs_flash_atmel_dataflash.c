@@ -287,11 +287,9 @@ df_detect_device(cyg_dataflash_device_t *dev)
 // cyg_dataflash_init()
 
 int
-cyg_dataflash_init(cyg_spi_device         *spi_dev, 
-                   cyg_bool                polled,
+cyg_dataflash_init(cyg_bool                polled,
                    cyg_dataflash_device_t *dev)
 {
-    dev->spi_dev  = spi_dev;
     dev->polled   = polled;
     dev->blocking = false;
     dev->state    = CYG_DATAFLASH_STATE_IDLE;

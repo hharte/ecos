@@ -1,5 +1,10 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/dataflash.h, src/devs_flash_atmel_dataflash.c,
+	src/devs_flash_atmel_dataflash_flash_dev_funs.c: merge the config
+	and priv structures, removing the duplicate spi_dev data in the
+	process. Adjust device driver API as per changes to the generic
+	flash code.
 	* src/devs_flash_atmel_dataflash_flash_dev_funs.c (df_flash_init):
 	Rename cyg_block_info to cyg_flash_block_info
 

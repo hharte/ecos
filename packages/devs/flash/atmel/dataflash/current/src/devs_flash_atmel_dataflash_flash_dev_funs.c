@@ -73,21 +73,17 @@
 static int 
 df_flash_init(struct cyg_flash_dev *dev)
 {
-    static cyg_flash_block_info_t block_info[1];
-    
-    cyg_dataflash_flash_dev_config_t *config;
     cyg_dataflash_flash_dev_priv_t   *priv;
     cyg_dataflash_device_t           *df_dev;
     int sector_cnt;
     
-    config = (cyg_dataflash_flash_dev_config_t *) dev->config;
     priv   = (cyg_dataflash_flash_dev_priv_t *) dev->priv; 
     df_dev = &priv->dev;
    
 #ifdef CYGPKG_REDBOOT    
-    if (cyg_dataflash_init(*(config->spi_dev), true, df_dev))
+    if (cyg_dataflash_init(true, df_dev))
 #else
-    if (cyg_dataflash_init(*(config->spi_dev), false, df_dev))
+    if (cyg_dataflash_init(false, df_dev))
 #endif        
         return CYG_DATAFLASH_ERR_WRONG_PART; 
   
@@ -95,53 +91,47 @@ df_flash_init(struct cyg_flash_dev *dev)
 
     sector_cnt = cyg_dataflash_get_sector_count(df_dev);
 
-    if (config->end_sector < 0)
-       config->end_sector = sector_cnt - 1; 
+    if (priv->end_sector < 0)
+       priv->end_sector = sector_cnt - 1; 
     
-    if (config->start_sector >= sector_cnt ||
-        config->end_sector   >= sector_cnt ||
-        config->end_sector   <  config->start_sector)
+    if (priv->start_sector >= sector_cnt ||
+        priv->end_sector   >= sector_cnt ||
+        priv->end_sector   <  priv->start_sector)
         return CYG_DATAFLASH_ERR_INVALID;        
     
     priv->start_page = cyg_dataflash_get_block_size(df_dev) *
-        cyg_dataflash_get_sector_start(df_dev, config->start_sector);
+        cyg_dataflash_get_sector_start(df_dev, priv->start_sector);
 
     priv->end_page = cyg_dataflash_get_block_size(df_dev) *
-        (cyg_dataflash_get_sector_start(df_dev, config->end_sector) +
-         cyg_dataflash_get_sector_size(df_dev, config->end_sector));
+        (cyg_dataflash_get_sector_start(df_dev, priv->end_sector) +
+         cyg_dataflash_get_sector_size(df_dev, priv->end_sector));
     
-    dev->start = (cyg_flashaddr_t)config->address;
-    dev->end   = (cyg_flashaddr_t)(config->address + 
+    dev->end   = (cyg_flashaddr_t)(dev->start +
         ((priv->end_page - priv->start_page) *
          cyg_dataflash_get_page_size(df_dev)) - 1);
-
-    dev->num_block_infos     = 1;
-    dev->block_info          = block_info;
-    block_info[0].block_size = cyg_dataflash_get_page_size(df_dev);
-    block_info[0].blocks     = priv->end_page - priv->start_page;
+    priv->block_info[0].block_size = cyg_dataflash_get_page_size(df_dev);
+    priv->block_info[0].blocks     = priv->end_page - priv->start_page;
 
     return CYG_DATAFLASH_ERR_OK;
 }
 
 static size_t 
-df_flash_query(struct cyg_flash_dev *dev, void *data, const size_t len)
+df_flash_query(struct cyg_flash_dev *dev, void *data, size_t len)
 {
     return len;
 }
 
 static int 
 df_flash_erase_block(struct cyg_flash_dev   *dev, 
-                     const  cyg_flashaddr_t  base)
+                     cyg_flashaddr_t  base)
 {
-    cyg_dataflash_flash_dev_config_t *config;
     cyg_dataflash_flash_dev_priv_t   *priv;
     cyg_uint32 page;
     int        err;
     
-    config = (cyg_dataflash_flash_dev_config_t *) dev->config;
     priv   = (cyg_dataflash_flash_dev_priv_t *) dev->priv;
     
-    page = priv->start_page + ((base - config->address) / 
+    page = priv->start_page + ((base - dev->start) / 
            cyg_dataflash_get_page_size(&priv->dev)); 
    
     RETURN_ON_ERROR( cyg_dataflash_aquire(&priv->dev)                       );
@@ -159,19 +149,17 @@ static int
 df_flash_program(struct cyg_flash_dev *dev, 
                  cyg_flashaddr_t       base, 
                  const void           *data, 
-                 const size_t          len)
+                 size_t                len)
 {
-    cyg_dataflash_flash_dev_config_t *config;
     cyg_dataflash_flash_dev_priv_t   *priv;
     cyg_uint32 page, pos;
     int        err;
  
-    config = (cyg_dataflash_flash_dev_config_t *) dev->config;
     priv   = (cyg_dataflash_flash_dev_priv_t *) dev->priv;
     
-    page = priv->start_page + ((base - config->address) / 
+    page = priv->start_page + ((base - dev->start) / 
            cyg_dataflash_get_page_size(&priv->dev)); 
-    pos  = (base - config->address) % cyg_dataflash_get_page_size(&priv->dev);
+    pos  = (base - dev->start) % cyg_dataflash_get_page_size(&priv->dev);
     
     RETURN_ON_ERROR( cyg_dataflash_aquire(&priv->dev)                       );
     GOTO_ON_ERROR(   cyg_dataflash_mem_to_buf(&priv->dev, 1, page)          );
@@ -190,19 +178,17 @@ static int
 df_flash_read(struct cyg_flash_dev   *dev, 
               const  cyg_flashaddr_t  base, 
               void                   *data, 
-              const size_t            len)
+              size_t                  len)
 {
-    cyg_dataflash_flash_dev_config_t *config;
     cyg_dataflash_flash_dev_priv_t   *priv;
     cyg_uint32 page, pos;
     int        err;
  
-    config = (cyg_dataflash_flash_dev_config_t *) dev->config;
     priv   = (cyg_dataflash_flash_dev_priv_t *) dev->priv;
     
-    page = priv->start_page + ((base - config->address) / 
+    page = priv->start_page + ((base - dev->start) / 
            cyg_dataflash_get_page_size(&priv->dev)); 
-    pos  = (base - config->address) % cyg_dataflash_get_page_size(&priv->dev);
+    pos  = (base - dev->start) % cyg_dataflash_get_page_size(&priv->dev);
  
     RETURN_ON_ERROR( cyg_dataflash_aquire(&priv->dev)                       );
     GOTO_ON_ERROR(   cyg_dataflash_mem_to_buf(&priv->dev, 1, page)          );
@@ -230,6 +216,7 @@ df_flash_hwr_map_error(struct cyg_flash_dev *dev, int err)
     }
 }
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 static int 
 df_flash_block_lock(struct cyg_flash_dev   *dev, 
                     const  cyg_flashaddr_t  block_base)
@@ -243,6 +230,7 @@ df_flash_block_unlock(struct cyg_flash_dev  *dev,
 {
     return CYG_DATAFLASH_ERR_INVALID;
 }
+#endif
 
 // -------------------------------------------------------------------------- 
 
