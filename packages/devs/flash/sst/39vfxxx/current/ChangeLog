@@ -1,3 +1,13 @@
+2004-08-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_sst_39vfxxx.inl: Added support for the SST39VF160
+	device.
+
+2004-07-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_sst_39vfxxx.inl: Modified the driver to make use
+	of the new flash device API.
+
 2003-10-02  Roland Caﬂebohm <r.cassebohm@visionsystems.de>
 
 	* include/flash_sst_39vfxxx.inl: 
