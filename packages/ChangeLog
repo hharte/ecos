@@ -1,3 +1,8 @@
+2003-03-05  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Prevent calls to 'cygpath' with an empty
+	path argument.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* pkgconf/rules.doc: Allow support for copying files directly from
