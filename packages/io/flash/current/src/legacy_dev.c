@@ -92,7 +92,7 @@ legacy_flash_init (struct cyg_flash_dev *dev)
 
   if (!err) {
     dev->start = (cyg_flashaddr_t)flash_info.start;
-    dev->end = (cyg_flashaddr_t)flash_info.end;
+    dev->end = flash_info.block_size * flash_info.blocks - 1; 
     dev->num_block_infos = 1;
     dev->block_info = block_info;
     block_info[0].block_size = flash_info.block_size;

@@ -170,7 +170,16 @@ cyg_flash_init(cyg_flash_printf *pf)
     CYG_ASSERT(dev->funs->flash_erase_block, "No erase function");
     CYG_ASSERT(dev->funs->flash_program, "No program function");
     CYG_ASSERT(dev->funs->flash_hwr_map_error, "No hwr map error function");
-
+#ifdef CYGDBG_USE_ASSERTS
+    {
+         int i; 
+         cyg_flashaddr_t addr = dev->start;
+         for (i = 0; i < dev->num_block_infos; i++) {
+              addr += dev->block_info[i].block_size * dev->block_info[i].blocks;
+         }
+         CYG_ASSERT(dev->end == addr-1, "Invalid end address");
+    }
+#endif
     dev->init = true;
     dev->next = flash_head;
     flash_head = dev;
