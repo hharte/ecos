@@ -72,7 +72,7 @@ cdl_package CYGPKG_REDBOOT {
         display       "Include support for ELF file format"
         default_value 1
     }
-
+        
 
     cdl_interface CYGINT_REDBOOT_LOAD_METHOD {
         display "Methods of loading images using redboot"
@@ -549,6 +549,19 @@ cdl_package CYGPKG_REDBOOT {
               into memory for execution or executed in place."
             compile -library=libextras.a flash.c
     
+            cdl_option CYGNUM_REDBOOT_FLASH_BASE {
+                display       "Base address of flash device redboot should use"
+                flavor        data
+                default_value 0
+                description   "
+                    This option controls how redboot finds the flash
+                    device. The default value of 0 will cause redboot
+                    to use the flash which has the lowest memory
+                    address. Setting this option to an address will
+                    cause redboot to use that address instead as the 
+                    base of the flash device."
+            }
+                    
             cdl_option CYGOPT_REDBOOT_FIS {
                 display         "RedBoot Flash Image System support"
                 default_value   1
@@ -864,7 +877,7 @@ cdl_package CYGPKG_REDBOOT {
               If this option is enabled then RedBoot will provide commands
               to load files from fileio file systems such as JFFS2."
             compile -library=libextras.a fs/fileio.c
-        }
+	} 
 
         cdl_component CYGPKG_REDBOOT_DISK {
             display       "Allow RedBoot to support disks"

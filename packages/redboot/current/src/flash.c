@@ -233,7 +233,7 @@ fis_update_directory(void)
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying to update
-    cyg_flash_unlock((void *)fis_addr, flash_block_size, &err_addr);
+    cyg_flash_unlock(fis_addr, flash_block_size, &err_addr);
 #endif
     if ((stat = cyg_flash_erase(fis_addr, flash_block_size, &err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, cyg_flash_errmsg(stat));
@@ -246,7 +246,7 @@ fis_update_directory(void)
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
-    cyg_flash_lock((void *)fis_addr, flash_block_size, &err_addr);
+    cyg_flash_lock(fis_addr, flash_block_size, &err_addr);
 #endif
 }
 
@@ -1374,6 +1374,9 @@ do_flash_init(void)
 {
     int stat;
     cyg_flashaddr_t err_addr;
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+    cyg_flash_info_t info;
+#endif
 
     if (!__flash_init) {
         __flash_init = 1;
@@ -1382,23 +1385,30 @@ do_flash_init(void)
             diag_printf("FLASH: driver init failed: %s\n", cyg_flash_errmsg(stat));
             return false;
         }
-        
+
+#ifdef CYGNUM_REDBOOT_FLASH_BASE
+        stat = cyg_flash_get_info_addr(CYGNUM_REDBOOT_FLASH_BASE, &info);
+        if (stat != CYG_FLASH_ERR_OK) {
+             diag_printf("FLASH: driver init failed: %s\n", 
+                         cyg_flash_errmsg(stat));
+             return false;
+        }
+        flash_start = info.start;
+        flash_end = info.end;
+#else        
         if ((stat = cyg_flash_get_limits(&flash_start, &flash_end)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", 
                         cyg_flash_errmsg(stat));
             return false;
         }
-
+#endif
         // Keep 'end' address as last valid location, to avoid wrap around problems
         flash_end = ((CYG_ADDRESS)flash_end - 1);
         cyg_flash_get_block_info(&flash_block_size, &flash_num_blocks);
         
 #ifdef CYGOPT_REDBOOT_FIS
         fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
-
-#ifndef CYGPKG_HAL_MIPS // FIXME: compiler is b0rken
         fisdir_size = ((fisdir_size + flash_block_size - 1) / flash_block_size) * flash_block_size;
-#endif
 # if defined(CYGPRI_REDBOOT_ZLIB_FLASH) && defined(CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER)
 	fis_work_block = fis_zlib_common_buffer;
 	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < fisdir_size) {
