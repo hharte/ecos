@@ -326,6 +326,58 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
     return rc;
 }
 
+// Can we generate the build tree yet?
+bool ecConfigToolDoc::CanGenerateBuildTree()
+{
+    if (m_strBuildTree.IsEmpty() || m_strInstallTree.IsEmpty() )
+        return FALSE;
+
+    int nCount=0;
+    if (GetCdlConfig ())
+    {
+        // calculate the number of conflicts
+        int nCount = GetCdlConfig ()->get_all_conflicts ().size ();
+
+        if (nCount > 0)
+            return FALSE;
+    }
+    else
+        return FALSE;
+
+    return TRUE;
+}
+
+// A standalone method for generating a build tree without saving first
+bool ecConfigToolDoc::GenerateBuildTree()
+{
+    wxBusyCursor wait;
+    if (CanGenerateBuildTree())
+    {
+        ecFileName buildFilename(m_strBuildTree);
+        ecFileName installFilename(m_strInstallTree);
+        
+        if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+        {
+            wxString msg;
+            msg.Printf(_("Failed to create build tree"));
+            
+            wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION);
+            return FALSE;
+        }
+        else if (GenerateHeaders() && CopyMLTFiles())
+        {
+            // in each case errors already emitted
+            // copy new MLT files to the build tree as necessary
+            bool rc = generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
+            rc = TRUE;
+        }
+
+    }
+    else
+        return FALSE;
+    return TRUE;
+}
+
 bool ecConfigToolDoc::OnOpenDocument(const wxString& filename)
 {
     wxGetApp().GetSettings().m_lastFilename = filename;

@@ -158,6 +158,11 @@ public:
     bool ImportFile();
     void RunTests();
 
+    // A standalone method for generating a build tree without saving first
+    bool GenerateBuildTree();
+    // Can we generate the build tree yet?
+    bool CanGenerateBuildTree() ;
+
     void SelectTemplate (const wxString& newTemplate, const wxString& newTemplateVersion);
     void SelectHardware (const wxString& newTemplate);
     void SelectPackages ();

@@ -223,7 +223,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
         bool bRepositoryChanged = FALSE;
         //POSITION posPathName = dlg.GetStartPosition ();
         wxArrayString filenames;
-        dlg.GetFilenames(filenames);
+        dlg.GetPaths(filenames);
         size_t i;
         for (i = (size_t) 0; i < filenames.GetCount(); i++)
         {

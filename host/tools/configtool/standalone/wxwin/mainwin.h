@@ -112,6 +112,7 @@ public:
     void OnStopBuild(wxCommandEvent& event);
     void OnClean(wxCommandEvent& event);
     void OnShell(wxCommandEvent& event);
+    void OnGenerateBuildTree(wxCommandEvent& event);
 
     void OnNewRegion(wxCommandEvent& event);
     void OnNewSection(wxCommandEvent& event);
@@ -148,6 +149,7 @@ public:
     void OnUpdateFind(wxUpdateUIEvent& event);
     void OnUpdateFindNext(wxUpdateUIEvent& event);
     void OnUpdateIndexDocs(wxUpdateUIEvent& event);
+    void OnUpdateGenerateBuildTree(wxUpdateUIEvent& event);
 
     void OnUpdateNewRegion(wxUpdateUIEvent& event);
     void OnUpdateNewSection(wxUpdateUIEvent& event);

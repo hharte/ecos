@@ -302,6 +302,7 @@ protected:
 #define ecID_BUILD_REPOSITORY           2185
 #define ecID_BUILD_TEMPLATES            2186
 #define ecID_BUILD_PACKAGES             2187
+#define ecID_GENERATE_BUILD_TREE        2188
 
 // Tools menu
 #define ecID_PATHS                      2200
