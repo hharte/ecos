@@ -54,6 +54,7 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/devs_flash_strata_v2.h>
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
@@ -87,7 +88,7 @@ static int strata_program_buf (struct cyg_flash_dev *dev,
                                const size_t len)
      __attribute__ ((section (".2ram.flash_program_buf")));
 
-#ifdef CYGOPT_DEVS_FLASH_STRATA_LOCKING
+#ifdef CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING
 static int strata_unlock_block(struct cyg_flash_dev *dev,
                                      const cyg_flashaddr_t block_base)
      __attribute__ ((section (".2ram.flash_unlock_block")));
@@ -186,7 +187,7 @@ strata_init (struct cyg_flash_dev *dev)
         }
 #endif // CYGNUM_FLASH_BASE_MASK
 
-        return FLASH_ERR_OK;
+        return CYG_FLASH_ERR_OK;
     }
 #ifdef CYGOPT_FLASH_IS_BOOTBLOCK
  flash_type_unknown:
@@ -196,7 +197,7 @@ strata_init (struct cyg_flash_dev *dev)
            qp->manuf_code, qp->device_code, qp->id );
     diag_dump_buf(qp, sizeof(data));
 #endif
-    return FLASH_ERR_HWR;
+    return CYG_FLASH_ERR_HWR;
 }
 
 //----------------------------------------------------------------------------
@@ -423,7 +424,7 @@ strata_program_buf (struct cyg_flash_dev *dev,
     return stat;
 }
 
-#ifdef CYGPKG_DEVS_FLASH_STRATA_LOCKING
+#ifdef CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING
 //----------------------------------------------------------------------------
 //
 // The difficulty with this operation is that the hardware does not support
@@ -445,7 +446,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
     int timeout = 5000000;
 #ifndef CYGOPT_FLASH_IS_SYNCHRONOUS
     int i;
-    volatile flash_t *bp, *bpv;
+    volatile flash_t *bp, *bpv, *block;
     unsigned char is_locked[MAX_FLASH_BLOCKS];
 #endif
 
@@ -467,7 +468,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
     // Get current block lock state.  This needs to access each block on
     // the device so currently locked blocks can be re-locked.
     bp = ROM;
-    for (i = 0;  i < blocks;  i++) {
+    for (i = 0;  i < dev->block_info[0].blocks;  i++) {
         bpv = FLASH_P2V( bp );
         *bpv = FLASH_Read_Query;
         if (bpv == block) {
@@ -479,7 +480,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
             is_locked[i] = bpv[2] & FLASH_LOCK_MASK;
 # endif
         }
-        bp += block_size / sizeof(*bp);
+        bp += dev->block_info[0].block_size / sizeof(*bp);
     }
 
     // Clears all lock bits
@@ -492,7 +493,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
 
     // Restore the lock state
     bp = ROM;
-    for (i = 0;  i < blocks;  i++) {
+    for (i = 0;  i < dev->block_info[0].blocks;  i++) {
         bpv = FLASH_P2V( bp );
         if (is_locked[i]) {
             *bpv = FLASH_Set_Lock;
@@ -502,7 +503,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
                 if (--timeout == 0) break;
             }
         }
-        bp += block_size / sizeof(*bp);
+        bp += dev->block_info[0].block_size / sizeof(*bp);
     }
 #endif  // CYGOPT_FLASH_IS_SYNCHRONOUS
 
@@ -520,6 +521,7 @@ strata_lock_block(struct cyg_flash_dev *dev,
     volatile flash_t *ROM;
     flash_t stat;
     int timeout = 5000000;
+    volatile flash_t *block;       
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V(dev->start);
@@ -544,7 +546,7 @@ strata_lock_block(struct cyg_flash_dev *dev,
 
 //----------------------------------------------------------------------------
 
-#ifdef CYGOPT_DEVS_FLASH_STRATA_LOCKING
+#ifdef CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING
 static CYG_FLASH_FUNS (cyg_flash_strata_v2_funs,
                 strata_init,
                 strata_query_hwr,

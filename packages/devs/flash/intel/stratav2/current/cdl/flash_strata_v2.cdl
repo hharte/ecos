@@ -68,6 +68,7 @@ cdl_package CYGPKG_DEVS_FLASH_STRATA_V2 {
     cdl_option  CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING {
 	display       "Flash device implements locking"
 	default_value 1
+        implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
         description   "
             This option controls whether the driver will include code
             to allow locking and unlocking of blocks."

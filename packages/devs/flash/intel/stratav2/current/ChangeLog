@@ -1,3 +1,11 @@
+2004-08-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_strata_v2.cdl: Indicate we implement
+	CYGHWR_IO_FLASH_BLOCK_LOCKING when
+	CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING is enabled.
+	* include/flash_strata_v2.inl: Make block unlock and 
+	lock compile.
+	
 2004-08-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* New version of the strata driver based on the old version. This
