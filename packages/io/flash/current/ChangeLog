@@ -1,5 +1,8 @@
 2004-11-20  Bart Veer  <bartv@ecoscentric.com>
 
+	* cdl/io_flash.cdl, src/flash.c(cyg_flash_read): add an interface
+	for hardware which requires indirect reads, and suppress
+	unnecessary code if direct reads are always available.
 	* src/flash.c: rearrange loops to avoid address comparisons, which
 	tend to go wrong if the flash is at the end of the address space
 

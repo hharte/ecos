@@ -1,3 +1,8 @@
+2004-11-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/flash_toshiba_tc58xxx.cdl: NAND flash requires indirect read
+	support in the main flash code
+
 2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_toshiba_tc58xxx.cdl: Indicate we need the legacy device API

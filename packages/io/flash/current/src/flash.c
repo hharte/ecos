@@ -586,11 +586,10 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
                cyg_flashaddr_t *err_address)
 {
   struct cyg_flash_dev * dev;
-  cyg_flashaddr_t addr, end_addr, block;
+  cyg_flashaddr_t addr, end_addr;
   unsigned char * ram = (unsigned char *)ram_base;
-  size_t read_count, offset;
+  size_t read_count;
   int stat = CYG_FLASH_ERR_OK;
-  int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
@@ -611,52 +610,61 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
   }
   read_count = (end_addr + 1) - flash_base;
 
-  // The first read may be in the middle of a block. Do the necessary
-  // adjustment here rather than inside the loop.
-  block = flash_block_begin(flash_base, dev);
-  if (addr == block) {
-      offset = 0;
-  } else {
-      offset = addr - block;
-  }
-  
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Read from %p-%p to %p: ", addr, end_addr, ram_base);
 #endif
-  
-  HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable(flash_base, end_addr);
-  while (read_count > 0) {
-    size_t block_size = flash_block_size(dev, addr);
-    size_t this_read;
-    if (read_count > (block_size - offset)) {
-        this_read = block_size - offset;
-    } else {
-        this_read = read_count;
-    }
-    // Only the first block may need the offset
-    offset      = 0;
+
+  // If the flash is directly accessible, just read it in one go. This
+  // still happens with the mutex locked to protect against concurrent
+  // programs/erases.
+  if (! dev->funs->flash_read) {
+      memcpy(ram, (void*)addr, read_count);
+  } else {
+#ifndef CYGHWR_IO_FLASH_INDIRECT_READS
+      CYG_FAIL("read function supplied but indirect reads not enabled");
+      stat = CYG_FLASH_ERR_PROTOCOL;
+#else
+      // We have to indirect through the device driver.
+      // The first read may be in the middle of a block. Do the necessary
+      // adjustment here rather than inside the loop.
+      int               d_cache, i_cache;
+      size_t            offset;
+      cyg_flashaddr_t   block = flash_block_begin(flash_base, dev);
+      if (addr == block) {
+          offset = 0;
+      } else {
+          offset = addr - block;
+      }
+      HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+      FLASH_Enable(flash_base, end_addr);
+      while (read_count > 0) {
+          size_t block_size = flash_block_size(dev, addr);
+          size_t this_read;
+          if (read_count > (block_size - offset)) {
+              this_read = block_size - offset;
+          } else {
+              this_read = read_count;
+          }
+          // Only the first block may need the offset
+          offset      = 0;
     
-    if (dev->funs->flash_read) {
-      stat = dev->funs->flash_read(dev, addr, ram, this_read);
-      stat = dev->funs->flash_hwr_map_error(dev,stat);
-    } else {
-      memcpy(ram, (void *)addr, this_read);
-      stat = CYG_FLASH_ERR_OK;
-    }
-    if (CYG_FLASH_ERR_OK != stat && err_address) {
-      *err_address = addr;
-      break;
-    }
+          stat = dev->funs->flash_read(dev, addr, ram, this_read);
+          stat = dev->funs->flash_hwr_map_error(dev,stat);
+          if (CYG_FLASH_ERR_OK != stat && err_address) {
+              *err_address = addr;
+              break;
+          }
 #ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf(".");
+          dev->pf(".");
 #endif
-    read_count  -= this_read;
-    addr        += this_read;
-    ram         += this_read;
+          read_count  -= this_read;
+          addr        += this_read;
+          ram         += this_read;
+      }
+      FLASH_Disable(flash_base, end_addr);
+      HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#endif      
   }
-  FLASH_Disable(flash_base, end_addr);
-  HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("\n");
 #endif

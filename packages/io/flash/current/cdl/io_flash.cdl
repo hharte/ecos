@@ -95,6 +95,17 @@ cdl_package CYGPKG_IO_FLASH {
             locking (write-protection) of individual blocks."
     }
 
+    cdl_interface CYGHWR_IO_FLASH_INDIRECT_READS {
+	display		"Hardware requires indirect reads"
+	flavor		booldata
+	description "
+            Some flash devices can be read directly like any other
+            memory. Others can only be accessed indirectly, which
+            involves extra code. If none of the flash devices on the
+            target hardware use indirect reads then the extra code
+            can be eliminated."   
+    }
+    
     cdl_interface CYGHWR_IO_FLASH_DEVICE_LEGACY {
         display       "Hardware driver uses the legacy interface"
         flavor        booldata
