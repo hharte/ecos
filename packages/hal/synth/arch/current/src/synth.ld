@@ -184,6 +184,7 @@ GROUP(libtarget.a libgcc.a)
      __DTOR_LIST__ = ABSOLUTE(.);                                            	\
        KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                    	\
     . = ALIGN(32);                                                              \
+    KEEP(*( SORT (.ecos.table.cyg_flashdev.*)));                                             \
     KEEP(*( SORT (.ecos.table.*)));                                             \
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);              \
     _GOT_START_ = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);     \
@@ -192,7 +193,9 @@ GROUP(libtarget.a libgcc.a)
       /* We want the small data sections together, so single-instruction */     \
       /* offsets can access them all, and initialized data all before    */     \
       /* uninitialized, so we can shorten the on-disk segment size.      */     \
-    _SDATA_START_ = ABSOLUTE(.); *(.sdata*) *(.gnu.linkonce.s.*) }              \
+    _SDATA_START_ = ABSOLUTE(.); *(.sdata*) *(.gnu.linkonce.s.*)                \
+    *(.dynamic) *(.sdata*) *(.gnu.linkonce.s.*)                                 \
+    . = ALIGN (4); *(.2ram.*) }                                                 \
     > _region_                                                                  \
     __rom_data_start = LOADADDR(.data);                                         \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                            \
