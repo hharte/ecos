@@ -45,3 +45,6 @@
 
 #define ecCONFIGURATION_TOOL_VERSION        2.08
 
+// Use /ecos-x notation for drive specification
+#define ecUSE_ECOS_X_NOTATION               1
+

@@ -128,7 +128,10 @@ public:
     // Fire off a subprocess to build the library or tests
     void Build(const wxString& strWhat = wxEmptyString) ;
 
+    // Mount drive e.g. /c
     static void CygMount(wxChar c);
+    // Mount in text mode e.g. /ecos-c
+    static void CygMountText(wxChar c);
 
     bool InitializeHelpController();
 

@@ -296,7 +296,7 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
 
             if (!wxGetApp().GetSettings().m_editSaveFileOnly)
             {
-                if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+                if (!buildFilename.CreateDirectory(FALSE) || !installFilename.CreateDirectory(FALSE))
                 {
                     wxString msg;
                     msg.Printf(_("Failed to save %s"), (const wxChar*) filename);
