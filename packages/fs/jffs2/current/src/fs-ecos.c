@@ -1347,6 +1347,7 @@ static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		if (err)
 			return -err;
 	}
+	ri.isize = cpu_to_je32(inode->i_size);
 
 	// Now loop over the iovecs until they are all done, or
 	// we get an error.
