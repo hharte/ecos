@@ -269,9 +269,11 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
 #ifdef __WXMSW__
                     if (-1 == strLicenseText.Find (wxT("\r\n"))) // if the file has LF line endings...
                         strLicenseText.Replace (_T("\n"), _T("\r\n")); // ... replace with CRLF line endings
-#endif                    
+#else
+                    strLicenseText.Replace (_T("\r"), wxEmptyString); // remove CR characters
+#endif
                     // display the license text
-                    
+
                     ecLicenseDialog dlgLicense (strLicenseText, this, ecID_LICENSE_DIALOG, strPathName + _(" - Add Packages"));
                     if (wxID_OK != dlgLicense.ShowModal ()) // if license not accepted by user
                         continue; // try the next file
