@@ -534,9 +534,9 @@ bool ecSettings::LoadConfig()
     
     // Load current repository from eCos Configuration Tool/Paths/RepositoryDir
     {
-        wxConfig eCosConfig(wxT("eCos Configuration Tool"), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
+        wxConfig eCosConfig(wxGetApp().GetSettings().GetConfigAppName(), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
         wxConfigPathChanger path(& config, wxT("/Repository/"));
-        
+
         //if (!eCosConfig.Read(wxT("Folder"), & m_strRepository))
         if (!eCosConfig.Read(wxT("/Paths/RepositoryDir"), & m_strRepository))
         {
@@ -635,7 +635,7 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Paths/BuildToolsDir"), m_buildToolsDir);
     
     config.Write(_("/Build/Make Options"), m_strMakeOptions);
-    
+
     // Find dialog settings
     config.Write(_("/Find/Text"), m_findText);
     config.Write(_("/Find/MatchWholeWord"), m_findMatchWholeWord);
@@ -716,11 +716,11 @@ ecFileName ecSettings::m_strDefaultExternalBrowser;
 int ecSettings::GetRepositoryRegistryClues(wxArrayString& arstr, const wxString& pszPrefix)
 {
     arstr.Clear();
-    
+
 #ifdef __WXMSW__
     wxConfig config(wxT("Windows"), wxT("Microsoft"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE);
     config.SetPath(wxT("/CurrentVersion/App Paths"));
-    
+
     wxString key(wxT(""));
     long index;
     bool bMore = config.GetFirstGroup(key, index);

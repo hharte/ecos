@@ -145,7 +145,7 @@ void ecAdminDialog::OnInitDialog(wxInitDialogEvent& event)
     }
     
     // populate the package tree
-    
+
     if (!PopulatePackageTree (m_strRepository))
     {
         m_strRepository = wxT("");
@@ -242,7 +242,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 // get an eCos package distribution file
                 
                 // extract the licence file
-                
+
                 wxString strCommand;
                 strCommand.Printf(wxT("add %s --extract_license"), (const wxChar*) strPathName);
                 strCommand.Replace(wxT("\\"), wxT("/")); // backslashes -> forward slashes for Tcl_EvalFile
@@ -251,11 +251,11 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 wxString strLicenseFile = m_strRepository + wxString(wxFILE_SEP_PATH) + wxT("pkgadd.txt");
 #ifdef __WXMSW__
                 strLicenseFile.Replace (wxT("/"), wxT("\\")); // forward slashes -> backslashes for Win32
-#endif                
+#endif
                 // read the license file
-                
+
                 wxFile fileLicenseFile;
-                if (fileLicenseFile.Open (strLicenseFile, wxFile::read))
+                if (fileLicenseFile.Exists (strLicenseFile) && fileLicenseFile.Open (strLicenseFile, wxFile::read))
                 {
                     //TRACE (_T("License file found at %s\n"), strLicenseFile);
                     const off_t dwLicenseLength = fileLicenseFile.Length ();
