@@ -1,0 +1,10 @@
+d41d8cd98f00b204e9800998ecf8427e  MD5SUMS
+787de76d1b2acb09eb1af16cbb2949ba  redboot_RAM.bin
+24bd9d243ca5ba6c4423d27e5f903de4  redboot_RAM.elf
+2dbc7a260b25441d6ade4fd3e032497c  redboot_RAM.srec
+ea2132b3f028c8144e12f81258332d8a  redboot_ROM.bin
+8923be3f462d9b8d8759e87961ed145e  redboot_ROM.elf
+f0f8dbe21ef926292953c5aee517b931  redboot_ROMRAM.bin
+5d3303111cff3b932869b6001b8b9efc  redboot_ROMRAM.elf
+63c28e995960200de1fcf0f65fbc539e  redboot_ROMRAM.srec
+711055adb770e6607e7ac37ac2554d9a  redboot_ROM.srec

@@ -1,0 +1,9 @@
+b313f9c924e69caedaffaedf9e099b2e  redboot_RAM.elf
+f73b2b4cccb7299e1399d30e607d0939  redboot_RAM.srec
+b6507c04931d86c0573b5d8144b44a0f  redboot_ROM.bin
+68a66a0c7f1a106a039c2fe6eb979d9b  redboot_ROM.bin.hi
+514767997f66bcc8538879a90dccf63e  redboot_ROM.bin.lo
+68a66a0c7f1a106a039c2fe6eb979d9b  redboot_ROM.bin.hi
+514767997f66bcc8538879a90dccf63e  redboot_ROM.bin.lo
+5943e5fd91113dea3a8d18c6ce538e52  redboot_ROM.elf
+8cdf971f77dbe70bd1bc18b965234ace  redboot_ROM.srec

@@ -1,0 +1,13 @@
+4b36faf83910e115b7abfb31811bd880  OSloader
+d7b2c2a60fd10b2511d191da139a205d  redboot_Compaq.bin
+35c584d189f5c2fad2a1188e50558138  redboot_Compaq.elf
+f633ac4f2ca87d10a2455e460408990a  redboot_Compaq.srec
+0bb49f8e4b838bcde8ab7d3914f372bf  redboot_RAM.bin
+3fb2571ea672deab66b3f8e3bf7b2e5f  redboot_RAM.elf
+b298f9d4361358ae25be2cbef45ec529  redboot_RAM.srec
+9c4977ffacb4cb5b6dadab6753cf23d4  redboot_ROM.bin
+ef2d20ddae63d88c9cb54f11d5e65e5f  redboot_ROM.elf
+b4dc6cd563c98b4e532c6ba3a8eca1f6  redboot_ROM.srec
+7c8af5352aa3a43275b579578327625b  redboot_WinCE.bin
+2368dbbf49537b3035a9c7f8d3131f61  redboot_WinCE.elf
+b061a411e48f95a1c76060a39da8e952  redboot_WinCE.srec

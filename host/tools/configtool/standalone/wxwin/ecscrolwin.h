@@ -26,7 +26,12 @@
 
 // 1 to use our own scroled window to insulate us from
 // wxWindows changes
+
+#if wxRELEASE_NUMBER < 2302
 #define ecUSE_OWN_SCROLLED_WINDOW 1
+#else
+#define ecUSE_OWN_SCROLLED_WINDOW 0
+#endif
 
 #if !ecUSE_OWN_SCROLLED_WINDOW
 #include "wx/scrolwin.h"

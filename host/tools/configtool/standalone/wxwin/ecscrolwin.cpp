@@ -122,7 +122,7 @@ bool ecScrolledWindow::Create(wxWindow *parent,
 
     bool ok = wxPanel::Create(parent, id, pos, size, style, name);
 
-#ifdef __WXMSW__
+#if defined(__WXMSW__) && (wxVERSION_NUMBER < 2302)
     // we need to process arrows ourselves for scrolling
     m_lDlgCode |= DLGC_WANTARROWS;
 #endif // __WXMSW__

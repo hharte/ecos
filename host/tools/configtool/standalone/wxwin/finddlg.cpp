@@ -199,14 +199,14 @@ bool ecFindDialog::TransferDataToWindow()
     // Convert to radiobox selection index from bool
     m_directionSelection = wxGetApp().GetSettings().m_findDirection ? 1 : 0 ;
     
-    wxPanel::TransferDataToWindow();
+    wxWindow::TransferDataToWindow();
 
     return TRUE;
 }
 
 bool ecFindDialog::TransferDataFromWindow()
 {
-    wxPanel::TransferDataFromWindow();
+    wxWindow::TransferDataFromWindow();
 
     // Convert from radiobox selection index to bool
     wxGetApp().GetSettings().m_findDirection = (m_directionSelection == 1);

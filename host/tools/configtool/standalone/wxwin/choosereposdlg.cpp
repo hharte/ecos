@@ -185,7 +185,7 @@ void ecChooseRepositoryDialog::CreateControls(wxWindow* parent)
 
 void ecChooseRepositoryDialog::OnBrowse(wxCommandEvent& event)
 {
-    wxDirDialog dialog(this);
+    wxDirDialog dialog(this, wxT("Repository path"));
     if (wxID_OK == dialog.ShowModal())
     {
         wxString path = dialog.GetPath();
