@@ -75,7 +75,7 @@
 #ifdef __WXMSW__
 #include <windows.h>
 #include "wx/msw/winundef.h"
-#if defined(GetTempPath) && !defined(__CYGWIN__)
+#ifdef GetTempPath
 #undef GetTempPath
 #endif
 #endif
@@ -771,8 +771,8 @@ wxString ecSettings::FindLatestVersion()
             cont = dir.GetNext(& filename);
         }
     }
-    if (latestDir.IsEmpty())
-        latestDir = wxGetCwd();
+//    if (latestDir.IsEmpty())
+//        latestDir = wxGetCwd();
     return latestDir;
 #else
     wxMessageBox(wxT("FindLatestVersion() is only implemented for Unix."));
