@@ -1,5 +1,10 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/synth.h, src/synth.c, tests/flash3.c: merge the config
+	and priv structures. Adjust device driver API as per changes to
+	the generic flash code.
+	* tests/flash2.c, tests/flash3.c: do not depend on both synthetic
+	flash drivers being loaded.
 	* include/synth.h (struct cyg_flash_synth_priv): rename
 	cyg_block_info to cyg_flash_block_info
 

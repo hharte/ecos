@@ -56,8 +56,12 @@ static char copyright[] =
 ;
 
 #include <pkgconf/system.h>
+#ifdef CYGPKG_DEVS_FLASH_SYNTH_V2
 #include <pkgconf/devs_flash_synth_v2.h>
+#endif
+#ifdef CYGPKG_DEVS_FLASH_SYNTH
 #include <pkgconf/devs_flash_synth.h>
+#endif
 #include <cyg/io/flash.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>

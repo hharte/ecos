@@ -56,8 +56,12 @@ static char copyright[] =
 ;
 
 #include <pkgconf/system.h>
+#ifdef CYGPKG_DEVS_FLASH_SYNTH_V2
 #include <pkgconf/devs_flash_synth_v2.h>
+#endif
+#ifdef CYGPKG_DEVS_FLASH_SYNTH
 #include <pkgconf/devs_flash_synth.h>
+#endif
 #include <cyg/io/flash.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
@@ -77,20 +81,24 @@ void cyg_user_start(void)
 }
 #else
 
-static struct cyg_flash_synth_config config = {
-    CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE,
-    CYGNUM_FLASH_SYNTH_V2_NUMBLOCKS,
-    CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCKSIZE,
-    CYGNUM_FLASH_SYNTH_V2_NUMBOOT_BLOCKS,
-    CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCK_BOTTOM,
-    "synth.flash3"
+static struct cyg_flash_synth_priv synth_flash_priv3 = {
+    .block_size         = CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE,
+    .blocks             = CYGNUM_FLASH_SYNTH_V2_NUMBLOCKS,
+    .boot_block_size    = CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCKSIZE,
+    .boot_blocks        = CYGNUM_FLASH_SYNTH_V2_NUMBOOT_BLOCKS,
+    .boot_block_bottom  = CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCK_BOTTOM,
+    .filename           = "synth.flash3",
+    .flashfd            = -1
 };
 
 CYG_FLASH_DRIVER(cyg_flash_synth_flashdev_flash3,
                  &cyg_flash_synth_funs,
-                 &config,  // Pointer to priv structure
-                 0x40020000,
-                 sizeof(struct cyg_flash_synth_priv));
+                 0,             // flags
+                 0x40020000,    // start
+                 0,             // end, filled in by init
+                 0,             // number of block_info's, filled in by init
+                 synth_flash_priv3.block_info,
+                 &synth_flash_priv3);
 
 //==========================================================================
 // main

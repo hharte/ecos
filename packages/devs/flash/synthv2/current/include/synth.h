@@ -54,25 +54,23 @@
 
 #include <cyg/io/flash_priv.h>
 
-// Structure of configuration parameters
-struct cyg_flash_synth_config 
-{
-  size_t     block_size;
-  cyg_uint32 blocks;
-  size_t     boot_block_size;
-  cyg_uint32 boot_blocks;
-  cyg_bool   boot_block_bottom;
-  char *     filename;
-};
-
-// Structure of data private to the drive
+// Structure of data private to each flash device
 struct cyg_flash_synth_priv 
 {
-  int                           flashfd;
-  struct cyg_flash_block_info   block_info[2];
+    // Configuration parameters,
+    size_t                      block_size;
+    cyg_uint32                  blocks;
+    size_t                      boot_block_size;
+    cyg_uint32                  boot_blocks;
+    cyg_bool                    boot_block_bottom;
+    char *                      filename;
+    // Run-time data
+    int                         flashfd;
+    // Space for the block layout
+    struct cyg_flash_block_info block_info[2];
 };
 
-extern struct cyg_flash_dev_funs cyg_flash_synth_funs;
+extern const struct cyg_flash_dev_funs cyg_flash_synth_funs;
 
 #endif
 

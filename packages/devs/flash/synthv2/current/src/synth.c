@@ -86,13 +86,12 @@ cyg_hal_sys_do_mmap(void *addr, unsigned long length, unsigned long prot,
 static int
 synth_flash_init(struct cyg_flash_dev *dev)
 {
-    struct cyg_flash_synth_config *config = dev->config;
-    struct cyg_flash_synth_priv *priv = dev->priv;
+    struct cyg_flash_synth_priv *priv = (struct cyg_flash_synth_priv*)dev->priv;
     cyg_flashaddr_t base;
     int flags=CYG_HAL_SYS_MAP_SHARED;
     
     priv->flashfd = 
-        cyg_hal_sys_open(config->filename,
+        cyg_hal_sys_open(priv->filename,
                          CYG_HAL_SYS_O_RDWR, 
                          CYG_HAL_SYS_S_IRWXU|CYG_HAL_SYS_S_IRWXG|
                          CYG_HAL_SYS_S_IRWXO);
@@ -101,15 +100,15 @@ synth_flash_init(struct cyg_flash_dev *dev)
         char buf[128];
         
         priv->flashfd = cyg_hal_sys_open(
-            config->filename, 
+            priv->filename, 
             CYG_HAL_SYS_O_RDWR|CYG_HAL_SYS_O_CREAT, 
             CYG_HAL_SYS_S_IRWXU|CYG_HAL_SYS_S_IRWXG|CYG_HAL_SYS_S_IRWXO);
         CYG_ASSERT( priv->flashfd >= 0, 
                     "Opening of the file for the synth flash failed!");
         // fill with 0xff
         memset( buf, 0xff, sizeof(buf) );
-        bytesleft = config->block_size * config->blocks +
-            config->boot_block_size * config->boot_blocks;
+        bytesleft = priv->block_size * priv->blocks +
+            priv->boot_block_size * priv->boot_blocks;
 
         while (bytesleft > 0) {
             int bytesneeded;
@@ -134,8 +133,8 @@ synth_flash_init(struct cyg_flash_dev *dev)
     }
     base = (cyg_flashaddr_t)cyg_hal_sys_do_mmap( 
         (void *)dev->start,
-        config->blocks * config->block_size + 
-        config->boot_block_size * config->boot_blocks,
+        priv->blocks * priv->block_size + 
+        priv->boot_block_size * priv->boot_blocks,
         CYG_HAL_SYS_PROT_READ, 
         flags,
         priv->flashfd, 
@@ -145,24 +144,24 @@ synth_flash_init(struct cyg_flash_dev *dev)
         return CYG_FLASH_ERR_HWR;
     }
     dev->start = base;
-    dev->end = base + (config->blocks * config->block_size) +
-        (config->boot_blocks * config->boot_block_size) - 1;
-    if (config->boot_blocks) {
-        if (config->boot_block_bottom) {
-            priv->block_info[0].block_size = config->boot_block_size;
-            priv->block_info[0].blocks = config->boot_blocks;
-            priv->block_info[1].block_size = config->block_size;
-            priv->block_info[1].blocks = config->blocks;
+    dev->end = base + (priv->blocks * priv->block_size) +
+        (priv->boot_blocks * priv->boot_block_size) - 1;
+    if (priv->boot_blocks) {
+        if (priv->boot_block_bottom) {
+            priv->block_info[0].block_size = priv->boot_block_size;
+            priv->block_info[0].blocks = priv->boot_blocks;
+            priv->block_info[1].block_size = priv->block_size;
+            priv->block_info[1].blocks = priv->blocks;
         } else {
-            priv->block_info[0].block_size = config->block_size;
-            priv->block_info[0].blocks = config->blocks;
-            priv->block_info[1].block_size = config->boot_block_size;
-            priv->block_info[1].blocks = config->boot_blocks;
+            priv->block_info[0].block_size = priv->block_size;
+            priv->block_info[0].blocks = priv->blocks;
+            priv->block_info[1].block_size = priv->boot_block_size;
+            priv->block_info[1].blocks = priv->boot_blocks;
         }
         dev->num_block_infos = 2;
     } else {
-        priv->block_info[0].block_size = config->block_size;
-        priv->block_info[0].blocks = config->blocks;
+        priv->block_info[0].block_size = priv->block_size;
+        priv->block_info[0].blocks = priv->blocks;
         dev->num_block_infos = 1;
     }
     dev->block_info = &priv->block_info[0];
@@ -205,9 +204,9 @@ flash_block_size(struct cyg_flash_dev *dev, const cyg_flashaddr_t addr)
 
 static int 
 synth_flash_erase_block(struct cyg_flash_dev *dev, 
-                        const cyg_flashaddr_t block_base)
+                        cyg_flashaddr_t block_base)
 {
-    struct cyg_flash_synth_priv *priv = dev->priv;
+    const struct cyg_flash_synth_priv *priv = dev->priv;
     int offset = (int)block_base;
     size_t remaining;
     int write_size;
@@ -235,9 +234,9 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
 static int
 synth_flash_program (struct cyg_flash_dev *dev, 
                      cyg_flashaddr_t base, 
-                     const void* data, const size_t len)
+                     const void* data, size_t len)
 {
-    struct cyg_flash_synth_priv *priv = dev->priv;
+    const struct cyg_flash_synth_priv *priv = dev->priv;
     int offset = base;
     offset -= dev->start;
     
@@ -251,35 +250,60 @@ synth_flash_program (struct cyg_flash_dev *dev,
 
 static size_t
 synth_flash_query(struct cyg_flash_dev *dev, void * data, 
-                  const size_t len)
+                  size_t len)
 {
     memcpy(data,QUERY,sizeof(QUERY));
     return sizeof(QUERY);
 }
 
-static struct cyg_flash_synth_config config = {
-    CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE,
-    CYGNUM_FLASH_SYNTH_V2_NUMBLOCKS,
-    CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCKSIZE,
-    CYGNUM_FLASH_SYNTH_V2_NUMBOOT_BLOCKS,
-    CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCK_BOTTOM,
-    CYGDAT_FLASH_SYNTH_V2_FILENAME
-};
+// Just in case there is another flash driver which does implement locking
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+static int
+synth_flash_lock(struct cyg_flash_dev* dev,
+                 const cyg_flashaddr_t addr)
+{
+    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
+    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
+    return CYG_FLASH_ERR_INVALID;
+}
 
-CYG_FLASH_FUNS(cyg_flash_synth_funs,
-               synth_flash_init,
-               synth_flash_query,
-               synth_flash_erase_block,
-               synth_flash_program,
-               NULL,                 // read
-               synth_flash_hwr_map_error,
-               NULL,                 // lock
-               NULL);                // unlock
+static int
+synth_flash_unlock(struct cyg_flash_dev* dev,
+                   const cyg_flashaddr_t addr)
+{
+    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
+    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
+    return CYG_FLASH_ERR_INVALID;
+}
+#endif
+
+const CYG_FLASH_FUNS(cyg_flash_synth_funs,
+                     synth_flash_init,
+                     synth_flash_query,
+                     synth_flash_erase_block,
+                     synth_flash_program,
+                     NULL,                 // read
+                     synth_flash_hwr_map_error,
+                     synth_flash_lock,
+                     synth_flash_unlock);
+
+static struct cyg_flash_synth_priv synth_flash_priv = {
+    .block_size         = CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE,
+    .blocks             = CYGNUM_FLASH_SYNTH_V2_NUMBLOCKS,
+    .boot_block_size    = CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCKSIZE,
+    .boot_blocks        = CYGNUM_FLASH_SYNTH_V2_NUMBOOT_BLOCKS,
+    .boot_block_bottom  = CYGNUM_FLASH_SYNTH_V2_BOOT_BLOCK_BOTTOM,
+    .filename           = CYGDAT_FLASH_SYNTH_V2_FILENAME,
+    .flashfd            = -1
+};
 
 CYG_FLASH_DRIVER(cyg_flash_synth_flashdev,
                  &cyg_flash_synth_funs,
-                 &config,  
-                 CYGMEM_FLASH_SYNTH_V2_BASE,
-                 sizeof(struct cyg_flash_synth_priv)); 
+                 0,                             // flags
+                 CYGMEM_FLASH_SYNTH_V2_BASE,    // Start, if 0 will be updated by init
+                 0,                             // end, filled in by init
+                 0,                             // number of block_info's, filled in by init
+                 synth_flash_priv.block_info,
+                 &synth_flash_priv);
 
 // EOF synth.c
