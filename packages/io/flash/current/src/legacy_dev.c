@@ -89,6 +89,8 @@ legacy_flash_init (struct cyg_flash_dev *dev)
   int err;
   static cyg_flash_block_info_t block_info[1];
 
+  flash_info.pf = dev->pf;
+  
   err=flash_hwr_init();
 
   if (!err) {
@@ -139,13 +141,12 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 {
   typedef int code_fun(cyg_flashaddr_t, const void *, int, unsigned long, int);
   code_fun *_flash_program_buf;
-  size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
   int    stat;
   
   _flash_program_buf = (code_fun*) cyg_flash_anonymizer(&flash_program_buf);
 
-  stat = (*_flash_program_buf)(base, data, len, block_mask ,block_size);
+  stat = (*_flash_program_buf)(base, data, len, block_mask, flash_info.buffer_size);
   return flash_hwr_map_error(stat);
 }
 

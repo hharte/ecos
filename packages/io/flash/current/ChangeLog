@@ -1,3 +1,15 @@
+2005-01-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/legacy_dev.c (legacy_flash_init): Assign flash_info.pf from
+	flash device field. Otherwise drivers try to call an invalid
+	address.
+	(legacy_flash_program): The last argument to flash_program_buf()
+	is not the block size but the programming buffer size.
+
+2005-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/legacy_api.c (flash_errmsg): Was missing. Add.
+
 2004-12-02  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/flash_dev.h: now provides everything needed by flash

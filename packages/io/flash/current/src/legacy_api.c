@@ -135,3 +135,10 @@ int flash_read(void *flash_base, void *ram_base, int len, void **err_address)
   return cyg_flash_read((cyg_flashaddr_t)flash_base, ram_base, 
                         len, (cyg_flashaddr_t *)err_address);
 }
+
+char *flash_errmsg(int err)
+{
+  return (char *)cyg_flash_errmsg(err);
+}
+
+// EOF legacy_api.c
