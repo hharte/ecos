@@ -299,7 +299,7 @@ static struct flashiodev_priv_t priv1 = {
   0,       // end
   1,       // use_fis
   0,       // use_static
-  0.       // use_offset
+  0,       // use_offset
   CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1,
   0        // blocksize
 };
@@ -315,7 +315,8 @@ static struct flashiodev_priv_t priv1 = {
   "",      // fis_name
   0        // blocksize
 };
-#else
+#endif
+#ifdef CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_1
 static struct flashiodev_priv_t priv1 = {
   CYGNUM_IO_FLASH_BLOCK_OFFSET_1,       // start
   CYGNUM_IO_FLASH_BLOCK_LENGTH_1,       // end 
@@ -352,11 +353,10 @@ static struct flashiodev_priv_t priv2 = {
   0,       // end
   1,       // use_fis
   0,       // use_static
-  0.       // use_offset
+  0,       // use_offset
   CYGDAT_IO_FLASH_BLOCK_FIS_NAME_2,
   0        // blocksize
 };
-
 #endif
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_ABSOLUTE_2 
 static struct flashiodev_priv_t priv2 = {
@@ -368,7 +368,8 @@ static struct flashiodev_priv_t priv2 = {
   "",      // fis_name
   0        // blocksize
 };
-#else
+#endif
+#ifdef CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_2
 static struct flashiodev_priv_t priv2 = {
   CYGNUM_IO_FLASH_BLOCK_OFFSET_2,       // start
   CYGNUM_IO_FLASH_BLOCK_LENGTH_2,       // end 

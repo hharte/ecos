@@ -1,3 +1,7 @@
+2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flashiodev.c: Fix typo in macro and configuration options
+	
 2004-08-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c: Major rewrite to implement a new API
