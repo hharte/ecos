@@ -106,11 +106,8 @@
 #define CHECK_SOFT_WRITE_PROTECT(_addr_, _len_) CYG_EMPTY_STATEMENT
 #endif
 
-// Has the FLASH IO library been initialise?
+// Has the FLASH IO library been initialised?
 static bool init = false;
-// We have a linked list of flash drivers. This is the head of the
-// list
-static struct cyg_flash_dev *flash_head = NULL;
 
 // This array contains entries for all flash devices that are
 // installed in the system.
@@ -121,18 +118,56 @@ CYG_HAL_TABLE_BEGIN(cyg_flashdevtab, cyg_flashdev);
 __externC struct cyg_flash_dev cyg_flashdevtab_end;
 CYG_HAL_TABLE_END(cyg_flashdevtab_end, cyg_flashdev);
 
-// Sort the linked list into ascending order of flash address. Use a
-// primitive ripple sort, but since we don't expect to have many
-// devices this should be OK.
-static void flash_sort(void) 
+#if (1 == CYGHWR_IO_FLASH_DEVICE)
+
+// Optimize the code for a single flash device, which is the common case.
+// The flash subsystem must have been initialized, the single device must
+// contain the specified address, and the device itself must have
+// initialized successfully.
+static struct cyg_flash_dev*
+find_dev(cyg_flashaddr_t addr, int* stat)
+{
+  if (!init) {
+    *stat = CYG_FLASH_ERR_NOT_INIT;
+    return NULL;
+  }
+  if (! ((addr >= cyg_flashdevtab[0].start) && (addr <= cyg_flashdevtab[0].end))) {
+    *stat = CYG_FLASH_ERR_INVALID;
+    return NULL;
+  }
+  if (! cyg_flashdevtab[0].init) {
+    *stat = CYG_FLASH_ERR_NOT_INIT;
+    return NULL;
+  }
+  return &cyg_flashdevtab[0];
+}
+
+#else
+
+// There are multiple devices. For convenience these are kept in a
+// linked list, sorted by address. This is the head of the list
+static struct cyg_flash_dev *flash_head = NULL;
+
+static bool flash_sort_and_check(void) 
 {
   bool moved;
   struct cyg_flash_dev *dev, **previous_next;
+
+  // Place all devices on the list, unsorted for now.
+  for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
+    dev->next  = flash_head;
+    flash_head = dev;
+  }
   
-  // If there is zero or one device, short cut
-  if (flash_head == NULL || flash_head->next == NULL)
-    return;
-  
+  // If there are no devices, abort. This should not happen because of
+  // the constraints on CYGHWR_IO_FLASH_DEVICE.
+  if (flash_head == NULL) {
+    return false;
+  }
+
+  // Sort the linked list into ascending order of flash address. Use a
+  // primitive ripple sort, but since we don't expect to have many
+  // devices this should be OK.
   do {
     moved=false;
     for (dev=flash_head, previous_next=&flash_head; 
@@ -147,24 +182,39 @@ static void flash_sort(void)
       }
     }
   } while (moved);
-}
-
-// Walk the linked list and see if there are any overlaps in the
-// addresses the devices claim to use using.
-static bool flash_check_overlap(void) 
-{
-  struct cyg_flash_dev *dev;
   
-  // If there is zero or one device, short cut
-  if (flash_head == NULL || flash_head->next == NULL)
-    return false;
-
+  // Now walk the linked list and see if there are any overlaps in the
+  // addresses the devices claim to use using.
   for (dev=flash_head; dev->next; dev=dev->next){
     if (dev->end >= dev->next->start)
-      return true;
+      return false;
   }
-  return false;
+  return true;
 }
+
+// Find the device at the specified address, if any.
+static struct cyg_flash_dev*
+find_dev(cyg_flashaddr_t addr, int* stat)
+{
+  struct cyg_flash_dev*   dev;
+  if (!init) {
+    *stat = CYG_FLASH_ERR_NOT_INIT;
+    return NULL;
+  }
+  for (dev = flash_head; dev; dev = dev->next) {
+    if ((dev->start <= addr) && (addr <= dev->end)) {
+      if (! dev->init) {
+        *stat = CYG_FLASH_ERR_NOT_INIT;
+        return NULL;
+      }
+      return dev;
+    }
+  }
+  *stat = CYG_FLASH_ERR_INVALID;
+  return NULL;
+}
+
+#endif
 
 // Initialise all registered device. Any device that fails to
 // initialise we leave dev->init as false. Then sort the devices into
@@ -177,7 +227,8 @@ cyg_flash_init(cyg_flash_printf *pf)
   struct cyg_flash_dev * dev;
   
   if (init) return CYG_FLASH_ERR_OK;
-  init = true;
+
+  CYG_ASSERT(&(cyg_flashdevtab[CYGHWR_IO_FLASH_DEVICE]) == &cyg_flashdevtab_end, "incorrect number of flash devices");
   
   for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
     dev->pf = pf;
@@ -188,7 +239,7 @@ cyg_flash_init(cyg_flash_printf *pf)
       continue;
     }
     CYG_ASSERT(dev->funs, "No flash functions");
-    CYG_ASSERT(dev->num_block_infos, "No number of block infoss");
+    CYG_ASSERT(dev->num_block_infos, "No number of block infos");
     CYG_ASSERT(dev->block_info, "No block infos");
     CYG_ASSERT(!(((cyg_flashaddr_t)dev->block_info >= dev->start) && 
                  ((cyg_flashaddr_t)dev->block_info < dev->end)),
@@ -207,15 +258,25 @@ cyg_flash_init(cyg_flash_printf *pf)
     }
 #endif
     dev->init = true;
-    dev->next = flash_head;
-    flash_head = dev;
   }
   
-  flash_sort();
-
-  if (flash_check_overlap()) {
+#if (1 == CYGHWR_IO_FLASH_DEVICE)
+  // Make sure there is one device, otherwise we could end up
+  // accessing a non-existent cyg_flash_dev structure.
+  if (&(cyg_flashdevtab[0]) == &cyg_flashdevtab_end) {
+      return CYG_FLASH_ERR_INVALID;
+  }
+#else
+  // Place the devices on a sorted linked list and check that there
+  // are no overlaps in the address space.
+  if (! flash_sort_and_check() ) {
     return CYG_FLASH_ERR_INVALID;
   }
+#endif
+
+  // Only mark the flash subsystem as initialized if the world is
+  // consistent.
+  init = true;
   return CYG_FLASH_ERR_OK;
 }
 
@@ -223,15 +284,9 @@ cyg_flash_init(cyg_flash_printf *pf)
 __externC int
 cyg_flash_verify_addr(const cyg_flashaddr_t address)
 {
-  struct cyg_flash_dev * dev;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; dev; dev=dev->next) {
-    if ((dev->start <= address) && (address <= dev->end))
-      return CYG_FLASH_ERR_OK;
-  }
-  return CYG_FLASH_ERR_INVALID;
+  int stat = CYG_FLASH_ERR_OK;
+  (void) find_dev(address, &stat);
+  return stat;
 }
 
 // Return information about the Nth driver
@@ -241,17 +296,25 @@ cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)
   struct cyg_flash_dev * dev;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
+
+#if (1 == CYGHWR_IO_FLASH_DEVICE)
+  if (0 == Nth) {
+      dev = &(cyg_flashdevtab[0]);
+  } else {
+      return CYG_FLASH_ERR_INVALID;
+  }
+#else
   for (dev = flash_head; dev && Nth; dev=dev->next, Nth--)
     ;
-  if (dev && !Nth) {
-    info->start = dev->start;
-    info->end = dev->end;
-    info->num_block_infos = dev->num_block_infos;
-    info->block_info = dev->block_info;
-    return CYG_FLASH_ERR_OK;
+  if (!dev || !dev->init) {
+      return CYG_FLASH_ERR_INVALID;
   }
-  return CYG_FLASH_ERR_INVALID;
+#endif
+  info->start = dev->start;
+  info->end = dev->end;
+  info->num_block_infos = dev->num_block_infos;
+  info->block_info = dev->block_info;
+  return CYG_FLASH_ERR_OK;
 }
 
 // Return information about the flash at the given address
@@ -259,19 +322,16 @@ __externC int
 cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
 {
   struct cyg_flash_dev *dev;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= flash_base) && ( flash_base <= dev->end)) {
+  int                   stat = CYG_FLASH_ERR_OK;
+
+  dev = find_dev(flash_base, &stat);
+  if (dev) {
     info->start = dev->start;
     info->end = dev->end;
     info->num_block_infos = dev->num_block_infos;
     info->block_info = dev->block_info;
-    return CYG_FLASH_ERR_OK;
-    }
   }
-  return CYG_FLASH_ERR_INVALID;
+  return stat;
 }
 
 #ifdef CYGPKG_KERNEL
@@ -279,52 +339,45 @@ cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
 __externC int
 cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len) 
 {
-  struct cyg_flash_dev * dev;
-  int err;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= from) && ( from <= dev->end)) {
-      cyg_mutex_lock(&dev->mutex);
-      if (dev->end > from+len) {
-        return CYG_FLASH_ERR_OK;
-      } else {                                     // Check off by one?
-        //The region is bigger than this driver. Recurse
-        err = cyg_flash_mutex_lock(dev->end+1, (len - (dev->end - from)));
-        if (err != CYG_FLASH_ERR_OK) {
-          // Something went wrong, unlock what we just locked
-          cyg_mutex_unlock(&dev->mutex);
-        }
-        return err;
+  struct cyg_flash_dev *    dev;
+  int                       stat    = CYG_FLASH_ERR_OK;
+
+  dev = find_dev(from, &stat);
+  if (dev) {
+    LOCK(dev);
+    if (len > (dev->end + 1 - from)) {
+      stat = cyg_flash_mutex_lock(dev->end + 1, len - (dev->end + 1 - from));
+      if (CYG_FLASH_ERR_OK != stat) {
+        // Something went wrong, unlock what we just locked
+        UNLOCK(dev);
       }
     }
   }
-  return CYG_FLASH_ERR_INVALID;
+  return stat;
 }
 
 // Unlock the mutex's for a range of addresses
 __externC int
 cyg_flash_mutex_unlock(const cyg_flashaddr_t from, const size_t len) 
 {
-  struct cyg_flash_dev * dev;
-  int err;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= from) && ( from <= dev->end)) {
-      cyg_mutex_unlock(&dev->mutex);
-      if (dev->end > from+len) {
-        return CYG_FLASH_ERR_OK;
-      } else {                                     // Check off by one?
-        //The region is bigger than this driver. Recurse
-        err = cyg_flash_mutex_unlock(dev->end+1, (len - (dev->end - from)));
-        return err;
+  struct cyg_flash_dev *    dev;
+  int                       stat = CYG_FLASH_ERR_OK;
+
+  dev = find_dev(from, &stat);
+  if (dev) {
+    UNLOCK(dev);
+    if (len > (dev->end + 1 - from)) {
+      stat = cyg_flash_mutex_lock(dev->end + 1, len - (dev->end + 1 - from));
+      if (CYG_FLASH_ERR_OK != stat) {
+        // Something went wrong, relock what we just unlocked. This may not
+        // be worth it since things must be pretty messed up, and could
+        // conceivably end in deadlock if there is a concurrent call to
+        // cyg_flash_mutex_lock();
+        LOCK(dev);
       }
     }
   }
-  return CYG_FLASH_ERR_INVALID;
+  return stat;
 }
 #endif
 
@@ -334,7 +387,6 @@ flash_block_size(struct cyg_flash_dev *dev, const cyg_flashaddr_t addr)
 {
   int i;
   size_t offset;
-  
   
   CYG_ASSERT((addr >= dev->start) && (addr <= dev->end), "Not inside device");
   
@@ -353,16 +405,11 @@ flash_block_size(struct cyg_flash_dev *dev, const cyg_flashaddr_t addr)
 __externC size_t
 cyg_flash_block_size(const cyg_flashaddr_t flash_base) 
 {
-  struct cyg_flash_dev * dev;
+  struct cyg_flash_dev *    dev;
+  int                       stat;
 
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
-  
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
   return flash_block_size(dev, flash_base);
 }
 
@@ -393,14 +440,9 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
   size_t erase_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
+
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
 
   CHECK_SOFT_WRITE_PROTECT(flash_base, len);
   
@@ -489,14 +531,9 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
   size_t write_count, offset;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
 
   CHECK_SOFT_WRITE_PROTECT(flash_base, len);
   
@@ -577,14 +614,9 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
   unsigned char * ram = (unsigned char *)ram_base;
   size_t read_count;
   int stat = CYG_FLASH_ERR_OK;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
+
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
 
   LOCK(dev);
   addr = flash_base;
@@ -673,14 +705,9 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   size_t lock_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
   if (!dev->funs->flash_block_lock) return CYG_FLASH_ERR_INVALID;
 
   CHECK_SOFT_WRITE_PROTECT(flash_base, len);
@@ -742,14 +769,9 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
   size_t unlock_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
-  
-  if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
-  for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
-       dev=dev->next)
-    ;
-  if (!dev) return CYG_FLASH_ERR_INVALID;
+  dev = find_dev(flash_base, &stat);
+  if (!dev) return stat;
   if (!dev->funs->flash_block_unlock) return CYG_FLASH_ERR_INVALID;
 
   CHECK_SOFT_WRITE_PROTECT(flash_base, len);

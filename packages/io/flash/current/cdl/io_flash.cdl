@@ -66,9 +66,11 @@ cdl_package CYGPKG_IO_FLASH {
  
     cdl_interface CYGHWR_IO_FLASH_DEVICE {
         display     "Hardware FLASH device drivers"
+	requires    { CYGHWR_IO_FLASH_DEVICE >= 1 }
         description "
             This calculated option gives the number of flash devices
-            on the current platform."
+            on the current platform. The generic flash support requires
+            at least one device."
     }
 
     cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {

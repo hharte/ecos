@@ -1,5 +1,7 @@
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
+	* src/flash.c, include/flash_priv.h, cdl/io_flash.h: optimize
+	for the case of a single flash device.
 	* include/flash.h, src/flash.c, doc/flash.sgml: remove
 	cyg_flash_code_overlaps()
 	* include/flash_priv.h, include/flash.h:

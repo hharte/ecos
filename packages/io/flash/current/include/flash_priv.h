@@ -54,6 +54,9 @@
 #ifndef _IO_FLASH_PRIV_H_
 #define _IO_FLASH_PRIV_H_
 
+#include <pkgconf/system.h>
+#include <pkgconf/io_flash.h>
+
 // Forward reference of the device structure
 struct cyg_flash_dev;
 
@@ -94,7 +97,9 @@ struct cyg_flash_dev {
 #ifdef CYGPKG_KERNEL
   cyg_mutex_t                 mutex;           // Mutex for thread safeness
 #endif
+#if (CYGHWR_IO_FLASH_DEVICE > 1)    
   struct cyg_flash_dev        *next;           // Pointer to next device
+#endif    
 } CYG_HAL_TABLE_TYPE;
 
 #define CYG_FLASH_FUNS(funs,init,query,erase,prog,read,map,lock,unlock)\
