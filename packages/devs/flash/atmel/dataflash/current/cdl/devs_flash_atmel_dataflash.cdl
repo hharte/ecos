@@ -61,7 +61,6 @@ cdl_package CYGPKG_DEVS_FLASH_ATMEL_DATAFLASH {
         active_if       CYGPKG_IO_FLASH
         implements      CYGHWR_IO_FLASH_DEVICE
         implements      CYGHWR_IO_FLASH_DEVICE_V2
-        requires        CYGSEM_IO_FLASH_READ_INDIRECT
         compile         devs_flash_atmel_dataflash_flash_dev_funs.c     
         description     "This option will be enabled by platforms which
             need to support access to DataFlash through IO Flash API."

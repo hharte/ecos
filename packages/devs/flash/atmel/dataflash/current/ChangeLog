@@ -1,3 +1,10 @@
+2004-10-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/devs_flash_atmel_dataflash.cdl: Remove
+	CYGSEM_IO_FLASH_READ_INDIRECT which only legacy drivers should use
+	when they provide a flash_read_buf function. For V2 drivers
+	providing a read function in the device structure is sufficient.
+
 2004-09-07  Savin Zlobec  <savin@elatec.si> 
 
         * cdl/devs_flash_atmel_dataflash.cdl:
