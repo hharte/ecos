@@ -515,6 +515,13 @@ alaia_unlock(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
     &hellip;
 }
       </programlisting>
+      <para>
+If real locking functions are implemented then the platform HAL's CDL
+script should implement the CDL interface
+<varname>CYGHWR_IO_FLASH_BLOCK_LOCKING</varname>. Otherwise the
+generic flash package may believe that none of the flash drivers in the
+system provide locking functionality and disable the interface functions.
+      </para>
     </refsect2>
 
     <refsect2 id="am29xxxxx-instance-functions-other"><title>Other</title>
@@ -686,6 +693,13 @@ may be used for initial bootstrap and holding the configuration data,
 while there is also a much larger and faster device to hold a file
 system. Such variations are usually best described by separate
 <structname>cyg_flash_dev</structname> structures.
+    </para>
+    <para>
+If more than one <structname>cyg_flash_dev</structname> structure is
+instantiated then the platform HAL's CDL script should implement the
+CDL interface <varname>CYGHWR_IO_FLASH_DEVICE</varname> once for every
+device past the first. Otherwise the generic code may default to the
+case of a single flash device and optimize for that.
     </para>
   </refsect1>
 

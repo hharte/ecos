@@ -1,5 +1,8 @@
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
+	* doc/am29xxxxx.sgml: describe CDL implications for custom locking
+	functions and additional devices.
+	
 	* cdl/flash_am29xxxxx_v2.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is now
 	implicit
 
