@@ -1,5 +1,8 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* src/legacy_dev.c: remove .2ram attributes. These functions do
+	not manipulate the hardware, there is no need for them to live in
+	ram rather than flash
 	* include/flash_priv.h, src/legacy_dev.c: clean up the interface
 	between the generic flash code and the device drivers
 	* include/flash_priv, src/flash_legacy.h, src/flash.c,

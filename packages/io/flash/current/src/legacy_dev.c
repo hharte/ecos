@@ -113,13 +113,7 @@ static void* __anonymizer(void* p)
 static size_t 
 legacy_flash_query (struct cyg_flash_dev *dev, 
                     void * data, 
-                    const size_t len)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-
-static size_t 
-legacy_flash_query (struct cyg_flash_dev *dev, 
-                    void * data, 
-                    const size_t len)
+                    size_t len)
 {
   typedef void code_fun(void*);
   code_fun *_flash_query;
@@ -130,11 +124,6 @@ legacy_flash_query (struct cyg_flash_dev *dev,
   
   return len;
 }
-
-static int 
-legacy_flash_erase_block (struct cyg_flash_dev *dev, 
-                          cyg_flashaddr_t block_base)
-     __attribute__ ((section (".2ram.flash_program_buf")));
 
 static int 
 legacy_flash_erase_block (struct cyg_flash_dev *dev, 
@@ -152,12 +141,6 @@ legacy_flash_erase_block (struct cyg_flash_dev *dev,
 static int
 legacy_flash_program(struct cyg_flash_dev *dev, 
                      cyg_flashaddr_t base, 
-                     const void* data, const size_t len)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-
-static int
-legacy_flash_program(struct cyg_flash_dev *dev, 
-                     cyg_flashaddr_t base, 
                      const void* data, size_t len)
 {
   typedef int code_fun(cyg_flashaddr_t, const void *, int, unsigned long, int);
@@ -171,12 +154,6 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 }
 
 #ifdef CYGSEM_IO_FLASH_READ_INDIRECT
-static int 
-legacy_flash_read (struct cyg_flash_dev *dev, 
-                   const cyg_flashaddr_t base, 
-                   void* data, size_t len)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-     
 static int 
 legacy_flash_read (struct cyg_flash_dev *dev, 
                    const cyg_flashaddr_t base, 
@@ -202,11 +179,6 @@ legacy_flash_read (struct cyg_flash_dev *dev,
 static int 
 legacy_flash_block_lock (struct cyg_flash_dev *dev, 
                          const cyg_flashaddr_t block_base)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-
-static int 
-legacy_flash_block_lock (struct cyg_flash_dev *dev, 
-                         const cyg_flashaddr_t block_base)
 {
   typedef int code_fun(cyg_flashaddr_t);
   code_fun *_flash_lock_block;
@@ -216,11 +188,6 @@ legacy_flash_block_lock (struct cyg_flash_dev *dev,
   return (*_flash_lock_block)(block_base);
 }
 
-static int 
-legacy_flash_block_unlock (struct cyg_flash_dev *dev, 
-                           const cyg_flashaddr_t block_base)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-     
 static int 
 legacy_flash_block_unlock (struct cyg_flash_dev *dev, 
                            const cyg_flashaddr_t block_base)
@@ -237,10 +204,6 @@ legacy_flash_block_unlock (struct cyg_flash_dev *dev,
 #endif
 
 // Map a hardware status to a package error
-static int 
-legacy_flash_hwr_map_error (struct cyg_flash_dev *dev, int err)
-     __attribute__ ((section (".2ram.flash_program_buf")));
-
 static int 
 legacy_flash_hwr_map_error (struct cyg_flash_dev *dev, int err)
 {
