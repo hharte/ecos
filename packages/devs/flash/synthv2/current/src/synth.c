@@ -207,9 +207,6 @@ static int
 synth_flash_erase_block(struct cyg_flash_dev *dev, 
                         const cyg_flashaddr_t block_base)
 {
-#ifdef CYGDBG_USE_ASSERTS
-    struct cyg_flash_synth_config *config = dev->config;
-#endif
     struct cyg_flash_synth_priv *priv = dev->priv;
     int offset = (int)block_base;
     size_t remaining;
@@ -225,11 +222,6 @@ synth_flash_erase_block(struct cyg_flash_dev *dev,
         empty_inited = true;
     }
 
-    CYG_ASSERT(sizeof(empty) < config->block_size,
-               "Eckk! Can't work with such small blocks");
-    CYG_ASSERT(config->boot_blocks && sizeof(empty) < config->boot_block_size,
-               "Eckk! Can't work with such small blocks");
-    
     remaining = flash_block_size(dev, block_base);
 
     while (remaining) {
