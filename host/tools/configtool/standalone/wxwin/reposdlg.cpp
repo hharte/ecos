@@ -149,20 +149,14 @@ bool ecRepositoryInfoDialog::CreateHtmlInfo(wxString& info)
 {
     ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
 
-    wxString ecosLogo(wxT("ecoslogosmall.png"));
-    wxSetWorkingDirectory(wxGetApp().GetAppDir());
-
     info += wxT("<html><head><title>Repository Information</title>\n");
     info += wxT("<body bgcolor=\"#FFFFE1\">\n");
 
     info += wxT("<table width=\"100%\">");
     info += wxT("<tr><td>\n");
-    if (wxFileExists(ecosLogo))
-    {
-        wxString s;
-        s.Printf(wxT("<img src=\"%s\" align=right border=0><p>"), ecosLogo.c_str());
-        info += s;
-    }
+    wxString s;
+    s.Printf(wxT("<img src=\"memory:ecoslogosmall.png\" align=right vspace=8 border=0><p>"));
+    info += s;
     info += wxT("</td><td>\n");
     info += wxT("<font size=+2><b>Repository Information</b></font>\n");
 
