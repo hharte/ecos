@@ -21,14 +21,10 @@
  *
  */
 
-#ifdef __ECOS
-#include "jffs2port.h"
-#else
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/string.h> 
-#endif
 
 /* _compress returns the compressed size, -1 if bigger */
 int jffs2_rtime_compress(unsigned char *data_in, unsigned char *cpage_out, 

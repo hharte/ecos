@@ -11,14 +11,12 @@
  *
  */
 
-#ifdef __KERNEL__
+#if defined(__KERNEL__) || defined (__ECOS)
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
-#include <linux/jffs2.h>
-#elif defined(__ECOS)
-#include "jffs2.h"
-#else /* Userland */
+#include <linux/types.h>
+#else 
 #define KERN_DEBUG
 #define KERN_NOTICE
 #define KERN_WARNING
@@ -26,8 +24,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
-#include <linux/jffs2.h>
 #endif
+
+#include <linux/jffs2.h>
 
 int jffs2_zlib_compress(unsigned char *data_in, unsigned char *cpage_out, uint32_t *sourcelen, uint32_t *dstlen);
 void jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out, uint32_t srclen, uint32_t destlen);

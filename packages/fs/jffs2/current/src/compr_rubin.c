@@ -12,12 +12,8 @@
  */
 
  
-#ifdef __ECOS
-#include "jffs2port.h"
-#else
 #include <linux/string.h>
 #include <linux/types.h>
-#endif
 #include "compr_rubin.h"
 #include "histo_mips.h"
 

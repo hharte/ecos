@@ -11,6 +11,7 @@
  *
  */
 
+#include <linux/kernel.h>
 #include "nodelist.h"
 
 struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize)
