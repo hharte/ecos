@@ -165,7 +165,7 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	/* Now we're pointing at the first frag which overlaps our page */
 	while(offset < end) {
 		D2(printk(KERN_DEBUG "jffs2_read_inode_range: offset %d, end %d\n", offset, end));
-		if (!frag || frag->ofs > offset) {
+		if (unlikely(!frag || frag->ofs > offset)) {
 			uint32_t holesize = end - offset;
 			if (frag) {
 				D1(printk(KERN_NOTICE "Eep. Hole in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n", f->inocache->ino, frag->ofs, offset));
@@ -177,13 +177,7 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			buf += holesize;
 			offset += holesize;
 			continue;
-		} else if (frag->ofs < offset && (offset & (PAGE_CACHE_SIZE-1)) != 0) {
-			D1(printk(KERN_NOTICE "Eep. Overlap in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n",
-				  f->inocache->ino, frag->ofs, offset));
-			D1(jffs2_print_frag_list(f));
-			memset(buf, 0, end - offset);
-			return -EIO;
-		} else if (!frag->node) {
+		} else if (unlikely(!frag->node)) {
 			uint32_t holeend = min(end, frag->ofs + frag->size);
 			D1(printk(KERN_DEBUG "Filling frag hole from %d-%d (frag 0x%x 0x%x)\n", offset, holeend, frag->ofs, frag->ofs + frag->size));
 			memset(buf, 0, holeend - offset);

@@ -17,7 +17,8 @@
 
 #include <linux/config.h>
 #include <linux/kernel.h>
-#include <linux/mtd/compatmac.h> /* for min() */
+#include <linux/vmalloc.h>
+#include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/zlib.h>
 #include <linux/zutil.h>

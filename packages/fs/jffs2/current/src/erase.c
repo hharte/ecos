@@ -52,6 +52,8 @@ void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)
 		list_del(&jeb->list);
 		list_add(&jeb->list, &c->erase_pending_list);
 		c->erasing_size -= c->sector_size;
+		c->dirty_size += c->sector_size;
+		jeb->dirty_size = c->sector_size;
 		spin_unlock(&c->erase_completion_lock);
 		return;
 	}
@@ -85,6 +87,8 @@ void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)
 		list_del(&jeb->list);
 		list_add(&jeb->list, &c->erase_pending_list);
 		c->erasing_size -= c->sector_size;
+		c->dirty_size += c->sector_size;
+		jeb->dirty_size = c->sector_size;
 		spin_unlock(&c->erase_completion_lock);
 		return;
 	}
@@ -94,12 +98,6 @@ void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)
 	else
 		printk(KERN_WARNING "Erase at 0x%08x failed immediately: errno %d\n", jeb->offset, ret);
 
-	/* Note: This is almost identical to jffs2_erase_failed() except
-	   for the fact that we used spin_lock() not spin_lock(). If
-	   we could use spin_lock() from a BH, we could merge them.
-	   Or if we abandon the idea that MTD drivers may call the erase
-	   callback from a BH, I suppose :)
-	*/
 	jffs2_erase_failed(c, jeb);
 }
 
