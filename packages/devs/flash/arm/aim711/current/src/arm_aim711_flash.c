@@ -71,11 +71,18 @@
 
 #include "cyg/io/flash_sst_39vfxxx.inl"
 
+static const cyg_flash_block_info_t cyg_flash_sst_block_info[1] = {
+    { FLASH_BLOCK_SIZE, FLASH_NUM_REGIONS * CYGNUM_FLASH_SERIES }
+};
 CYG_FLASH_DRIVER(cyg_flash_sst_flashdev,
                  &cyg_sst_funs,
-                 NULL,
-                 CYGNUM_FLASH_BASE,
-                 sizeof(struct cyg_flash_sst_priv));
+                 0,                     // Flags
+                 CYGNUM_FLASH_BASE,     // Start
+                 CYGNUM_FLASH_BASE + (FLASH_BLOCK_SIZE * FLASH_NUM_REGIONS * CYGNUM_FLASH_SERIES) - 1,    // End
+                 1,                     // Number of block infos
+                 cyg_flash_sst_block_info,
+                 NULL                   // priv
+    );
 
 // ------------------------------------------------------------------------
 // EOF arm_aim711_flash.c

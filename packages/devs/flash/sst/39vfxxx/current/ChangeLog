@@ -1,5 +1,7 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
-
+	
+	* include/flash_sst_39vfxxx.inl: assume static initialization and
+	adjust const's in various parameters
 	* include/flash_sst_39vfxxx.inl: rename cyg_block_info to
 	cyg_flash_block_info
 

@@ -134,20 +134,14 @@
 #include <cyg/io/flash_dev.h>
 
 //----------------------------------------------------------------------------
-// Private structure used by the device
-struct cyg_flash_sst_priv 
-{
-  cyg_flash_block_info_t block_info[1];
-};
-//----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
 // in RAM.
-static size_t sst_query(struct cyg_flash_dev *dev, void* data, const size_t len)
+static size_t sst_query(struct cyg_flash_dev *dev, void* data, size_t len)
   __attribute__ ((section (".2ram.flash_query")));
 static int sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
   __attribute__ ((section (".2ram.flash_erase_block")));
 static int sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base, 
-            const void* data, const size_t length)
+            const void* data, size_t length)
   __attribute__ ((section (".2ram.flash_program_buf")));
 
 
@@ -156,7 +150,6 @@ static int sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base,
 static int
 sst_init(struct cyg_flash_dev *dev)
 {
-  struct cyg_flash_sst_priv *priv = dev->priv;
   flash_data_t id[2];
 
   dev->funs->flash_query(dev,id,sizeof(id));
@@ -166,14 +159,6 @@ sst_init(struct cyg_flash_dev *dev)
   if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER
       || id[1] != CYGNUM_FLASH_ID_DEVICE)
     return CYG_FLASH_ERR_DRV_WRONG_PART;
-  
-  // Hard wired for now
-  dev->end = dev->start + 
-    (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES) -1;
-  dev->num_block_infos = 1;
-  priv->block_info[0].blocks = FLASH_NUM_REGIONS * CYGNUM_FLASH_SERIES;
-  priv->block_info[0].block_size = FLASH_BLOCK_SIZE;
-  dev->block_info = priv->block_info;
   return CYG_FLASH_ERR_OK;
 }
 
@@ -194,7 +179,7 @@ sst_hwr_map_error(struct cyg_flash_dev *dev, int err)
 // will be of the same type.
 
 static size_t
-sst_query(struct cyg_flash_dev *dev, void* data, const size_t len)
+sst_query(struct cyg_flash_dev *dev, void* data, size_t len)
 {
     volatile flash_data_t *ROM;
     flash_data_t* id = (flash_data_t*) data;
@@ -283,7 +268,7 @@ sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
 // Program Buffer
 static int
 sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base, 
-            const void* data, const size_t length)
+            const void* data, size_t length)
 {
     volatile flash_data_t* ROM;
     volatile flash_data_t* addr_ptr = (volatile flash_data_t*) base;
@@ -341,14 +326,28 @@ sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base,
     return res;
 }
 
-static CYG_FLASH_FUNS(cyg_sst_funs,
-               sst_init,
-               sst_query,
-               sst_erase_block,
-               sst_program,
-               NULL,              // read
-               sst_hwr_map_error,
-               NULL,              // block_lock
-               NULL);             // block_unlock
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+static int 
+sst_block_lock(struct cyg_flash_dev   *dev, const  cyg_flashaddr_t  block_base)
+{
+    return CYG_DATAFLASH_ERR_INVALID;
+}
+
+static int 
+sst_block_unlock(struct cyg_flash_dev  *dev, const cyg_flashaddr_t  block_base)
+{
+    return CYG_DATAFLASH_ERR_INVALID;
+}
+#endif
+
+static const CYG_FLASH_FUNS(cyg_sst_funs,
+	               sst_init,
+	               sst_query,
+	               sst_erase_block,
+	               sst_program,
+	               NULL,              // read
+	               sst_hwr_map_error,
+	               sst_block_lock,
+	               sst_block_unlock);
 
 #endif // CYGONCE_DEVS_FLASH_SST_39VFXXX_INL
