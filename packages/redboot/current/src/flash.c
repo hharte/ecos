@@ -1372,7 +1372,7 @@ _flash_info(void)
 bool
 do_flash_init(void)
 {
-    int stat;
+    int stat, i;
     cyg_flashaddr_t err_addr;
 #ifdef CYGNUM_REDBOOT_FLASH_BASE
     cyg_flash_info_t info;
@@ -1388,23 +1388,30 @@ do_flash_init(void)
 
 #ifdef CYGNUM_REDBOOT_FLASH_BASE
         stat = cyg_flash_get_info_addr(CYGNUM_REDBOOT_FLASH_BASE, &info);
+#else
+        stat = cyg_flash_get_info(0, &info);
+#endif
         if (stat != CYG_FLASH_ERR_OK) {
              diag_printf("FLASH: driver init failed: %s\n", 
                          cyg_flash_errmsg(stat));
              return false;
         }
         flash_start = info.start;
-        flash_end = info.end;
-#else        
-        if ((stat = cyg_flash_get_limits(&flash_start, &flash_end)) != 0) {
-            diag_printf("FLASH: driver init failed: %s\n", 
-                        cyg_flash_errmsg(stat));
-            return false;
+        flash_end = info.end -1;
+
+        // No bootblock support yet, so we merge any bootblocks we might
+        // find into full size blocks
+        for (i=0; i < info.num_block_infos; i++) {
+          if (info.block_info[i].block_size > flash_block_size) {
+            flash_block_size = info.block_info[i].block_size;
+          }
         }
-#endif
-        // Keep 'end' address as last valid location, to avoid wrap around problems
-        flash_end = ((CYG_ADDRESS)flash_end - 1);
-        cyg_flash_get_block_info(&flash_block_size, &flash_num_blocks);
+        flash_num_blocks = 0;
+        for (i=0; i < info.num_block_infos; i++) {
+          flash_num_blocks += (info.block_info[i].block_size *
+                               info.block_info[i].blocks) /
+            flash_block_size;
+        }
         
 #ifdef CYGOPT_REDBOOT_FIS
         fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
