@@ -252,7 +252,14 @@ AM29_FNNAME(am29_hw_erase)(volatile AM29_TYPE* addr)
             // The bits have stopped toggling, so finished.
             break;
         }
-        if (0 != ((datum1 | datum2) & AM29_STATUS_DQ5)) {
+        // If DQ6 toggled, then check if DQ5 was set in datum1
+        // (not datum2 as that may indicate a successful 0->1 transition
+        // which can happen for one part of parallel devices before they
+        // all complete the erase)
+        if ((((datum1 ^ datum2) & AM29_STATUS_DQ6) >> 1) & datum1) {
+            // Hardware error. The calling code will always verify
+            // that the erase really was successful, so we don't need
+            // to distinguish
             addr[AM29_OFFSET_COMMAND] = AM29_COMMAND_RESET;
             break;
         }
@@ -275,7 +282,7 @@ AM29_FNNAME(am29_hw_program)(volatile AM29_TYPE* block_start, volatile AM29_TYPE
     
     for (i = 0; i < count; i++) {
         AM29_TYPE   datum;
-        AM29_TYPE   current, masked_datum;
+        AM29_TYPE   current, current2, masked_datum;
         
         // We can only clear bits, not set them, so any bits that were
         // already clear need to be preserved.
@@ -303,11 +310,16 @@ AM29_FNNAME(am29_hw_program)(volatile AM29_TYPE* block_start, volatile AM29_TYPE
                 break;
             }
             if (0 != (current & AM29_STATUS_DQ5)) {
-                current = addr[i];
-                if (current == datum) {
-                    // Race condition, but the operation did succeed.
-                    break;
-                } else {
+                // It's possible that one device can finish before
+                // another. To deal with this we look at the DQ6
+                // toggle bit, and only consider this to be an error
+                // if it is still toggling for the device that's
+                // reporting DQ5 set. This is similar to the checking
+                // for erase timeouts above. This is unnecessary
+                // before DQ5 gets set, so we don't do the double read
+                // all the time.
+                current2 = addr[i];
+                if ((((current ^ current2) & AM29_STATUS_DQ6) >> 1) & current) {
                     // A timeout has occurred inside the hardware and
                     // the system is in a strange state. Reset but don't
                     // try to write any more of the data.
@@ -446,7 +458,7 @@ AM29_FNNAME(cyg_am29xxxxx_program)(struct cyg_flash_dev* dev, cyg_flashaddr_t de
     int                 i;
 
     CYG_CHECK_DATA_PTR(dev, "valid flash device pointer required");
-    CYG_ASSERT((dest >= dev->start) && (addr <= dev->end), "flash address out of device range");
+    CYG_ASSERT((dest >= dev->start) && (dest <= dev->end), "flash address out of device range");
 
     // Only support writes that are aligned to the bus boundary. This
     // may be more restrictive than what the hardware is capable of.

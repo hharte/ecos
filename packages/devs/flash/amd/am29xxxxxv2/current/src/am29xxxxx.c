@@ -168,7 +168,7 @@
 
 # define AM29_NEXT_DATUM_32(_ptr_)                                                      \
     ({                                                                                  \
-        cyg_uint16 _result_;                                                            \
+        cyg_uint32 _result_;                                                            \
         _result_  = (_ptr_[3] << 24) | (_ptr_[2] << 16) | (_ptr_[1] << 8) | _ptr_[0];   \
         _ptr_    += 4;                                                                  \
         _result_; })
@@ -182,7 +182,7 @@
 
 # define AM29_NEXT_DATUM_32(_ptr_)                                                      \
     ({                                                                                  \
-        cyg_uint16 _result_;                                                            \
+        cyg_uint32 _result_;                                                            \
         _result_  = (_ptr_[0] << 24) | (_ptr_[1] << 16) | (_ptr_[2] << 8) | _ptr_[3];   \
         _ptr_    += 4;                                                                  \
         _result_; })
