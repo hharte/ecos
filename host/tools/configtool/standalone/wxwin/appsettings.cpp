@@ -109,7 +109,7 @@ ecSettings::ecSettings()
     m_showShortDescrWindow = TRUE;
     m_showMemoryWindow = FALSE;
     m_showOutputWindow = TRUE;
-    
+
     m_showMacroNames = FALSE;
     
     m_bUseCustomViewer = FALSE;
@@ -257,7 +257,7 @@ bool ecSettings::LoadConfig()
     config.Read(_("/Window Size/WindowY"), & m_frameSize.y);
     config.Read(_("/Window Size/WindowWidth"), & m_frameSize.width);
     config.Read(_("/Window Size/WindowHeight"), & m_frameSize.height);
-    
+
     config.Read(_("/Window Size/TreeSashWidth"), & m_treeSashSize.x);
     config.Read(_("/Window Size/TreeSashHeight"), & m_treeSashSize.y);
     config.Read(_("/Window Size/ConfigPaneWidth"), & m_configPaneWidth);
@@ -320,7 +320,8 @@ bool ecSettings::LoadConfig()
 #ifdef __WXMSW__
         SYSTEM_INFO SystemInfo;
         GetSystemInfo(&SystemInfo);
-        m_strMakeOptions.Printf(_T("-j%d"),SystemInfo.dwNumberOfProcessors);
+//        disable -j option for now due to problem with Cygwin 1.3.18
+//        m_strMakeOptions.Printf(_T("-j%d"),SystemInfo.dwNumberOfProcessors);
 #endif
     }
     
