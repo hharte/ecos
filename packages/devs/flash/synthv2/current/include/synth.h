@@ -68,8 +68,8 @@ struct cyg_flash_synth_config
 // Structure of data private to the drive
 struct cyg_flash_synth_priv 
 {
-  int                   flashfd;
-  struct cyg_block_info block_info[2];
+  int                           flashfd;
+  struct cyg_flash_block_info   block_info[2];
 };
 
 extern struct cyg_flash_dev_funs cyg_flash_synth_funs;

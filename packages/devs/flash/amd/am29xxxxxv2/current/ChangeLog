@@ -1,3 +1,8 @@
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/am29xxxxx_dev.h: rename cyg_block_info to
+	cyg_flash_block_info
+
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/am29xxxxx.sgml: describe CDL implications for custom locking

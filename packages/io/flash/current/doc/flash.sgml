@@ -147,16 +147,16 @@ __externC int cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info
 __externC int cyg_flash_verify_addr(const flashaddr_t address);
 __extern size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
 
-typedef struct cyg_block_info
+typedef struct cyg_flash_block_info
     size_t                    block_size;
     cyg_unit32                blocks;
-} cyg_block_info_t;
+} cyg_flash_block_info_t;
 
 typedef struct {
-    flashaddr_t               start;          // First address
-    flashaddr_t               end;            // Last address
-    cyg_uint32                num_block_infos // Number of entries
-    cyg_block_info_t          *blocks_info;   // Info about one block size
+    flashaddr_t                  start;          // First address
+    flashaddr_t                  end;            // Last address
+    cyg_uint32                   num_block_infos // Number of entries
+    const cyg_flash_block_info_t *blocks_info;   // Info about one block size
 } cyg_flash_info_t;
 </PROGRAMLISTING>
 
@@ -329,7 +329,7 @@ between the FLASH IO library the FLASH device drivers.</PARA>
     flashaddr_t               *end;            // Last address
     void                      *priv;           // Devices private data
     cyg_uint32                num_block_infos; // Number of entries
-    cyg_block_info_t          *blocks_info;    // Info about one block size
+    cyg_flash_block_info_t    *blocks_info;    // Info about one block size
 
 
 // The following are only written to by the FLASH IO layer.

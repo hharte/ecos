@@ -105,11 +105,11 @@ externC int cyg_am29xxxxx_program_16as8( struct cyg_flash_dev*, const cyg_flasha
 // a cyg_flash_dev structure.
 typedef struct cyg_am29xxxxx_dev {
     // The device id, mainly for use by the init_check_devid() routines
-    cyg_uint32          devid;
+    cyg_uint32              devid;
     // Space for the block_info fields needed for the cyg_flash_dev.
     // These can be statically initialized, or dynamically via
     // init_cfi().
-    cyg_block_info_t    block_info[CYGNUM_DEVS_FLASH_AMD_AM29XXXXX_V2_ERASE_REGIONS];
+    cyg_flash_block_info_t  block_info[CYGNUM_DEVS_FLASH_AMD_AM29XXXXX_V2_ERASE_REGIONS];
 } cyg_am29xxxxx_dev;
 
 #endif  // CYGONCE_DEVS_FLASH_AM29xxxxx_dev_V2_H

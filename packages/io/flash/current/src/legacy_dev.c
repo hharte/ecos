@@ -86,7 +86,7 @@ static int
 legacy_flash_init (struct cyg_flash_dev *dev)
 {
   int err;
-  static cyg_block_info_t block_info[1];
+  static cyg_flash_block_info_t block_info[1];
 
   err=flash_hwr_init();
 

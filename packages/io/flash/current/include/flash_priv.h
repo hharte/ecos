@@ -56,6 +56,8 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/io_flash.h>
+#include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_tables.h>
 
 // Forward reference of the device structure
 struct cyg_flash_dev;
@@ -86,7 +88,7 @@ struct cyg_flash_dev {
   cyg_flashaddr_t             start;           // First address
   cyg_flashaddr_t             end;             // Last address
   cyg_uint32                  num_block_infos; // Number of entries
-  cyg_block_info_t            *block_info;     // Info about one block size
+  cyg_flash_block_info_t      *block_info;     // Info about one block size
 
   void                        *priv;           // Devices private data
   void                        *config;         // Configuration info

@@ -73,7 +73,7 @@
 static int 
 df_flash_init(struct cyg_flash_dev *dev)
 {
-    static cyg_block_info_t block_info[1];
+    static cyg_flash_block_info_t block_info[1];
     
     cyg_dataflash_flash_dev_config_t *config;
     cyg_dataflash_flash_dev_priv_t   *priv;

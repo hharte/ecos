@@ -137,7 +137,7 @@
 // Private structure used by the device
 struct cyg_flash_sst_priv 
 {
-  cyg_block_info_t block_info[1];
+  cyg_flash_block_info_t block_info[1];
 };
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside

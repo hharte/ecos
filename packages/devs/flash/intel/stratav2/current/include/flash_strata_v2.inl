@@ -112,8 +112,8 @@ static int strata_lock_block(struct cyg_flash_dev *dev,
 //----------------------------------------------------------------------------
 // Private structure used by the device.
 struct cyg_flash_strata_v2_priv {
-    cyg_block_info_t block_info [1];
-    unsigned int     buffer_size;    // Size of write buffer
+    cyg_flash_block_info_t block_info [1];
+    unsigned int	   buffer_size;    // Size of write buffer
 };
 //----------------------------------------------------------------------------
 

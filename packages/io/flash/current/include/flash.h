@@ -8,9 +8,10 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2003 Gary Thomas
 // copyright (C) 2004 Andrew Lunn
+// Copyright (C) eCosCentric Ltd.
+// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, Andrew Lunn
+// Contributors: gthomas, Andrew Lunn, bartv
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -57,59 +58,62 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/io_flash.h>
-#include <cyg/hal/hal_cache.h>
-#include <cyg/hal/hal_tables.h>
+#include <stddef.h>
+#include <cyg/infra/cyg_type.h>
 #ifdef CYGPKG_KERNEL
 #include <cyg/kernel/kapi.h>
 #endif
 
+// Currently a 32-bit quantity. In future this may be 64-bits on some
+// platforms, e.g. to support very large nand flashes which can only
+// be accessed indirectly.
 typedef CYG_ADDRESS cyg_flashaddr_t;
 
-typedef struct cyg_block_info 
+typedef struct cyg_flash_block_info 
 {
   size_t                    block_size;
   cyg_uint32                blocks;
-} cyg_block_info_t;
+} cyg_flash_block_info_t;
 
 // Information about what one device driver drives
 typedef struct {
-  cyg_flashaddr_t           start;           // First address
-  cyg_flashaddr_t           end;             // Last address
-  cyg_uint32                num_block_infos; // Number of entries
-  cyg_block_info_t          *block_info;     // Info about block sizes
+  cyg_flashaddr_t               start;              // First address
+  cyg_flashaddr_t               end;                // Last address
+  cyg_uint32                    num_block_infos;    // Number of entries
+  const cyg_flash_block_info_t* block_info;         // Info about block sizes
 } cyg_flash_info_t;
 
 typedef int cyg_flash_printf(const char *fmt, ...);
 __externC int cyg_flash_init( cyg_flash_printf *pf );
 __externC int cyg_flash_get_info(cyg_uint32 devno, 
                                  cyg_flash_info_t * info);
-__externC int cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, 
+__externC int cyg_flash_get_info_addr(const cyg_flashaddr_t flash_base, 
                                       cyg_flash_info_t * info);
 __externC int cyg_flash_verify_addr(const cyg_flashaddr_t address);
 __externC size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
-__externC int cyg_flash_read(cyg_flashaddr_t flash_base, 
-                             const void *ram_base, 
-                             const size_t len, 
+__externC int cyg_flash_read(const cyg_flashaddr_t flash_base, 
+                             void *ram_base, 
+                             size_t len, 
                              cyg_flashaddr_t *err_address);
-__externC int cyg_flash_erase(const cyg_flashaddr_t flash_base, 
-                              const size_t len, 
+__externC int cyg_flash_erase(cyg_flashaddr_t flash_base, 
+                              size_t len, 
                               cyg_flashaddr_t *err_address);
-__externC int cyg_flash_program(const cyg_flashaddr_t flash_base, 
-                                void *ram_base, 
-                                const size_t len, 
+__externC int cyg_flash_program(cyg_flashaddr_t flash_base, 
+                                const void *ram_base, 
+                                size_t len, 
                                 cyg_flashaddr_t *err_address);
 __externC int cyg_flash_lock(const cyg_flashaddr_t flash_base, 
-                             const size_t len, 
+                             size_t len, 
                              cyg_flashaddr_t *err_address);
 __externC int cyg_flash_unlock(const cyg_flashaddr_t flash_base, 
-                               const size_t len, 
+                               size_t len, 
                                cyg_flashaddr_t *err_address);
 __externC const char *cyg_flash_errmsg(const int err);
 #ifdef CYGPKG_KERNEL
 __externC int cyg_flash_mutex_lock(const cyg_flashaddr_t from, 
-                                   const size_t len);
+                                   size_t len);
 __externC int cyg_flash_mutex_unlock(const cyg_flashaddr_t from, 
-                                     const size_t len);
+                                     size_t len);
 #endif
 
 #define CYG_FLASH_ERR_OK              0x00  // No error - operation complete

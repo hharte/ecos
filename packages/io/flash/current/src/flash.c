@@ -319,7 +319,7 @@ cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)
 
 // Return information about the flash at the given address
 __externC int
-cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
+cyg_flash_get_info_addr(const cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
 {
   struct cyg_flash_dev *dev;
   int                   stat = CYG_FLASH_ERR_OK;
@@ -337,7 +337,7 @@ cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
 #ifdef CYGPKG_KERNEL
 // Lock the mutex's for a range of addresses
 __externC int
-cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len) 
+cyg_flash_mutex_lock(const cyg_flashaddr_t from, size_t len) 
 {
   struct cyg_flash_dev *    dev;
   int                       stat    = CYG_FLASH_ERR_OK;
@@ -358,7 +358,7 @@ cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len)
 
 // Unlock the mutex's for a range of addresses
 __externC int
-cyg_flash_mutex_unlock(const cyg_flashaddr_t from, const size_t len) 
+cyg_flash_mutex_unlock(const cyg_flashaddr_t from, size_t len) 
 {
   struct cyg_flash_dev *    dev;
   int                       stat = CYG_FLASH_ERR_OK;
@@ -431,8 +431,8 @@ flash_block_begin(cyg_flashaddr_t addr, struct cyg_flash_dev *dev)
 
 
 __externC int 
-cyg_flash_erase(const cyg_flashaddr_t flash_base, 
-                const size_t len, 
+cyg_flash_erase(cyg_flashaddr_t flash_base, 
+                size_t len, 
                 cyg_flashaddr_t *err_address)
 {
   cyg_flashaddr_t block, end_addr;
@@ -520,14 +520,14 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
 }
 
 __externC int 
-cyg_flash_program(const cyg_flashaddr_t flash_base, 
-                  void *ram_base, 
-                  const size_t len, 
+cyg_flash_program(cyg_flashaddr_t flash_base, 
+                  const void *ram_base, 
+                  size_t len, 
                   cyg_flashaddr_t *err_address)
 {
   struct cyg_flash_dev * dev;
   cyg_flashaddr_t addr, end_addr, block;
-  unsigned char * ram = ram_base;
+  const unsigned char * ram = ram_base;
   size_t write_count, offset;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
@@ -604,9 +604,9 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
 }
 
 __externC int 
-cyg_flash_read(cyg_flashaddr_t flash_base, 
-               const void *ram_base, 
-               const size_t len, 
+cyg_flash_read(const cyg_flashaddr_t flash_base, 
+               void *ram_base, 
+               size_t len, 
                cyg_flashaddr_t *err_address)
 {
   struct cyg_flash_dev * dev;
@@ -697,7 +697,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 __externC int 
 cyg_flash_lock(const cyg_flashaddr_t flash_base, 
-               const size_t len, 
+               size_t len, 
                cyg_flashaddr_t *err_address)
 {
   cyg_flashaddr_t block, end_addr;
@@ -761,7 +761,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
 
 __externC int 
 cyg_flash_unlock(const cyg_flashaddr_t flash_base, 
-                 const size_t len, 
+                 size_t len, 
                  cyg_flashaddr_t *err_address)
 {
   cyg_flashaddr_t block, end_addr;

@@ -1,3 +1,8 @@
+2004-11-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/devs_flash_atmel_dataflash_flash_dev_funs.c (df_flash_init):
+	Rename cyg_block_info to cyg_flash_block_info
+
 2004-11-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/devs_flash_atmel_dataflash.cdl: CYGHWR_IO_FLASH_DEVICE_V2 is
