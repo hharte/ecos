@@ -1,3 +1,10 @@
+2004-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flashiodev.c Ordering problem again. If an invalid name is
+	configured the lookup would fail and it then was impossible to do
+	a cyg_io_config_set. Lookup cannot fail because the name does not
+	exist in FIS.
+
 2004-08-13  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * src/flash.c: Make the flock lock/unlock code compile without

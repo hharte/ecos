@@ -95,11 +95,10 @@ flashiodev_lookup(struct cyg_devtab_entry **tab,
   cyg_flash_info_t info;
   cyg_uint32 i;
   int stat;
-  
+
   if (dev->init)
     return ENOERR;
-  dev->init = 1;
-  
+
   if (dev->use_fis) {
     CYG_ADDRESS	flash_base;
     unsigned long	size;
@@ -107,11 +106,16 @@ flashiodev_lookup(struct cyg_devtab_entry **tab,
     if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
                                     dev->fis_name,
                                     &flash_base))
-      return ENODEV;
+      return ENOERR; 
+ // Strange, yes, but needed since we have to do a lookup in order to
+ // set the name using cyg_io_config_set. If we fail here you cannot
+ // do a set. Since dev->init will still be false and attempts to
+ // actually use the device will fail, so it is safe.
+    
     if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
                                     dev->fis_name,
                                     &size))
-      return ENODEV;
+      return ENOERR; // Ditto.
     dev->start = flash_base;
     dev->end = flash_base + size;
   }
@@ -137,7 +141,8 @@ flashiodev_lookup(struct cyg_devtab_entry **tab,
   for (i=0; i < info.num_block_infos; i++){
     dev->block_size = MAX(dev->block_size, info.block_info[i].block_size);
   }
-  
+
+  dev->init = 1;
   return ENOERR;
 } // flashiodev_lookup()
 
@@ -150,6 +155,10 @@ flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
 
   cyg_flashaddr_t startpos = dev->start + pos;
   Cyg_ErrNo err;
+  
+  if (!dev->init) {
+    return -EINVAL;
+  }
   
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
   cyg_flashaddr_t endpos = startpos + *len - 1;
@@ -176,6 +185,10 @@ flashiodev_bwrite( cyg_io_handle_t handle, const void *buf, cyg_uint32 *len,
   Cyg_ErrNo err;
   cyg_flashaddr_t startpos = dev->start + pos;
   
+  if (!dev->init) {
+    return -EINVAL;
+  }
+  
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
   cyg_flashaddr_t endpos = startpos + *len - 1;
   if ( startpos < dev->start )
@@ -199,10 +212,14 @@ flashiodev_get_config( cyg_io_handle_t handle,
   struct cyg_devtab_entry *tab = (struct cyg_devtab_entry *)handle;
   struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
 
+  if (!dev->init) {
+    return -EINVAL;
+  }
+  
   switch (key) {
   case CYG_IO_GET_CONFIG_FLASH_ERASE:
     {
-      if ( *len != sizeof( cyg_io_flash_getconfig_erase_t ) )
+      if (*len != sizeof( cyg_io_flash_getconfig_erase_t ) )
         return -EINVAL;
       {
         cyg_io_flash_getconfig_erase_t *e = (cyg_io_flash_getconfig_erase_t *)buf;
@@ -278,6 +295,7 @@ flashiodev_set_config( cyg_io_handle_t handle,
       if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
                                       (char *)buf, &flash_base))
         return -ENOENT;
+      
       if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
                                       (char *)buf, &size))
         return -ENOENT;
@@ -286,6 +304,7 @@ flashiodev_set_config( cyg_io_handle_t handle,
       dev->end = flash_base + size;
 
       stat = cyg_flash_get_info_addr(dev->start, &info);
+
       if (stat != CYG_FLASH_ERR_OK) {
         return -ENOENT;
       }
