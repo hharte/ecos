@@ -1,3 +1,8 @@
+2002-03-19  John Dallaway  <jld@ecoscentric.com>
+
+	* doc/redboot_installing.sgml: Update Atmel AT91EB40 RedBoot
+	installation instructions.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot.sgml: De-vendorise a little.
@@ -611,14 +616,14 @@
 	Updated edb7312 details.
 
 2002-03-05  Gary Thomas  <gthomas@redhat.com>
-2002-02-25  Hendrik Ruijter  <Hendrik.Ruijter@axis.com>
+2002-02-25 Hendrik Ruijter <Hendrik.Ruijter@axis.com>
 
 	* include/net/net.h: Add 'reuse' flag.
 
 	* src/net/tcp.c 
 	(tcp_send): Adjust socket close time to allow for faster re-use.
-	(__tcp_handler): State transitions to TIME_WAIT on active close 
-	when FIN,ACK received simultaneously.
+	(__tcp_handler): Statetransitions to TIME_WAIT on active close 
+	when FIN,ACK receivedsimultaneously.
 	(__tcp_so_reuseaddr): New function - select fast re-use.
 
 2002-03-05  Jesper Skov  <jskov@redhat.com>
