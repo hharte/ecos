@@ -413,22 +413,25 @@ bool ecSettings::LoadConfig()
 
 	    wxArrayString arstrPath;
             ecUtils::Chop(strPath, arstrPath, wxT(':'));
-            
+
             for (int i = arstrPath.GetCount()-1;i >= 0; --i)
             { // Reverse order is important to treat path correctly
-                wxLogNull log;
-                wxDir finder(arstrPath[i]);
-                wxString filename;
-            
-                if (finder.IsOpened())
+                if (wxT(".") != arstrPath[i] && !arstrPath[i].IsEmpty())
                 {
-                    bool bMore = finder.GetFirst(& filename, gccExe);
-                    while (bMore)
+                    wxLogNull log;
+                    wxDir finder(arstrPath[i]);
+                    wxString filename;
+
+                    if (finder.IsOpened())
                     {
-                        wxString targetName = filename.Left(filename.Find(wxT("-gcc")));
-                        m_arstrBinDirs.Set(targetName, arstrPath[i]);
-                    
-                        bMore = finder.GetNext(& filename);
+                        bool bMore = finder.GetFirst(& filename, gccExe);
+                        while (bMore)
+                        {
+                            wxString targetName = filename.Left(filename.Find(wxT("-gcc")));
+                            m_arstrBinDirs.Set(targetName, arstrPath[i]);
+
+                            bMore = finder.GetNext(& filename);
+                        }
                     }
                 }
             }
@@ -458,7 +461,7 @@ bool ecSettings::LoadConfig()
     // Read toolchain paths (local machine again)
 #ifdef __WXMSW__    
     wxArrayString arstrToolChainPaths;
-    
+
     // Use eCos just as a test.
     //GetRepositoryRegistryClues(arstrToolChainPaths,_T("eCos"));
     GetRepositoryRegistryClues(arstrToolChainPaths,_T("GNUPro eCos"));
@@ -547,20 +550,23 @@ bool ecSettings::LoadConfig()
             
             for (int i = arstrPath.GetCount()-1;i >= 0; --i)
             { // Reverse order is important to treat path correctly
-                
+
                 const ecFileName &strFolder = arstrPath[i];
-                ecFileName strFile(strFolder);
-                strFile += wxT("ls.exe");
-                if ( strFile.Exists() )
+                if (wxT(".") != strFolder && !strFolder.IsEmpty())
                 {
-                    if (!wxArrayStringIsMember(m_userToolPaths, strFolder))
+                    ecFileName strFile(strFolder);
+                    strFile += wxT("ls.exe");
+                    if ( strFile.Exists() )
                     {
-                        m_userToolPaths.Add(strFolder);
-                    }
-                    
-                    if ( m_userToolsDir.IsEmpty() )
-                    {
-                        m_userToolsDir = strFolder;
+                        if (!wxArrayStringIsMember(m_userToolPaths, strFolder))
+                        {
+                            m_userToolPaths.Add(strFolder);
+                        }
+
+                        if ( m_userToolsDir.IsEmpty() )
+                        {
+                            m_userToolsDir = strFolder;
+                        }
                     }
                 }
             }

@@ -44,7 +44,7 @@
 //
 //===========================================================================
 
-#define ecCONFIGURATION_TOOL_VERSION        "2.13.net"
+#define ecCONFIGURATION_TOOL_VERSION        "2.0"
 
 // Use /ecos-x notation for drive specification
 #define ecUSE_ECOS_X_NOTATION               1
