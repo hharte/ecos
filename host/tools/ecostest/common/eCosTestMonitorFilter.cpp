@@ -138,8 +138,8 @@ CeCosTestMonitorFilter::PrintHex(const unsigned char* d1, int len, data_origin_t
 bool CALLBACK
 SerialMonitorFunction(void*& pBuf,
                       unsigned int& nRead,
-                      CeCosTestSerial& serial,
-                      CeCosTestSocket& socket,
+                      CeCosSerial& serial,
+                      CeCosSocket& socket,
                       void* pParem)
 {
     CeCosTestMonitorFilter* p = (CeCosTestMonitorFilter*) pParem;
