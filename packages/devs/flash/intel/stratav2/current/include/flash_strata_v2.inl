@@ -70,6 +70,17 @@ extern void diag_dump_buf(void *buf, CYG_ADDRWORD len);
 extern int strncmp(const char *s1, const char *s2, size_t len);
 extern void *memcpy( void *, const void *, size_t );
 
+// Platforms may define these for special handling when accessing the
+// query data or write buffer .
+#ifndef CYGHWR_FLASH_READ_QUERY 
+#define CYGHWR_FLASH_READ_QUERY(a) (*(a)) 
+#endif
+#ifndef CYGHWR_FLASH_WRITE_BUF
+#define CYGHWR_FLASH_WRITE_BUF(a,b) (*(a) = *(b))
+#endif
+
+
+
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
 // in RAM.
@@ -158,7 +169,7 @@ strata_init (struct cyg_flash_dev *dev)
 #endif // Not CYGOPT_FLASH_IS_BOOTBLOCK
         
         dev->end = dev->start +
-          (num_regions*region_size*CYGNUM_FLASH_INTERLEAVE);
+          (num_regions*region_size*CYGNUM_FLASH_INTERLEAVE) -1;
         priv->buffer_size = buffer_size;
         priv->block_info[0].blocks = num_regions;
         priv->block_info[0].block_size = region_size * CYGNUM_FLASH_INTERLEAVE;
@@ -241,10 +252,10 @@ strata_query_hwr (struct cyg_flash_dev *dev, void *data_dst, const size_t len)
 #endif // Not CYGOPT_FLASH_IS_BOOTBLOCK
 
     for (cnt = CNT;  cnt > 0;  cnt--) ;
-    for ( /* i */;  i > 0;  i-- ) {
+    for ( /* i */;  i > 0;  i--, ++ROM ) {
         // It is very deliberate that data is chars NOT flash_t:
         // The info comes out in bytes regardless of device.
-        *data++ = (unsigned char) (*ROM++);
+        *data++ = (unsigned char) CYGHWR_FLASH_READ_QUERY(ROM);
 #ifndef CYGOPT_FLASH_IS_BOOTBLOCK
 # if  8 == CYGNUM_FLASH_WIDTH
 	// strata flash with 'byte-enable' contains the configuration data
@@ -366,7 +377,7 @@ strata_program_buf (struct cyg_flash_dev *dev,
 #ifdef CYGHWR_FLASH_WRITE_ELEM
             CYGHWR_FLASH_WRITE_ELEM(addr+i, data+i);
 #else
-            *(addr+i) = *(data+i);
+            CYGHWR_FLASH_WRITE_BUF(addr+i, data+i);
 #endif
         }
         *BA = FLASH_Confirm;

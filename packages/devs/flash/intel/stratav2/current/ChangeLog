@@ -1,3 +1,9 @@
+2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_strata_v2.inl: Return the end address which is the
+	last valid address, not the first invalid address.
+	Also import Mark Salters changes from the trunk.
+	
 2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 	
 	* include/flash_strata_v2.inl (flash_unlock_block): 
