@@ -522,6 +522,16 @@ package CYGPKG_DEVS_FLASH_STRATA {
 	   StrataFLASH memory devices."
 }
 
+package CYGPKG_DEVS_FLASH_STRATA_V2 {
+	alias 		{ "Generic FLASH memory support for Intel StrataFLASH" strata_v2 }
+	directory	devs/flash/intel/stratav2
+	script		flash_strata_v2.cdl
+	hardware
+        description "
+           This package contains generic hardware support for Intel
+	   StrataFLASH memory devices using the V2 device API."
+}
+
 package CYGPKG_DEVS_FLASH_SST_39VFXXX {
     alias       { "Support for SST 39VFXXX flash memory" flash_sst_39vfXXX }
     directory   devs/flash/sst/39vfxxx
