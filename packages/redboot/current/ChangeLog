@@ -1,3 +1,8 @@
+2004-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (do_flash_init): We need info independent of
+	CYGNUM_REDBOOT_FLASH_BASE being set or not.
+	
 2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/redboot.cdl: Change CYGNUM_REDBOOT_FLASH_BASE to a booldata

@@ -1374,9 +1374,7 @@ do_flash_init(void)
 {
     int stat, i;
     cyg_flashaddr_t err_addr;
-#ifdef CYGNUM_REDBOOT_FLASH_BASE
     cyg_flash_info_t info;
-#endif
 
     if (!__flash_init) {
         __flash_init = 1;
