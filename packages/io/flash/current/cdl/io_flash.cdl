@@ -10,6 +10,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2003 Gary Thomas
+## Copyright (C) 2004 Andrew Lunn
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -83,7 +84,7 @@ cdl_package CYGPKG_IO_FLASH {
             Use of this interface is deprecated.
             Drivers should make sure that the functions are
             linked to RAM by putting them in .2ram sections."
-	    requires !CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
+            requires !CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     }
 
     cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {
@@ -94,6 +95,22 @@ cdl_package CYGPKG_IO_FLASH {
             locking (write-protection) of individual blocks."
     }
 
+    cdl_interface CYGHWR_IO_FLASH_DEVICE_LEGACY {
+        display       "Hardware driver uses the legacy interface"
+        flavor        booldata
+        description   "
+            The flash device driver implements the legacy interface to the 
+            flash library"
+    }
+
+    cdl_interface CYGHWR_IO_FLASH_DEVICE_V2 {
+        display       "Hardware driver uses the V2 interface"
+        flavor        booldata
+        description   "
+            The flash device driver implements the V2 interface to the 
+            flash library"
+    }
+        
     cdl_option CYGSEM_IO_FLASH_READ_INDIRECT {
         display       "Hardware cannot support direct access to FLASH memory"
         flavor        bool
@@ -134,6 +151,27 @@ cdl_package CYGPKG_IO_FLASH {
            write-protected or not."
     }
 
+
+    cdl_option CYGSEM_IO_FLASH_LEGACY_API {
+        display          "Provide the legacy user API"
+        flavor           bool
+        default_value    1
+        compile          legacy_api.c
+        description      "
+            Provide an implementation of the lagacy user API. This is mapped 
+            onto the new API via a small layer of code"
+    }
+        
+    cdl_option CYGSEM_IO_FLASH_LEGACY_DEVICE_API {
+        display          "Provide the legacy device API"
+        flavor           bool
+        default_value    CYGHWR_IO_FLASH_DEVICE_LEGACY
+        compile          -library=libextras.a legacy_dev.c
+        description      "
+            Provide an implementation of the legacy device API. This can be 
+            used to interface to one legacy device."
+    }
+    
     cdl_component CYGPKG_IO_FLASH_BLOCK_DEVICE {
         display         "Instantiate in I/O block device API"
         flavor          bool
@@ -145,54 +183,164 @@ cdl_package CYGPKG_IO_FLASH {
                 API ( cyg_io_read() etc. )"
 
         cdl_component CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1 {
-			display       "Name of flash device 1 block device"
+            display       "Name of flash device 1 block device"
             flavor        data
             default_value { "\"/dev/flash1\"" }
                 
-			cdl_interface CYGINT_IO_FLASH_BLOCK_CFG_1 {
-				requires 1 == CYGINT_IO_FLASH_BLOCK_CFG_1
-				no_define
-			}
+            cdl_interface CYGINT_IO_FLASH_BLOCK_CFG_1 {
+                  requires 1 == CYGINT_IO_FLASH_BLOCK_CFG_1
+                  no_define
+            }
 
-			cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_1 {
-				display       "Static configuration"
-				default_value 1
-				implements    CYGINT_IO_FLASH_BLOCK_CFG_1
-				description   "
-					This configures the flash device 1 block device
-					with static base and length"
-			
-				cdl_option CYGNUM_IO_FLASH_BLOCK_OFFSET_1 {
-					display         "Start offset from flash base"
-					flavor          data
-					default_value   0x100000
-					description     "
-						This gives the offset from the base of flash which this
-						block device corresponds to."
-					}
-					cdl_option CYGNUM_IO_FLASH_BLOCK_LENGTH_1 {
-					display         "Length"
-					flavor          data
-					default_value   0x100000
-					description     "
-						This gives the length of the region of flash given over
-						to this block device."
-					}
-				}
-			cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1 {
-				display       "Configuration from FIS"
-				default_value 0
-				implements    CYGINT_IO_FLASH_BLOCK_CFG_1
-				description   "
-					This configures the flash device 1 block device
-					from Redboot FIS"
-					
-				cdl_component CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1 {
-					display       "Name of FIS entry"
-					flavor        data
-					default_value { "\"jffs2\"" }	
-				}
+            cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_1 {
+                  display       "Static configuration via offset"
+                  default_value 1
+                  implements    CYGINT_IO_FLASH_BLOCK_CFG_1
+                  description   "
+                        This configures the flash device 1 block device
+                        with static offset from the base of the first
+                        flash device and length"
+                        
+                  cdl_option CYGNUM_IO_FLASH_BLOCK_OFFSET_1 {
+                      display         "Start offset from flash base"
+                      flavor          data
+                      default_value   0x100000
+                      description     "
+                            This gives the offset from the base of flash 
+                            of the first flash device which this block device 
+                            corresponds to."
+                  }
+                  cdl_option CYGNUM_IO_FLASH_BLOCK_LENGTH_1 {
+                      display         "Length"
+                      flavor          data
+                      default_value   0x100000
+                      description     "
+                            This gives the length of the region of flash given over
+                            to this block device."
+                  }
+            }
+            cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_ABSOLUTE_1 {
+                  display       "Absolute static configuration"
+                  default_value 0
+                  implements    CYGINT_IO_FLASH_BLOCK_CFG_1
+                  description   "
+                        This configures the flash device 1 block device
+                        with absolute base address and a length"
+                        
+                   cdl_option CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_1 {
+                       display         "Start offset from flash base"
+                       flavor          data
+                       default_value   0x4000000
+                       description     "
+                             This gives the absolute address in flash which this
+                             block device corresponds to."
+                   }
+                   cdl_option CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_1 {
+                       display         "Length"
+                       flavor          data
+                       default_value   0x100000
+                       description     "
+                             This gives the length of the region of flash given over
+                             to this block device."
+                   }
+             }
+             cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1 {
+                    display       "Configuration from FIS"
+                    default_value 0
+                    implements    CYGINT_IO_FLASH_BLOCK_CFG_1
+                    description   "
+                          This configures the flash device 1 block device
+                          from Redboot FIS"
+                                       
+                     cdl_component CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1 {
+                            display       "Name of FIS entry"
+                            flavor        data
+                            default_value { "\"jffs2\"" }   
+                     }
             }        
-        }
-    }
+        }        
+        cdl_component CYGSEM_IO_FLASH_BLOCK_DEVICE_2 {
+               display       "Implements a second block device"
+               default_value 0
+
+               cdl_component CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_2 {
+               display       "Name of flash device 2 block device"
+               flavor        data
+               default_value { "\"/dev/flash2\"" }
+                
+               cdl_interface CYGINT_IO_FLASH_BLOCK_CFG_2 {
+                             requires 1 == CYGINT_IO_FLASH_BLOCK_CFG_2
+                             no_define
+               }
+
+               cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_2 {
+                      display       "Static configuration via offset"
+                      default_value 1
+                      implements    CYGINT_IO_FLASH_BLOCK_CFG_2
+                      description   "
+                            This configures the flash device 2 block device
+                            with static offset from the base of the first
+                            flash device and length"
+                        
+                      cdl_option CYGNUM_IO_FLASH_BLOCK_OFFSET_2 {
+                            display         "Start offset from flash base"
+                            flavor          data
+                            default_value   0x100000
+                            description     "
+                                  This gives the offset from the base of flash 
+                                  of the first flash device which this block device 
+                                  corresponds to."
+                      }
+                      cdl_option CYGNUM_IO_FLASH_BLOCK_LENGTH_2 {
+                            display         "Length"
+                            flavor          data
+                            default_value   0x100000
+                            description     "
+                                  This gives the length of the region of flash 
+                                  given over to this block device."
+                      }       
+               }
+               cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_STATIC_ABSOLUTE_2 {
+                      display       "Absolute static configuration"
+                      default_value 0
+                      implements    CYGINT_IO_FLASH_BLOCK_CFG_2
+                      description   "
+                            This configures the flash device 2 block device
+                            with absolute base address and a length"
+                        
+                      cdl_option CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_START_2 {
+                            display         "Start offset from flash base"
+                            flavor          data
+                            default_value   0x4000000
+                            description     "
+                                  This gives the absolute address in flash which this
+                                  block device corresponds to."
+                      }
+                      cdl_option CYGNUM_IO_FLASH_BLOCK_ABSOLUTE_LENGTH_2 {
+                            display         "Length"
+                            flavor          data
+                            default_value   0x100000
+                            description     "
+                                  This gives the length of the region of flash 
+                                  given over to this block device."
+                      }
+               }
+
+               cdl_component CYGNUM_IO_FLASH_BLOCK_CFG_FIS_2 {
+                      display       "Configuration from FIS"
+                      default_value 0
+                      implements    CYGINT_IO_FLASH_BLOCK_CFG_2
+                      description   "
+                            This configures the flash device 2 block device
+                            from Redboot FIS"
+                                       
+                      cdl_component CYGDAT_IO_FLASH_BLOCK_FIS_NAME_2 {
+                            display       "Name of FIS entry"
+                            flavor        data
+                            default_value { "\"jffs2-2\"" }   
+                      }
+               }        
+            }
+         }
+     }
 }

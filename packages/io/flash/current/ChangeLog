@@ -1,3 +1,12 @@
+2004-08-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c: Major rewrite to implement a new API
+	* src/legacy_api.c: Support the legacy API
+	* src/legacy_drv.c: Support the legacy driver API
+	* src/flashiodev.c: Support the new API and multiple devices
+	* include/flash_priv.h: Interface devices should use
+	* cdl/io_flash.cdl: Updates for new interface and multiple devices.
+	
 2004-06-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (flash_read): Don't check if the flash is write 
