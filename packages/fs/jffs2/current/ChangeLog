@@ -1,3 +1,21 @@
+2004-07-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/fileio1.c (main): If we have two filesystem configured
+	mount the second one on /mnt and list the root of it.
+	* src/fs-ecos.c (jffs2_fo_write): Fixed a typo in a debug print 
+	which is normally disabled.
+
+2004-07-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/fs-ecos.c (jffs2_fo_lseek): Put back part of the fix for
+	lseeking past the end of the file which was removed during the last
+	merge with MTD.
+
+2004-07-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flashio.c (jffs2_flash_erase): Minor update for new
+	flash API.
+
 2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/build.c: JFFS2 can now be used as a write-once, read many mode

@@ -73,6 +73,8 @@
 #include <string.h>
 #include <dirent.h>
 
+#include <stdlib.h>
+
 #include <cyg/fileio/fileio.h>
 
 #include <cyg/infra/testcase.h>
@@ -416,6 +418,14 @@ int main( int argc, char **argv )
     //int i;
     int existingdirents=-1;
 
+    struct mallinfo info;
+
+    info =  mallinfo();
+    diag_printf("arenasize %d, freeblocks %d, totalallocated %d, totalfree %d, maxfree %d\n",
+                info.arena, info.ordblks, info.uordblks, info.fordblks, info.maxfree);
+    
+    
+
     CYG_TEST_INIT();
 
     // --------------------------------------------------------------
@@ -658,9 +668,33 @@ int main( int argc, char **argv )
     err = umount( "/jffs2" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
+#ifdef CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_2
+    diag_printf("<INFO>: mounting second JFFS2 filesystem on /mnt\n");
+    
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/mnt", "jffs2" );
+    if( err < 0 ) SHOW_RESULT( mount, err );    
+
+    err = chdir( "/" );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+
+    checkcwd( "/" );
+    
+    listdir( "/", true, -1, &existingdirents );
+    if ( existingdirents < 2 )
+        CYG_TEST_FAIL("Not enough dir entries\n");
+
+    listdir( "/mnt", true, -1, &existingdirents );
+    if ( existingdirents < 2 )
+        CYG_TEST_FAIL("Not enough dir entries\n");
+
+    diag_printf("<INFO>: umount /mnt\n");    
+    err = umount( "/mnt" );
+#endif
+
     diag_printf("<INFO>: umount /\n");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
+
     
     CYG_TEST_PASS_FINISH("fileio1");
 }
