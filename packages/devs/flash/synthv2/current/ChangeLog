@@ -1,3 +1,8 @@
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth.c: use the dummy lock/unlock functions provided by the
+	generic flash package.
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/synth.h, src/synth.c, tests/flash3.c: merge the config

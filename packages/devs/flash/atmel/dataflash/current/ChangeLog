@@ -1,3 +1,8 @@
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/devs_flash_atmel_dataflash_flash_dev_funs.c: use the dummy
+	query/lock/unlock functions provided by the generic flash code
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/dataflash.h, src/devs_flash_atmel_dataflash.c,

@@ -576,8 +576,8 @@ static CYG_FLASH_FUNS (cyg_flash_strata_v2_funs,
                 strata_program_buf,
                 NULL,
                 strata_hwr_map_error,
-                NULL,
-                NULL);
+                cyg_flash_devfn_lock_nop,
+                cyg_flash_devfn_unlock_nop);
 #endif
 #endif //CYGONCE_DEVS_FLASH_STRATA_V2_INL
 // EOF strata.c

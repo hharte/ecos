@@ -1,3 +1,10 @@
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/flash_priv.h, src/flash.c, src/legacy_dev.c: provide
+	dummy init/query/lock/unlock functions for use by device drivers
+	which do not support/need this functionality. Export the
+	anonymizer function.
+
 2004-11-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/flash.c (flash_sort_and_check): previous patch would have

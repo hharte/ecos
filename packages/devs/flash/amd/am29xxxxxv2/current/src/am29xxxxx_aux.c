@@ -343,7 +343,7 @@ AM29_FNNAME(cyg_am29xxxxx_read_devid) (struct cyg_flash_dev* dev)
     CYG_CHECK_DATA_PTR(dev, "valid flash device pointer required");
     
     addr     = AM29_P2V(dev->start);
-    query_fn = (int (*)(volatile AM29_TYPE*)) am29_anonymizer( & AM29_FNNAME(am29_hw_query) );
+    query_fn = (int (*)(volatile AM29_TYPE*)) cyg_flash_anonymizer( & AM29_FNNAME(am29_hw_query) );
     devid    = (*query_fn)(addr);
     return devid;
 }
@@ -380,7 +380,7 @@ AM29_FNNAME(cyg_am29xxxxx_init_cfi)(struct cyg_flash_dev* dev)
     am29_dev    = (cyg_am29xxxxx_dev*) dev->priv;    // Remove const, only place where this is needed.
     addr        = AM29_P2V(dev->start);
     cfi_fn      = (int (*)(struct cyg_flash_dev*, cyg_am29xxxxx_dev*, volatile AM29_TYPE*))
-        am29_anonymizer( & AM29_FNNAME(am29_hw_cfi));
+        cyg_flash_anonymizer( & AM29_FNNAME(am29_hw_cfi));
 
     result      = (*cfi_fn)(dev, am29_dev, addr);
 
@@ -414,7 +414,7 @@ AM29_FNNAME(cyg_am29xxxxx_erase)(struct cyg_flash_dev* dev, cyg_flashaddr_t addr
     CYG_ASSERT(addr == block_start, "erase address should be the start of a flash block");
     
     block       = AM29_P2V(addr);
-    erase_fn    = (void (*)(volatile AM29_TYPE*)) am29_anonymizer( & AM29_FNNAME(am29_hw_erase) );
+    erase_fn    = (void (*)(volatile AM29_TYPE*)) cyg_flash_anonymizer( & AM29_FNNAME(am29_hw_erase) );
     (*erase_fn)(block);
 
     // The erase may have failed for a number of reasons, e.g. because
@@ -467,7 +467,7 @@ AM29_FNNAME(cyg_am29xxxxx_program)(struct cyg_flash_dev* dev, cyg_flashaddr_t de
     data        = (const cyg_uint8*) src;
 
     program_fn  = (void (*)(volatile AM29_TYPE*, volatile AM29_TYPE*, const cyg_uint8*, cyg_uint32))
-        am29_anonymizer( & AM29_FNNAME(am29_hw_program) );
+        cyg_flash_anonymizer( & AM29_FNNAME(am29_hw_program) );
     (*program_fn)(block, addr, (const cyg_uint8*)src, len / sizeof(AM29_TYPE));
     
     // Too many things can go wrong when manipulating the h/w, so

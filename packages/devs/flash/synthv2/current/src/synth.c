@@ -256,27 +256,6 @@ synth_flash_query(struct cyg_flash_dev *dev, void * data,
     return sizeof(QUERY);
 }
 
-// Just in case there is another flash driver which does implement locking
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
-static int
-synth_flash_lock(struct cyg_flash_dev* dev,
-                 const cyg_flashaddr_t addr)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
-    return CYG_FLASH_ERR_INVALID;
-}
-
-static int
-synth_flash_unlock(struct cyg_flash_dev* dev,
-                   const cyg_flashaddr_t addr)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
-    return CYG_FLASH_ERR_INVALID;
-}
-#endif
-
 const CYG_FLASH_FUNS(cyg_flash_synth_funs,
                      synth_flash_init,
                      synth_flash_query,
@@ -284,8 +263,8 @@ const CYG_FLASH_FUNS(cyg_flash_synth_funs,
                      synth_flash_program,
                      NULL,                 // read
                      synth_flash_hwr_map_error,
-                     synth_flash_lock,
-                     synth_flash_unlock);
+                     cyg_flash_devfn_lock_nop,
+                     cyg_flash_devfn_unlock_nop);
 
 static struct cyg_flash_synth_priv synth_flash_priv = {
     .block_size         = CYGNUM_FLASH_SYNTH_V2_BLOCKSIZE,

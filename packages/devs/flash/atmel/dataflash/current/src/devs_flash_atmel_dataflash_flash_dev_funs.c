@@ -115,12 +115,6 @@ df_flash_init(struct cyg_flash_dev *dev)
     return CYG_DATAFLASH_ERR_OK;
 }
 
-static size_t 
-df_flash_query(struct cyg_flash_dev *dev, void *data, size_t len)
-{
-    return len;
-}
-
 static int 
 df_flash_erase_block(struct cyg_flash_dev   *dev, 
                      cyg_flashaddr_t  base)
@@ -216,33 +210,17 @@ df_flash_hwr_map_error(struct cyg_flash_dev *dev, int err)
     }
 }
 
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
-static int 
-df_flash_block_lock(struct cyg_flash_dev   *dev, 
-                    const  cyg_flashaddr_t  block_base)
-{
-    return CYG_DATAFLASH_ERR_INVALID;
-}
-
-static int 
-df_flash_block_unlock(struct cyg_flash_dev  *dev, 
-                      const cyg_flashaddr_t  block_base)
-{
-    return CYG_DATAFLASH_ERR_INVALID;
-}
-#endif
-
 // -------------------------------------------------------------------------- 
 
 CYG_FLASH_FUNS(cyg_dataflash_flash_dev_funs,
                df_flash_init,
-               df_flash_query,
+               cyg_flash_devfn_query_nop,
                df_flash_erase_block,
                df_flash_program,
                df_flash_read,
                df_flash_hwr_map_error,
-               df_flash_block_lock,
-               df_flash_block_unlock
+               cyg_flash_devfn_lock_nop,
+               cyg_flash_devfn_unlock_nop
 );
 
 //----------------------------------------------------------------------------

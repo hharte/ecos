@@ -84,6 +84,17 @@ struct cyg_flash_dev_funs {
 #endif    
 };
 
+// Dummy functions for some of the above operations, if a device does
+// not support e.g. locking.
+externC int     cyg_flash_devfn_init_nop(struct cyg_flash_dev*);
+externC size_t  cyg_flash_devfn_query_nop(struct cyg_flash_dev*, void*, const size_t);
+externC int     cyg_flash_devfn_lock_nop(struct cyg_flash_dev*, const cyg_flashaddr_t);
+externC int     cyg_flash_devfn_unlock_nop(struct cyg_flash_dev*, const cyg_flashaddr_t);
+
+// Facilitate function calls between flash-resident code and .2ram
+// functions.
+externC void*   cyg_flash_anonymizer(void*);
+
 // Structure each device places in the HAL table
 struct cyg_flash_dev {
   const struct cyg_flash_dev_funs *funs;            // Function pointers

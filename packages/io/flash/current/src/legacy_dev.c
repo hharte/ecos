@@ -102,14 +102,6 @@ legacy_flash_init (struct cyg_flash_dev *dev)
   return err;
 }
 
-// Use this function to make function pointers anonymous - forcing the
-// compiler to use jumps instead of branches when calling driver
-// services.
-static void* __anonymizer(void* p)
-{
-  return p;
-}
-
 static size_t 
 legacy_flash_query (struct cyg_flash_dev *dev, 
                     void * data, 
@@ -118,7 +110,7 @@ legacy_flash_query (struct cyg_flash_dev *dev,
   typedef void code_fun(void*);
   code_fun *_flash_query;
   
-  _flash_query = (code_fun*) __anonymizer(&flash_query);
+  _flash_query = (code_fun*) cyg_flash_anonymizer(&flash_query);
   
   (*_flash_query)(data);
   
@@ -133,7 +125,7 @@ legacy_flash_erase_block (struct cyg_flash_dev *dev,
   code_fun *_flash_erase_block;
   size_t block_size = dev->block_info[0].block_size;
   
-  _flash_erase_block = (code_fun*) __anonymizer(&flash_erase_block);
+  _flash_erase_block = (code_fun*) cyg_flash_anonymizer(&flash_erase_block);
 
   return (*_flash_erase_block)(block_base, block_size);
 }
@@ -148,7 +140,7 @@ legacy_flash_program(struct cyg_flash_dev *dev,
   size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
 
-  _flash_program_buf = (code_fun*) __anonymizer(&flash_program_buf);
+  _flash_program_buf = (code_fun*) cyg_flash_anonymizer(&flash_program_buf);
 
   return (*_flash_program_buf)(base, data, len, block_mask ,block_size);
 }
@@ -164,7 +156,7 @@ legacy_flash_read (struct cyg_flash_dev *dev,
   size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
 
-  _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
+  _flash_read_buf = (code_fun*) cyg_flash_anonymizer(&flash_read_buf);
   
   return (*_flash_read_buf)(base, data, len, block_mask, block_size);
 }
@@ -183,7 +175,7 @@ legacy_flash_block_lock (struct cyg_flash_dev *dev,
   typedef int code_fun(cyg_flashaddr_t);
   code_fun *_flash_lock_block;
   
-  _flash_lock_block = (code_fun*) __anonymizer(&flash_lock_block);
+  _flash_lock_block = (code_fun*) cyg_flash_anonymizer(&flash_lock_block);
 
   return (*_flash_lock_block)(block_base);
 }
@@ -197,7 +189,7 @@ legacy_flash_block_unlock (struct cyg_flash_dev *dev,
   size_t block_size = dev->block_info[0].block_size;
   cyg_uint32 blocks = dev->block_info[0].blocks;
   
-  _flash_unlock_block = (code_fun*) __anonymizer(&flash_unlock_block);
+  _flash_unlock_block = (code_fun*) cyg_flash_anonymizer(&flash_unlock_block);
   
   return (*_flash_unlock_block)(block_base, block_size, blocks);
 }
@@ -217,7 +209,7 @@ flash_dev_query(void* data)
     code_fun *_flash_query;
     int d_cache, i_cache;
 
-    _flash_query = (code_fun*) __anonymizer(&flash_query);
+    _flash_query = (code_fun*) cyg_flash_anonymizer(&flash_query);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     (*_flash_query)(data);

@@ -195,62 +195,12 @@
 // ----------------------------------------------------------------------------
 // Generic code.
 
-// A dummy initialization routine, for platforms where everything is
-// done statically and there is no need to check device ids or anything similar.
-int
-cyg_am29xxxxx_init_nop(struct cyg_flash_dev* dev)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    return CYG_FLASH_ERR_OK;
-}
-
-// A dummy query routine. The implementation of this is specific to
-// each device driver, and I choose to do as little as possible.
-size_t
-cyg_am29xxxxx_query_nop(struct cyg_flash_dev* dev, void* data, size_t len)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(void*, data);
-    CYG_UNUSED_PARAM(size_t, len);
-    return 0;
-}
-
 // A dummy hwr_map_error routine.
 int
 cyg_am29xxxxx_hwr_map_error_nop(struct cyg_flash_dev* dev, int err)
 {
     CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
     return err;
-}
-
-// Dummy lock/unlock routines
-int
-cyg_am29xxxxx_lock_nop(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(cyg_flashaddr_t, addr);
-    return CYG_FLASH_ERR_DRV_WRONG_PART;
-}
-
-int
-cyg_am29xxxxx_unlock_nop(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(cyg_flashaddr_t, addr);
-    return CYG_FLASH_ERR_DRV_WRONG_PART;
-}
-
-// On some architectures there are problems calling the .2ram
-// functions from the main ones. Specifically the compiler may issue a
-// short call, even though the flash and ram are too far apart. The
-// solution is to indirect via a function pointer, but the simplistic
-// approach is vulnerable to compiler optimization. Hence the function
-// pointer is passed through an anonymizer. Even this may fail in
-// future if the compiler starts doing global optimization.
-static void*
-am29_anonymizer(void* fn)
-{
-    return fn;
 }
 
 // Get info about the current block, i.e. base and size.

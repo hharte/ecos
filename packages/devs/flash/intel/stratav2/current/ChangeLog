@@ -1,3 +1,8 @@
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/flash_strata_v2.inl: use the dummy lock/unlock functions
+	provided by the generic flash code.
+
 2004-11-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flash_strata_v2.inl: Correct the usage of const

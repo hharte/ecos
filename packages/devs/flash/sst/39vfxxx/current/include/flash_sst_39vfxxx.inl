@@ -326,20 +326,6 @@ sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base,
     return res;
 }
 
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
-static int 
-sst_block_lock(struct cyg_flash_dev   *dev, const  cyg_flashaddr_t  block_base)
-{
-    return CYG_DATAFLASH_ERR_INVALID;
-}
-
-static int 
-sst_block_unlock(struct cyg_flash_dev  *dev, const cyg_flashaddr_t  block_base)
-{
-    return CYG_DATAFLASH_ERR_INVALID;
-}
-#endif
-
 static const CYG_FLASH_FUNS(cyg_sst_funs,
 	               sst_init,
 	               sst_query,
@@ -347,7 +333,7 @@ static const CYG_FLASH_FUNS(cyg_sst_funs,
 	               sst_program,
 	               NULL,              // read
 	               sst_hwr_map_error,
-	               sst_block_lock,
-	               sst_block_unlock);
+	               cyg_flash_devfn_lock_nop,
+	               cyg_flash_devfn_unlock_nop);
 
 #endif // CYGONCE_DEVS_FLASH_SST_39VFXXX_INL

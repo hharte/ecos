@@ -1,3 +1,8 @@
+2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/flash_sst_39vfxxx.inl: use the dummy lock/unlock
+	functions provided by the generic flash code.
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 	
 	* include/flash_sst_39vfxxx.inl: assume static initialization and
