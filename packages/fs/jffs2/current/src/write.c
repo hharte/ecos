@@ -31,7 +31,6 @@ int jffs2_do_new_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, uint
 
 	memset(ic, 0, sizeof(*ic));
 
-	init_MUTEX_LOCKED(&f->sem);
 	f->inocache = ic;
 	f->inocache->nlink = 1;
 	f->inocache->nodes = (struct jffs2_raw_node_ref *)f->inocache;
@@ -279,7 +278,7 @@ struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jff
 	raw->next_phys = NULL;
 
 	ret = jffs2_flash_writev(c, vecs, 2, flash_ofs, &retlen,
-				 (alloc_mode==ALLOC_GC)?0:fd->ino);
+				 (alloc_mode==ALLOC_GC)?0:je32_to_cpu(rd->pino));
 	if (ret || (retlen != sizeof(*rd) + namelen)) {
 		printk(KERN_NOTICE "Write of %zd bytes at 0x%08x failed. returned %d, retlen %zd\n", 
 			       sizeof(*rd)+namelen, flash_ofs, ret, retlen);
