@@ -1,3 +1,9 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth.c: explicitly include <cyg/io/flash_dev.h> rather than
+	just defining _FLASH_PRIVATE_
+	* tests/flash2.c (cyg_user_start): update as per the v2 testcase
+
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/flash_synth.cdl: fix testcase definitions

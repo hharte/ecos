@@ -56,8 +56,6 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/io/spi.h>
-
-#define  _FLASH_PRIVATE_
 #include <cyg/io/dataflash.h>
 
 // -------------------------------------------------------------------------- 

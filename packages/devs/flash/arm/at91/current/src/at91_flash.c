@@ -55,8 +55,8 @@
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_io.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 #include "flash.h"
 

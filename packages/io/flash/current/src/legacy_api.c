@@ -53,7 +53,6 @@
 #include <pkgconf/system.h>
 #include <pkgconf/io_flash.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
 int

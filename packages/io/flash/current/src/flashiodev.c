@@ -51,9 +51,7 @@
 //
 //==========================================================================
 
-#define _FLASH_PRIVATE_
 #include <pkgconf/io_flash.h>
-
 #include <errno.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/devtab.h>

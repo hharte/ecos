@@ -54,9 +54,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
-
 #include "strata.h"
 
 #define _si(p) ((p[1]<<8)|p[0])

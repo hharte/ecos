@@ -189,8 +189,4 @@ typedef struct {
 } cyg_io_flash_getconfig_blocksize_t;
 #endif
 
-#ifdef _FLASH_PRIVATE_
-#include <cyg/io/flash_priv.h>
-#endif
-
 #endif  // _IO_FLASH_H_

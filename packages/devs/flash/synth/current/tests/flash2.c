@@ -80,9 +80,9 @@ void cyg_user_start(void)
 void cyg_user_start(void)
 {
     int ret;
-    cyg_flashaddr_t flash_start, flash_end;
+    cyg_flashaddr_t flash_start=0, flash_end=0;
     cyg_flash_info_t info;
-    int block_size, blocks;
+    int block_size=0, blocks=0;
     cyg_flashaddr_t prog_start;
     unsigned char * ptr;
     cyg_uint32 i=0;
@@ -94,25 +94,17 @@ void cyg_user_start(void)
   
     CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_init");
 
-    ret = cyg_flash_get_limits(&flash_start,&flash_end);
-    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_get_limits");
-    diag_printf("INFO: flash_start=%p, flash_end=%p\n", 
-                flash_start, flash_end);
-    
-    ret = cyg_flash_get_block_info(&block_size, &blocks);
-    CYG_TEST_PASS_FAIL((ret == CYG_FLASH_ERR_OK),"flash_get_block_info");
-    CYG_TEST_PASS_FAIL((block_size == CYGNUM_FLASH_SYNTH_BLOCKSIZE),
-                      "correct block size");
-    CYG_TEST_PASS_FAIL((blocks == CYGNUM_FLASH_SYNTH_NUMBLOCKS),
-                      "correct number of blocks");
-    
-    diag_printf("INFO: block_size=0x%x, blocks=%d\n", block_size, blocks);
-    
     do {
       ret = cyg_flash_get_info(i, &info);
       if (ret == CYG_FLASH_ERR_OK) {
         diag_printf("INFO: Nth=%d, start=%p, end=%p\n",
                     i, info.start, info.end);
+        if (i == 0) {
+          flash_start = info.start;
+          flash_end = info.end;
+          block_size = info.block_info[0].block_size;
+          blocks = info.block_info[0].blocks;
+        }
         for (j=0;j < info.num_block_infos; j++) {
           diag_printf("INFO:\t block_size %d, blocks %d\n",
                       info.block_info[j].block_size,

@@ -1,3 +1,15 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/flash_dev.h: now provides everything needed by flash
+	device drivers.
+
+	* include/flash_priv.h: removed, subsumed by flash_dev.h
+	
+	* include/flash.h, src/flash.c, src/flashiodev.c,
+	  src/legacy_api.c, src/legacy_dev.c:
+	Replace implicit #include's of <cyg/io/flash_priv.h> with explicit
+	#include's of <cyg/io/flash_dev.h>
+
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 	
 	* include/flash_priv.h, src/flash.c, src/legacy_dev.c: remove

@@ -58,8 +58,8 @@
 #include <cyg/hal/hal_cache.h>
 #include <string.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 #include "flash_legacy.h"
 
 // When this flag is set, do not actually jump to the relocated code.

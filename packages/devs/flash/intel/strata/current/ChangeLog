@@ -1,3 +1,7 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/strata.c: leave _FLASH_PRIVATE_ to the private strata.h
+
 2005-01-26  Scott Wilkinson <scott@alliantnetworks.com>
 	* src/strata.h:
 	* src/strata.c:

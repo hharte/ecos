@@ -1,3 +1,8 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/am29xxxxx.c, include/am29xxxxx_dev.h: <cyg/io/flash_priv.h>
+	no longer exists, use <cyg/io/flash_dev.h> instead.
+
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/am29xxxxx_dev.h, src/am29xxxxx.c: eliminate

@@ -52,7 +52,8 @@
 //
 //==========================================================================
 
-#include <cyg/io/flash_priv.h>
+#include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 // Structure of data private to each flash device
 struct cyg_flash_synth_priv 

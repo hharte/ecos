@@ -1,3 +1,8 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/atlas_flash.c: include <cyg/io/flash_dev.h> explicitly
+	rather than defining _FLASH_PRIVATE_
+
 2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_atlas.cdl: Indicate we need the legacy device API

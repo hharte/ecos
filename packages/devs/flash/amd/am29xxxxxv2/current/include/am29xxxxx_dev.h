@@ -50,7 +50,7 @@
 #include <pkgconf/devs_flash_amd_am29xxxxx_v2.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/flash.h>
-#include <cyg/io/flash_priv.h>
+#include <cyg/io/flash_dev.h>
 
 externC int cyg_am29xxxxx_read_devid_8(     struct cyg_flash_dev*);
 externC int cyg_am29xxxxx_read_devid_16(    struct cyg_flash_dev*);

@@ -98,8 +98,8 @@ typedef struct cyg_dataflash_device_s
 
 //----------------------------------------------------------------------------
 
-#ifdef _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 typedef struct cyg_dataflash_flash_dev_priv_s
 {
@@ -128,8 +128,6 @@ externC struct cyg_flash_dev_funs cyg_dataflash_flash_dev_funs;
                      cyg_dataflash_priv_ ## name.block_info,                    \
                      & cyg_dataflash_priv_ ## name                              \
         )
-
-#endif // _FLASH_PRIVATE_
     
 //----------------------------------------------------------------------------
 

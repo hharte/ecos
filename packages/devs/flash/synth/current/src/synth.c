@@ -57,8 +57,8 @@
 #include <errno.h>
 #include <string.h>
 
-#define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include <cyg/io/flash_dev.h>
 
 #include "synth.h"
 

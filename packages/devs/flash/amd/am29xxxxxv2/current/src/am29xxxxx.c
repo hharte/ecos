@@ -50,7 +50,7 @@
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/infra/diag.h>
 #include <cyg/io/flash.h>
-#include <cyg/io/flash_priv.h>
+#include <cyg/io/flash_dev.h>
 #include <cyg/io/am29xxxxx_dev.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
@@ -83,7 +83,6 @@
 //  size_t  (*query)(...)
 //  int     (*erase)(...)
 //  int     (*program)(...)
-//  int     (*hwr_map_error)(...)
 //  int     (*block_lock)(...)
 //  int     (*block_unlock)(...)
 //
@@ -103,10 +102,8 @@
 // No read function need be supplied because the flash memory is
 // always directly accessible to the cpu.
 //
-// The hwr_map_error is a no-op.
-//
 // Erase, program, and the locking functions need real
-// implementations.
+// implementations, although locking is not always available.
 
 // ----------------------------------------------------------------------------
 // The protocol understood by AMD flash chips and compatibles.

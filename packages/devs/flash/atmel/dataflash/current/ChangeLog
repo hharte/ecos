@@ -1,3 +1,9 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/dataflash.h,
+	src/devs_flash_atmel_dataflash_flash_dev_funs.c: include
+	<cyg/io/flash_dev.h> explicitly rather than using _FLASH_PRIVATE_
+
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
 	(df_flash_hwr_map_error): this is now internal to the driver, no

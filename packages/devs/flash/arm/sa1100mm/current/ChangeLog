@@ -1,3 +1,8 @@
+2004-12-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/sa1100mm_flash.c: explicitly include <cyg/io/flash_dev.h>
+	rather than just defining _FLASH_PRIVATE_
+
 2004-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/flash_sa1100mm.cdl: Indicate we need the legacy device API.
