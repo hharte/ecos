@@ -80,55 +80,61 @@ static int dummy_printf( const char *fmt, ... ) {return 0;}
 static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
-  struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
+  int stat = cyg_flash_init( &dummy_printf );
+
+  return (stat == CYG_FLASH_ERR_OK);
+} // flashiodev_init()
+
+static Cyg_ErrNo
+flashiodev_lookup(struct cyg_devtab_entry **tab,
+                  struct cyg_devtab_entry  *sub_tab,
+                  const char *name) 
+{
+  struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)(*tab)->priv;
   cyg_flash_info_t info;
   cyg_uint32 i;
+  int stat;
   
-  int stat = cyg_flash_init( &dummy_printf );
-  if ( stat == 0 ) {
-    if (dev->use_fis) {
-      CYG_ADDRESS	flash_base;
-      unsigned long	size;
+  if (dev->use_fis) {
+    CYG_ADDRESS	flash_base;
+    unsigned long	size;
     
-      if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
-                                      dev->fis_name,
-                                      &flash_base))
-        return false;
-      if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
-                                      dev->fis_name,
-                                      &size))
-        return false;
-    
-      dev->start = flash_base;
-      dev->end = flash_base + size;
+    if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
+                                    dev->fis_name,
+                                    &flash_base))
+      return ENODEV;
+    if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
+                                    dev->fis_name,
+                                    &size))
+      return ENODEV;
+    dev->start = flash_base;
+    dev->end = flash_base + size;
+  }
+  if (dev->use_offset) {
+    // dev->start the contain the offset to the beginning of the block
+    // dev->end is the length of the block
+    cyg_flashaddr_t start, end;
+    cyg_flash_get_limits(&start, &end);
+    dev->start = dev->start + start;
+    dev->end = dev->start + dev->end;
+  }
+  if (dev->use_absolute) {
+    // dev->start is the absolute address of the start
+    // dev->end is the length;
+    dev->end = dev->start + dev->end;
+  }
+  
+  stat = cyg_flash_get_info_addr(dev->start, &info);
+  if (stat != CYG_FLASH_ERR_OK) {
+    return ENODEV;
     }
-    if (dev->use_offset) {
-      // dev->start the contain the offset to the beginning of the block
-      // dev->end is the length of the block
-      cyg_flashaddr_t start, end;
-      cyg_flash_get_limits(&start, &end);
-      dev->start = dev->start + start;
-      dev->end = dev->start + dev->end;
-    }
-    if (dev->use_absolute) {
-      // dev->start is the absolute address of the start
-      // dev->end is the length;
-      dev->end = dev->start + dev->end;
-    }
-
-    stat = cyg_flash_get_info_addr(dev->start, &info);
-    if (stat != CYG_FLASH_ERR_OK) {
-      return false;
-    }
-    dev->block_size = 0;
-    for (i=0; i < info.num_block_infos; i++){
-      dev->block_size = MAX(dev->block_size, info.block_info[i].block_size);
-    }
-    
-    return true;
-  } else
-    return false;
-} // flashiodev_init()
+  dev->block_size = 0;
+  for (i=0; i < info.num_block_infos; i++){
+    dev->block_size = MAX(dev->block_size, info.block_info[i].block_size);
+  }
+  
+  return ENOERR;
+} // flashiodev_lookup()
 
 static Cyg_ErrNo
 flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
@@ -136,10 +142,9 @@ flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
 {
   struct cyg_devtab_entry *tab = (struct cyg_devtab_entry *)handle;
   struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
-  
+
   cyg_flashaddr_t startpos = dev->start + pos;
   Cyg_ErrNo err;
-  
   
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
   cyg_flashaddr_t endpos = startpos + *len - 1;
@@ -188,7 +193,7 @@ flashiodev_get_config( cyg_io_handle_t handle,
 {
   struct cyg_devtab_entry *tab = (struct cyg_devtab_entry *)handle;
   struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
-  
+
   switch (key) {
   case CYG_IO_GET_CONFIG_FLASH_ERASE:
     {
@@ -216,7 +221,7 @@ flashiodev_get_config( cyg_io_handle_t handle,
       {
         cyg_io_flash_getconfig_devsize_t *d =
           (cyg_io_flash_getconfig_devsize_t *)buf;
-        
+
         d->dev_size = dev->end - dev->start;
       }
       return ENOERR;
@@ -342,7 +347,7 @@ BLOCK_DEVTAB_ENTRY( cyg_io_flashdev1,
                     0,
                     &cyg_io_flashdev1_ops,
                     &flashiodev_init,
-                    0, // No lookup required
+                    &flashiodev_lookup,
                     &priv1 );
 
 
@@ -386,7 +391,7 @@ BLOCK_DEVTAB_ENTRY( cyg_io_flashdev2,
                     0,
                     &cyg_io_flashdev1_ops,
                     &flashiodev_init,
-                    0, // No lookup required
+                    &flashiodev_lookup,
                     &priv2 );
 #endif
 

@@ -1,3 +1,13 @@
+2004-08-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flashiodev.c (flashiodev_lookup): Moved most of the
+	flashiodev_init into this new function. This fixed the ordering
+	issue with redboot startup. When doing a FIS name lookup in
+	flashiodev_init, redboot was not yet initialized so lookup
+	failed. Moving this into flashiodev_lookup solves this problem.
+	Its now possible for redboot to mount the jffs2 filesystem with 
+	-d /dev/flash1.
+
 2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flashiodev.c: Fix typo in macro and configuration options
