@@ -95,7 +95,7 @@ struct jffs2_sb_info {
 	   to an obsoleted node. I don't like this. Alternatives welcomed. */
 	struct semaphore erase_free_sem;
 
-#ifdef CONFIG_JFFS2_FS_NAND
+#if defined CONFIG_JFFS2_FS_NAND || defined CONFIG_JFFS2_FS_NOR_ECC
 	/* Write-behind buffer for NAND flash */
 	unsigned char *wbuf;
 	uint32_t wbuf_ofs;

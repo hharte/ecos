@@ -1671,7 +1671,8 @@ unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
 	/* FIXME: This works only with one file system mounted at a time */
 	int ret;
 
-	ret = jffs2_read_inode_range(c, f, gc_buffer, offset, PAGE_CACHE_SIZE);
+	ret = jffs2_read_inode_range(c, f, gc_buffer, 
+				     offset & ~(PAGE_CACHE_SIZE-1), PAGE_CACHE_SIZE);
 	if (ret)
 		return ERR_PTR(ret);
 

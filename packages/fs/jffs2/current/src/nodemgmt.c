@@ -549,6 +549,59 @@ void jffs2_mark_node_obsolete(struct jffs2_sb_info *c, struct jffs2_raw_node_ref
 		printk(KERN_WARNING "Short write in obliterating obsoleted node at 0x%08x: %zd\n", ref_offset(ref), retlen);
 		return;
 	}
+
+	/* Nodes which have been marked obsolete no longer need to be
+	   associated with any inode. Remove them from the per-inode list */
+	if (ref->next_in_ino) {
+		struct jffs2_inode_cache *ic;
+		struct jffs2_raw_node_ref **p;
+
+		ic = jffs2_raw_ref_to_ic(ref);
+		for (p = &ic->nodes; (*p) != ref; p = &((*p)->next_in_ino))
+			;
+
+		*p = ref->next_in_ino;
+		ref->next_in_ino = NULL;
+	}
+
+
+	/* Merge with the next node in the physical list, if there is one
+	   and if it's also obsolete. */
+	if (ref->next_phys && ref_obsolete(ref->next_phys) ) {
+		struct jffs2_raw_node_ref *n = ref->next_phys;
+		
+		ref->__totlen += n->__totlen;
+		ref->next_phys = n->next_phys;
+                if (jeb->last_node == n) jeb->last_node = ref;
+		if (jeb->gc_node == n) {
+			/* gc will be happy continuing gc on this node */
+			jeb->gc_node=ref;
+		}
+		BUG_ON(n->next_in_ino);
+		jffs2_free_raw_node_ref(n);
+	}
+	
+	/* Also merge with the previous node in the list, if there is one
+	   and that one is obsolete */
+	if (ref != jeb->first_node ) {
+		struct jffs2_raw_node_ref *p = jeb->first_node;
+		
+		while (p->next_phys != ref)
+			p = p->next_phys;
+		
+		if (ref_obsolete(p) ) {
+			p->__totlen += ref->__totlen;
+			if (jeb->last_node == ref) {
+				jeb->last_node = p;
+			}
+			if (jeb->gc_node == ref) {
+				/* gc will be happy continuing gc on this node */
+				jeb->gc_node=p;
+			}
+			p->next_phys = ref->next_phys;
+			jffs2_free_raw_node_ref(ref);
+		}
+	}
 }
 
 #if CONFIG_JFFS2_FS_DEBUG > 0
