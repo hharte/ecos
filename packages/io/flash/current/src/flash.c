@@ -343,6 +343,22 @@ cyg_flash_block_size(const cyg_flashaddr_t flash_base)
   return flash_block_size(dev, flash_base);
 }
 
+// Return the first address of a block. The flash might not be aligned
+// in terms of its block size. So we have to be careful and use
+// offsets.
+static inline cyg_flashaddr_t 
+flash_block_begin(cyg_flashaddr_t addr, struct cyg_flash_dev *dev)
+{
+  size_t block_size;
+  cyg_flashaddr_t offset;
+  
+  block_size = flash_block_size(dev, addr);
+  
+  offset = addr - dev->start;
+  offset = (offset / block_size) * block_size;
+  return offset + dev->start;
+}
+
 
 __externC int 
 cyg_flash_erase(const cyg_flashaddr_t flash_base, 
@@ -377,8 +393,7 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
     end_addr = dev->end;
   }
   
-  block_size = flash_block_size(dev, addr);
-  block = (cyg_flashaddr_t)((size_t)addr & ~(block_size - 1));
+  block = flash_block_begin(addr, dev);
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
@@ -390,6 +405,8 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
     int i;
     unsigned char *dp;
     bool erased = true;
+
+    block_size = flash_block_size(dev, addr);
 
     // If there is a read function it probably means the flash
     // cannot be read directly.
@@ -412,7 +429,7 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
       *err_address = block;
       break;
     }
-    block += flash_block_size(dev, block);
+    block += block_size;
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
@@ -488,7 +505,7 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
     if (size > block_size) size = block_size;
     
     // Writing from the middle of a block?
-    offset = (size_t)addr & (block_size-1);
+    offset = (size_t)addr % block_size;
     if (offset)
       size = MIN(block_size - offset, size);
     stat = dev->funs->flash_program(dev, addr, ram, size);
@@ -576,7 +593,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
     if (size > block_size) size = block_size;
     
     // Reading from the middle of a block?
-    offset = (size_t)addr & (block_size-1);
+    offset = (size_t)addr % block_size;
     if (offset)
       size = MIN(block_size - offset, size);
     if (dev->funs->flash_read) {
@@ -651,8 +668,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
     end_addr = dev->end;
   }
   
-  block_size = flash_block_size(dev, addr);
-  block = (cyg_flashaddr_t)((size_t)addr & ~(block_size - 1));
+  block = flash_block_begin(addr, dev);
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Locking from %p-%p: ", (void*)block, (void*)end_addr);
@@ -685,7 +701,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
     return stat;
   }
   
-  if (flash_base + len - 1 > dev->end) {        // Off by one?
+  if (flash_base + len - 1 > dev->end) {        
     // The region to erase if bigger than this driver handles. Recurse
     return cyg_flash_lock(dev->end+1, 
                           len - (dev->end - flash_base) - 1,
@@ -728,8 +744,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
     end_addr = dev->end;
   }
   
-  block_size = flash_block_size(dev, addr);
-  block = (cyg_flashaddr_t)((size_t)addr & ~(block_size - 1));
+  block =   block = flash_block_begin(addr, dev);
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Unlocking from %p-%p: ", (void*)block, (void*)end_addr);
@@ -762,7 +777,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
     return stat;
   }
   
-  if (flash_base + len - 1 > dev->end) {        // Off by one?
+  if (flash_base + len - 1 > dev->end) {        
     // The region to erase if bigger than this driver handles. Recurse
     return cyg_flash_lock(dev->end+1, 
                           len - (dev->end - flash_base) - 1,

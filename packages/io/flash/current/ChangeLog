@@ -1,3 +1,8 @@
+2004-09-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c: Support flash blocks of arbitary size. The
+	DataFlash devices for example have block of 528 bytes.
+
 2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * removed the functions cyg_flash_get_limits and
