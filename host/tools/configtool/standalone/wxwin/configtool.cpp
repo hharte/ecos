@@ -1037,9 +1037,10 @@ void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )
             // wxSetWorkingDirectory(pDoc->GetBuildTree());
 
             m_pipedProcess = new ecPipedProcess;
-            int pid = wxExecute(strCmd, FALSE, m_pipedProcess);
+            long pid = wxExecute(strCmd, FALSE, m_pipedProcess);
             if ( pid )
             {
+                m_pipedProcess->SetPid(pid);
                 // wxLogStatus(_T("Process %ld (%s) launched."), pid, cmd.c_str());
             }
             else

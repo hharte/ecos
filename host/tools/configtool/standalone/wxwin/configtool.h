@@ -242,6 +242,7 @@ public:
     {
         Redirect();
         m_pingTimer.Start(100);
+        m_pid = 0;
     }
     ~ecPipedProcess()
     {
@@ -254,8 +255,13 @@ public:
 //// Operations
     virtual bool HasInput();
 
+//// Accessors
+    void SetPid(long pid) { m_pid = pid; }
+    long GetPid() const { return m_pid; }
+
 protected:
     ecPingTimer m_pingTimer;
+    long        m_pid;
 };
 
 // IDs for the controls and the menu commands

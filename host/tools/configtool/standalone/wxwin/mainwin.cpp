@@ -1508,7 +1508,11 @@ void ecMainFrame::OnBuildTests(wxCommandEvent& event)
 void ecMainFrame::OnStopBuild(wxCommandEvent& event)
 {
     if (wxGetApp().m_pipedProcess)
+    {
+        long pid = wxGetApp().m_pipedProcess->GetPid();
         wxGetApp().m_pipedProcess->Detach();
+        ecKill(pid, wxSIGKILL);
+    }
 }
 
 void ecMainFrame::OnClean(wxCommandEvent& event)
