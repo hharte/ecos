@@ -64,7 +64,6 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
-
 //----------------------------------------------------------------------------
 // Common device details.
 #define FLASH_Read_ID                   FLASHWORD( 0x90 )
@@ -170,7 +169,7 @@ sst_init(struct cyg_flash_dev *dev)
   
   // Hard wired for now
   dev->end = dev->start + 
-    (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES);
+    (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES) -1;
   dev->num_block_infos = 1;
   priv->block_info[0].blocks = FLASH_NUM_REGIONS * CYGNUM_FLASH_SERIES;
   priv->block_info[0].block_size = FLASH_BLOCK_SIZE;
@@ -266,7 +265,6 @@ sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
             }
             prev_state = state;
         }
-
         // Verify loaded data bytes
         while (len > 0) {
             if (*addr_ptr != FLASH_BlankValue) {
@@ -278,7 +276,6 @@ sst_erase_block(struct cyg_flash_dev *dev, cyg_flashaddr_t block_base)
             len -= sizeof(*addr_ptr);
         }
     }
-
     return CYG_FLASH_ERR_OK;
 }
 

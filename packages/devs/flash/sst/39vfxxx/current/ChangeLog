@@ -1,3 +1,8 @@
+2004-09-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_sst_39vfxxx.inl: Set the end address to the last
+	valid address in flash, not the first invalid address.
+
 2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flash_sst_39vfxxx.inl: The structure declared by
