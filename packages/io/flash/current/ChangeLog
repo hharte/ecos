@@ -1,3 +1,8 @@
+2004-11-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/flash.c: encapsulate various optional bits of code in
+	macros, to cut down on the #ifdef's in the main code
+
 2004-11-20  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/io_flash.cdl, src/flash.c(cyg_flash_read): add an interface

@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, Andrew Lunn
+// Contributors: gthomas, Andrew Lunn, Bart Veer
 // Date:         2000-07-26
 // Purpose:      
 // Description:  
@@ -74,6 +74,36 @@
 #undef RAM_FLASH_DEV_DEBUG
 #if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
 # warning "Can only enable the flash debugging when configured for RAM startup"
+#endif
+
+// Optional verbosity. Using a macro here avoids lots of ifdefs in the
+// rest of the code.
+#ifdef CYGSEM_IO_FLASH_CHATTER
+# define CHATTER(_dev_, _fmt_, ...) (*(_dev_)->pf)((_fmt_), ## __VA_ARGS__)
+#else
+# define CHATTER(_dev_, _fmt_, ...) CYG_EMPTY_STATEMENT
+#endif
+
+// Per-thread locking. Again using macros avoids lots of ifdefs
+#ifdef CYGPKG_KERNEL
+# define LOCK_INIT(_dev_)   cyg_mutex_init(&((_dev_)->mutex))
+# define LOCK(_dev_)        cyg_mutex_lock(&((_dev_)->mutex))
+# define UNLOCK(_dev_)      cyg_mutex_unlock(&((_dev_)->mutex))
+#else
+# define LOCK_INIT(_dev_)   CYG_EMPTY_STATEMENT
+# define LOCK(_dev_)        CYG_EMPTY_STATEMENT
+# define UNLOCK(_dev_)      CYG_EMPTY_STATEMENT
+#endif
+
+// Software write-protect. Very rarely used.
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+# define CHECK_SOFT_WRITE_PROTECT(_addr_, _len_)    \
+  CYG_MACRO_START                                   \
+  if (plf_flash_query_soft_wp((_addr_), (_len_)))   \
+    return CYG_FLASH_ERR_PROTECT;                   \
+  CYG_MACRO_END
+#else
+#define CHECK_SOFT_WRITE_PROTECT(_addr_, _len_) CYG_EMPTY_STATEMENT
 #endif
 
 // Has the FLASH IO library been initialise?
@@ -151,9 +181,7 @@ cyg_flash_init(cyg_flash_printf *pf)
   
   for (dev = &cyg_flashdevtab[0]; dev != &cyg_flashdevtab_end; dev++) {
     dev->pf = pf;
-#ifdef CYGPKG_KERNEL
-    cyg_mutex_init(&dev->mutex);
-#endif
+    LOCK_INIT(dev);
     
     err = dev->funs->flash_init(dev);
     if (err != CYG_FLASH_ERR_OK) {
@@ -259,7 +287,7 @@ cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
 }
 
 #ifdef CYGPKG_KERNEL
-//Lock the mutex's for a range of addresses
+// Lock the mutex's for a range of addresses
 __externC int
 cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len) 
 {
@@ -287,7 +315,7 @@ cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len)
   return CYG_FLASH_ERR_INVALID;
 }
 
-//Unlock the mutex's for a range of addresses
+// Unlock the mutex's for a range of addresses
 __externC int
 cyg_flash_mutex_unlock(const cyg_flashaddr_t from, const size_t len) 
 {
@@ -380,20 +408,15 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
-#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-  if (plf_flash_query_soft_wp(flash_base,len))
-    return CYG_FLASH_ERR_PROTECT;
-#endif
-  
   for (dev = flash_head; 
        dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
+
+  CHECK_SOFT_WRITE_PROTECT(flash_base, len);
   
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_lock(&dev->mutex);
-#endif
+  LOCK(dev);
 
   // Check whether or not we are going past the end of this device, on
   // to the next one. If so the next device will be handled by a
@@ -407,9 +430,7 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
   block         = flash_block_begin(flash_base, dev);
   erase_count   = (end_addr + 1) - block;
 
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
-#endif
+  CHATTER(dev, "... Erase from %p-%p: ", (void*)block, (void*)end_addr);
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
   FLASH_Enable(flash_base, end_addr);
@@ -446,18 +467,12 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
     }
     block       += block_size;
     erase_count -= block_size;
-#ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf(".");
-#endif
+    CHATTER(dev, ".");
   }
   FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("\n");
-#endif
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_unlock(&dev->mutex);
-#endif
+  CHATTER(dev, "\n");
+  UNLOCK(dev);
   if (stat != CYG_FLASH_ERR_OK) {
     return stat;
   }
@@ -488,21 +503,16 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
   int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-  if (plf_flash_query_soft_wp(addr,len))
-    return CYG_FLASH_ERR_PROTECT;
-#endif
-  
+
   for (dev = flash_head; 
        dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
+
+  CHECK_SOFT_WRITE_PROTECT(flash_base, len);
   
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_lock(&dev->mutex);
-#endif
+  LOCK(dev);
   addr = flash_base;
   if (len > (dev->end + 1 - flash_base)) {
     end_addr = dev->end;
@@ -520,10 +530,7 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
       offset = addr - block;
   }
   
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Program from %p-%p to %p: ", ram_base, 
-          ((CYG_ADDRESS)ram_base)+write_count, addr);
-#endif
+  CHATTER(dev, "... Program from %p-%p to %p: ", ram_base, ((CYG_ADDRESS)ram_base)+write_count, addr);
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
   FLASH_Enable(flash_base, end_addr);
@@ -544,30 +551,22 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
     if (CYG_FLASH_ERR_OK == stat) // Claims to be OK
       if (!dev->funs->flash_read && memcmp((void *)addr, ram, this_write) != 0) {                
         stat = CYG_FLASH_ERR_DRV_VERIFY;
-#ifdef CYGSEM_IO_FLASH_CHATTER
-        dev->pf("V");
-#endif
+        CHATTER(dev, "V");
       }
 #endif
     if (CYG_FLASH_ERR_OK != stat && err_address) {
       *err_address = addr;
       break;
     }
-#ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf(".");
-#endif
+    CHATTER(dev, ".");
     write_count -= this_write;
     addr        += this_write;
     ram         += this_write;
   }
   FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
-#ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf("\n");
-#endif
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_unlock(&dev->mutex);
-#endif
+  CHATTER(dev, "\n");
+  UNLOCK(dev);
   if (stat != CYG_FLASH_ERR_OK) {
     return (stat);
   }
@@ -599,9 +598,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
 
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_lock(&dev->mutex);
-#endif
+  LOCK(dev);
   addr = flash_base;
   if (len > (dev->end + 1 - flash_base)) {
       end_addr = dev->end;
@@ -610,9 +607,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
   }
   read_count = (end_addr + 1) - flash_base;
 
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Read from %p-%p to %p: ", addr, end_addr, ram_base);
-#endif
+  CHATTER(dev, "... Read from %p-%p to %p: ", addr, end_addr, ram_base);
 
   // If the flash is directly accessible, just read it in one go. This
   // still happens with the mutex locked to protect against concurrent
@@ -654,9 +649,7 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
               *err_address = addr;
               break;
           }
-#ifdef CYGSEM_IO_FLASH_CHATTER
-          dev->pf(".");
-#endif
+          CHATTER(dev, ".");
           read_count  -= this_read;
           addr        += this_read;
           ram         += this_read;
@@ -665,12 +658,8 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
       HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #endif      
   }
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("\n");
-#endif
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_unlock(&dev->mutex);
-#endif
+  CHATTER(dev, "\n");
+  UNLOCK(dev);
   if (stat != CYG_FLASH_ERR_OK) {
     return (stat);
   }
@@ -695,12 +684,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-  if (plf_flash_query_soft_wp(addr,len))
-    return CYG_FLASH_ERR_PROTECT;
-#endif
-  
+
   for (dev = flash_head; 
        dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
@@ -708,9 +692,9 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   if (!dev) return CYG_FLASH_ERR_INVALID;
   if (!dev->funs->flash_block_lock) return CYG_FLASH_ERR_INVALID;
 
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_lock(&dev->mutex);
-#endif
+  CHECK_SOFT_WRITE_PROTECT(flash_base, len);
+  
+  LOCK(dev);
   if (len > (dev->end + 1 - flash_base)) {
       end_addr = dev->end;
   } else {
@@ -719,9 +703,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   block         = flash_block_begin(flash_base, dev);
   lock_count    = (end_addr + 1) - block;
   
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Locking from %p-%p: ", (void*)block, (void*)end_addr);
-#endif
+  CHATTER(dev, "... Locking from %p-%p: ", (void*)block, (void*)end_addr);
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
   FLASH_Enable(flash_base, end_addr);
@@ -739,18 +721,12 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
     }
     block       += block_size;
     lock_count  -= block_size;
-#ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf(".");
-#endif
+    CHATTER(dev, ".");
   }
   FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("\n");
-#endif
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_unlock(&dev->mutex);
-#endif
+  CHATTER(dev, "\n");
+  UNLOCK(dev);
   if (stat != CYG_FLASH_ERR_OK) {
     return stat;
   }
@@ -777,22 +753,17 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
   int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
-  
-#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-  if (plf_flash_query_soft_wp(addr,len))
-    return CYG_FLASH_ERR_PROTECT;
-#endif
-  
+
   for (dev = flash_head; 
        dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
   if (!dev->funs->flash_block_unlock) return CYG_FLASH_ERR_INVALID;
+
+  CHECK_SOFT_WRITE_PROTECT(flash_base, len);
   
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_lock(&dev->mutex);
-#endif
+  LOCK(dev);
   if (len > (dev->end + 1 - flash_base)) {
       end_addr = dev->end;
   } else {
@@ -801,9 +772,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
   block         = flash_block_begin(flash_base, dev);
   unlock_count  = (end_addr + 1) - block;
   
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Unlocking from %p-%p: ", (void*)block, (void*)end_addr);
-#endif
+  CHATTER(dev, "... Unlocking from %p-%p: ", (void*)block, (void*)end_addr);
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
   FLASH_Enable(flash_base, end_addr);
@@ -822,18 +791,12 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
     block           += block_size;
     unlock_count    -= block_size;
     
-#ifdef CYGSEM_IO_FLASH_CHATTER
-    dev->pf(".");
-#endif
+    CHATTER(dev, ".");
   }
   FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
-#ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("\n");
-#endif
-#ifdef CYGPKG_KERNEL
-  cyg_mutex_unlock(&dev->mutex);
-#endif
+  CHATTER(dev, "\n");
+  UNLOCK(dev);
   if (stat != CYG_FLASH_ERR_OK) {
     return stat;
   }
