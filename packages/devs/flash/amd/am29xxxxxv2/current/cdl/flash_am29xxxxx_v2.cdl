@@ -1,0 +1,141 @@
+# ====================================================================
+#
+#      flash_am29xxxxx_v2.cdl
+#
+#      Device driver for AMD am29xxxxx flash chips and compatibles
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2004 eCosCentric Ltd
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Contributors:   
+# Date:           2004-11-05
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 {
+    display	"AMD am29xxxxx flash memory support"
+    parent	CYGPKG_IO_FLASH
+    active_if	CYGPKG_IO_FLASH
+    implements	CYGHWR_IO_FLASH_DEVICE
+    implements	CYGHWR_IO_FLASH_DEVICE_V2
+    include_dir	cyg/io
+    compile	am29xxxxx.c
+
+    description "
+        Flash memory support for AMD AM29xxxxx devices and compatibles.
+        This driver implements the V2 flash driver API"
+
+    cdl_option CYGNUM_DEVS_FLASH_AMD_AM29XXXXX_V2_ERASE_REGIONS {
+	display		"Number of different erase regions"
+	flavor		data
+	default_value	4
+	legal_values	1 to 64
+	description "
+            Flash devices vary widely in the way the various flash blocks are
+            laid out. In uniform devices all flash blocks are the same size,
+            for example 64 blocks of 64K each. Other devices have a boot block,
+            where one of the big blocks is subdivided into a number of smaller
+            ones. For example there could be a 16K block, followed by two 8K blocks,
+            then a 32K block, and finally 63 64K blocks. Each sequence of blocks
+            of a given size is known as an erase region, so a uniform device has
+            a single erase region and the above boot block device has four
+            erase regions. The driver needs to know the maximum number of erase
+            regions that may be present, especially if CFI is used to determine
+            the block details at run-time. Typically this option is controlled
+            by a requires property in the platform HAL, so users do not need
+            to edit it."
+    }
+
+    cdl_option CYGNUM_DEVS_FLASH_AMD_AM29XXXXX_V2_ERASE_TIMEOUT {
+	display		"Maximum number of iterations during a block erase"
+	flavor		data
+	default_value	100000000
+	description "
+            The driver needs to poll the flash device during a block erase
+            to detect when the operation has completed. This option controls
+            the maximum number of iterations of the polling loop, before the
+            driver will give up. The timeout should never actually trigger,
+            as long as the hardware is functioning correctly. If a timeout
+            does occur the flash device may be left in an inconsistent state.
+            If very slow flash devices are used then the platform HAL may
+            require a larger timeout."
+    }
+    
+    cdl_option CYGNUM_DEVS_FLASH_AMD_AM29XXXXX_V2_PROGRAM_TIMEOUT {
+	display		"Maximum number of iterations during a write"
+	flavor		data
+	default_value	10000000
+	description "
+            The driver needs to poll the flash device when writing data
+            to detect when the operation has completed. This option controls
+            the maximum number of iterations of the polling loop, before the
+            driver will give up. The timeout should never actually trigger,
+            as long as the hardware is functioning correctly. If a timeout
+            does occur the flash device may be left in an inconsistent state.
+            If very slow flash devices are used then the platform HAL may
+            require a larger timeout."
+    }
+    
+    cdl_component CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2_OPTIONS {
+        display "AMD AM29xxxxx driver build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building the AMD am29xxxxx
+            flash driver, and details of which tests are built."
+
+        cdl_option CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the AMD am29xxxxx flash driver. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the AMD am29xxxxx flash driver. These flags
+                are removed from the set of global flags if present."
+        }
+    }
+}

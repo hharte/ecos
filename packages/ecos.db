@@ -181,6 +181,16 @@ package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
            flash memory devices."
 }
 
+package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX_V2 {
+	alias 		{ "Support for AMD AM29xxxxx flash memory" flash_amd_am29xxxxx_v2 }
+	directory	devs/flash/amd/am29xxxxxv2
+	script		flash_am29xxxxx_v2.cdl
+	hardware
+        description "
+           This package contains hardware support for AMD AM29xxxxx
+           flash memory devices."
+}
+
 package CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX {
 	alias 		{ "Support for Atmel AT29Cxxxx flash memory" flash_atmel_at29cxxxx }
 	directory	devs/flash/atmel/at29cxxxx
