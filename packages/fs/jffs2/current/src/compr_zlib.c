@@ -17,8 +17,6 @@
 
 #include <linux/config.h>
 #include <linux/kernel.h>
-#include <linux/vmalloc.h>
-#include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/zlib.h>
 #include <linux/zutil.h>
@@ -39,6 +37,9 @@ static DECLARE_MUTEX(inflate_sem);
 static z_stream inf_strm, def_strm;
 
 #ifdef __KERNEL__ /* Linux-only */
+#include <linux/vmalloc.h>
+#include <linux/init.h>
+
 int __init jffs2_zlib_init(void)
 {
 	def_strm.workspace = vmalloc(zlib_deflate_workspacesize());

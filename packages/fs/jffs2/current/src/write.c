@@ -373,8 +373,8 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			break;
 		}
 		down(&f->sem);
-		datalen = writelen;
-		cdatalen = min_t(uint32_t, alloclen - sizeof(*ri), writelen);
+		datalen = min_t(uint32_t, writelen, PAGE_CACHE_SIZE - (offset & (PAGE_CACHE_SIZE-1)));
+		cdatalen = min_t(uint32_t, alloclen - sizeof(*ri), datalen);
 
 		comprtype = jffs2_compress(buf, &comprbuf, &datalen, &cdatalen);
 
