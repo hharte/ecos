@@ -65,13 +65,26 @@ cdl_package CYGPKG_DEVS_FLASH_STRATA_V2 {
     description   "FLASH memory device support for Intel StrataFlash using
                    the V2 driver API"
 
-    cdl_option  CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING {
+    cdl_component CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING {
 	display       "Flash device implements locking"
 	default_value 1
         implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
         description   "
             This option controls whether the driver will include code
             to allow locking and unlocking of blocks."
+
+        cdl_option CYGNUM_DEVS_FLASH_STRATA_V2_MAX_BLOCKS {
+             display       "Maximum number of blocks the driver supports" 
+             flavor        data
+             default_value 128
+             description   "
+                 The strata devices do not support unlocking an 
+                 individual block. Instead it is necassary to unlock
+                 all the blocks in one operation and then lock all those
+                 blocks that should be blocked. To do this we need an array
+                 containing the current status of the blocks. This controls the 
+                 size of that array."
+        }       
     }
 
     cdl_option  CYGOPT_DEV_FLASH_STATE_V2_DUMP_UNKNOWN {

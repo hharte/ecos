@@ -434,7 +434,6 @@ strata_program_buf (struct cyg_flash_dev *dev,
 // then reset the regions which are known to be locked.
 //
 
-#define MAX_FLASH_BLOCKS 128
 #define FLASH_LOCK_MASK 0x1    // which bit of the read query has the lock bit
 
 static int
@@ -447,7 +446,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
 #ifndef CYGOPT_FLASH_IS_SYNCHRONOUS
     int i;
     volatile flash_t *bp, *bpv, *block;
-    unsigned char is_locked[MAX_FLASH_BLOCKS];
+    unsigned char is_locked[CYGNUM_DEVS_FLASH_STRATA_V2_MAX_BLOCKS];
 #endif
 
     // Get base address and map addresses to virtual addresses
