@@ -115,7 +115,7 @@ int jffs2_prepare_write (struct inode *d_inode, struct page *pg, unsigned start,
 		ri.node_crc = cpu_to_je32(crc32(0, &ri, sizeof(ri)-8));
 		ri.data_crc = cpu_to_je32(0);
 		
-		fn = jffs2_write_dnode(c, f, &ri, NULL, 0, phys_ofs, NULL);
+		fn = jffs2_write_dnode(c, f, &ri, NULL, 0, phys_ofs, ALLOC_NORMAL);
 		jffs2_complete_reservation(c);
 		if (IS_ERR(fn)) {
 			ret = PTR_ERR(fn);
