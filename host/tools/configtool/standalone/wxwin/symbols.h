@@ -43,5 +43,5 @@
 //
 //===========================================================================
 
-#define ecCONFIGURATION_TOOL_VERSION        2.05
+#define ecCONFIGURATION_TOOL_VERSION        2.07
 

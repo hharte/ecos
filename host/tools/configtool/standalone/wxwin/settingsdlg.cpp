@@ -568,7 +568,7 @@ void ecViewerOptionsDialog::CreateControls( wxPanel *parent)
     item0->Add( item8, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     // Disable this option because we don't yet have a built-in browser
-#if !ecUSE_EXPERIMENTAL_CODE
+#if 0 // !ecUSE_EXPERIMENTAL_CODE
     FindWindow(ecID_VIEWER_DIALOG_DOC_BUILTIN)->Enable(FALSE);
 #endif
 

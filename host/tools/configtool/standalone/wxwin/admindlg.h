@@ -70,7 +70,7 @@ public:
     void CreateControls(wxWindow* parent);
 	bool FindUserToolsPath();
 	bool RemovePackageVersion (wxTreeItemId hTreeItem);
-	bool EvalTclFile (int nargc, const wxString& argv);
+	bool EvalTclFile (int nargc, const wxString& argv, const wxString& msg);
 	void ClearPackageTree ();
 	bool PopulatePackageTree (const wxString& packageDatabase);
 

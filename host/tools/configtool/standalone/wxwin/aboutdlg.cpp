@@ -52,6 +52,7 @@
 #include "wx/wxhtml.h"
 #include "wx/datetime.h"
 #include "wx/file.h"
+#include "wx/fs_mem.h"
 
 #ifdef __BORLANDC__
     #pragma hdrstop
@@ -81,23 +82,28 @@ ecAboutDialog::ecAboutDialog( wxWindow *parent, wxWindowID id, const wxString &t
 
 bool ecAboutDialog::AddControls(wxWindow* parent)
 {
-    wxSetWorkingDirectory(wxGetApp().GetAppDir());
-    wxString htmlFile(wxGetApp().GetFullAppPath(wxT("about.htm")));
-
     wxString htmlText;
-    if (wxFileExists(htmlFile))
+
+    if (!wxGetApp().GetMemoryTextResource(wxT("about.htm"), htmlText))
     {
-        wxFile file;
-        file.Open(htmlFile, wxFile::read);
-        long len = file.Length();
-        char* buf = htmlText.GetWriteBuf(len + 1);
-        file.Read(buf, len);
-        buf[len] = 0;
-        htmlText.UngetWriteBuf();
+        wxSetWorkingDirectory(wxGetApp().GetAppDir());
+        wxString htmlFile(wxGetApp().GetFullAppPath(wxT("about.htm")));
+        
+        if (wxFileExists(htmlFile))
+        {
+            wxFile file;
+            file.Open(htmlFile, wxFile::read);
+            long len = file.Length();
+            char* buf = htmlText.GetWriteBuf(len + 1);
+            file.Read(buf, len);
+            buf[len] = 0;
+            htmlText.UngetWriteBuf();
+        }
     }
-    else
+
+    if (htmlText.IsEmpty())
     {
-        htmlText.Printf(wxT("<html><head><title>Warning</title></head><body><P>Sorry, could not find file for About dialog, %s<P></body></html>"), (const wxChar*) htmlFile);
+        htmlText.Printf(wxT("<html><head><title>Warning</title></head><body><P>Sorry, could not find resource for About dialog<P></body></html>"));
     }
 
     // Customize the HTML
