@@ -243,6 +243,10 @@ public:
 
     // Font settings
     wxWindowSettings        m_windowSettings;
+
+    // Packages dialog settings
+    bool                    m_omitHardwarePackages;
+    bool                    m_matchPackageNamesExactly;
 };
 
 #endif

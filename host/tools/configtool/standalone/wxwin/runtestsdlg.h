@@ -59,7 +59,7 @@
 /*
  * ecRunTestsTimer
  * Just to force idle processing now and again while
- * the tests are runnin
+ * the tests are running
  */
 
 class ecRunTestsTimer: public wxTimer
