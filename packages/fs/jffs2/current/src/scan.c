@@ -104,6 +104,10 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		else
 			buf_size = PAGE_SIZE;
 
+		/* Respect kmalloc limitations */
+		if (buf_size > 128*1024)
+			buf_size = 128*1024;
+
 		D1(printk(KERN_DEBUG "Allocating readbuf of %d bytes\n", buf_size));
 		flashbuf = kmalloc(buf_size, GFP_KERNEL);
 		if (!flashbuf)
@@ -337,8 +341,6 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 			switch (ret) {
 			case 0:		return cleanmarkerfound ? BLK_STATE_CLEANMARKER : BLK_STATE_ALLFF;
 			case 1: 	return BLK_STATE_ALLDIRTY;
-			case 2: 	return BLK_STATE_BADBLOCK; /* case 2/3 are paranoia checks */
-			case 3:		return BLK_STATE_ALLDIRTY; /* Block has failed to erase min. once */
 			default: 	return ret;
 			}
 		}

@@ -17,7 +17,8 @@ $Id$
  - test, test, test
 
  - NAND flash support:
-	- done :)
+	- almost done :)
+	- use bad block check instead of the hardwired byte check
 
  - Optimisations:
    - Split writes so they go to two separate blocks rather than just c->nextblock.
