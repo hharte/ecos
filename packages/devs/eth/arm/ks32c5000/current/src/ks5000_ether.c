@@ -60,7 +60,7 @@
 #include <cyg/io/io.h>
 #include <cyg/io/devtab.h>
 #else
-// need to prvide fake values for errno
+// need to provide fake values for errno
 #define EIO 1
 #define EINVAL 2
 #endif
@@ -100,11 +100,18 @@
 #include "phy.h"
 #endif
 
-#if 1
-#define debug_printf(args...) diag_printf(args)
+// Set up the level of debug output
+#if CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL > 0
+#define debug1_printf(args...) diag_printf(args)
 #else
-#define debug_printf(args...) /* noop */
+#define debug1_printf(args...) /* noop */
 #endif
+#if CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL > 1
+#define debug2_printf(args...) diag_printf(args)
+#else
+#define debug2_printf(args...) /* noop */
+#endif
+
 #define Bit(n) (1<<(n))
 
 // enable/disable software verification of rx CRC
@@ -127,20 +134,20 @@
 void MiiStationWrite(U32 RegAddr, U32 PhyAddr, U32 PhyWrData)
 {
   STADATA = PhyWrData ;
-  STACON = RegAddr | PhyAddr |  MiiStart | PHYREGWRITE ;
+  STACON = RegAddr | (PhyAddr<<5) |  MiiStart | PHYREGWRITE ;
   while (STACON & MiiStart)  
     ;
-  //debug_printf("PHY Wr %x:%02x := %04x\n",PhyAddr, RegAddr, PhyWrData) ;
+  //debug1_printf("PHY Wr %x:%02x := %04x\n",PhyAddr, RegAddr, PhyWrData) ;
 }
 
 U32 MiiStationRead(U32 RegAddr, U32 PhyAddr)
 {
   U32	PhyRdData;
-  STACON = RegAddr | PhyAddr |  MiiStart;
+  STACON = RegAddr | (PhyAddr<<5) |  MiiStart;
   while (STACON & MiiStart)
     ;
   PhyRdData = STADATA;
-  //debug_printf("PHY Rd %x:%02x  %04x\n",PhyAddr,RegAddr,PhyRdData) ;
+  //debug1_printf("PHY Rd %x:%02x  %04x\n",PhyAddr,RegAddr,PhyRdData) ;
   return PhyRdData ;
 }
 #endif
@@ -307,9 +314,9 @@ static FRAME_DESCRIPTOR _txFrameDescrArray[MAX_TX_FRAME_DESCRIPTORS] __attribute
 #define rxFrameDescrArray ((FRAME_DESCRIPTOR*)(((unsigned)_rxFrameDescrArray)|0x4000000))
 #define txFrameDescrArray ((FRAME_DESCRIPTOR*)(((unsigned)_txFrameDescrArray)|0x4000000))
 
-static FRAME_DESCRIPTOR *rxReadPointer;
-static FRAME_DESCRIPTOR *txDonePointer;
-static FRAME_DESCRIPTOR *txWritePointer;
+static volatile FRAME_DESCRIPTOR *rxReadPointer;
+static volatile FRAME_DESCRIPTOR *txDonePointer;
+static volatile FRAME_DESCRIPTOR *txWritePointer;
 
 static cyg_drv_mutex_t oldRxMutex;
 static cyg_drv_cond_t  oldRxCond;
@@ -476,8 +483,6 @@ static int ks32c5000_eth_buffer_send(tEthBuffer *buf)
     cyg_thread_delay(10);
 #endif
 
-  //diag_printf("Phy Status = %x\n",PhyStatus());
-  
   if (txWritePointer->FrameDataPtr & FRM_OWNERSHIP_BDMA)
     {
       // queue is full!  make sure transmit is running
@@ -631,11 +636,11 @@ static tEthBuffer *ks32c5000_eth_get_recv_buffer(void)
 static int EthInit(U08* mac_address)
 {
   if (mac_address)
-    debug_printf("EthInit(%02x:%02x:%02x:%02x:%02x:%02x)\n",
+    debug2_printf("EthInit(%02x:%02x:%02x:%02x:%02x:%02x)\n",
                 mac_address[0],mac_address[1],mac_address[2],
                 mac_address[3],mac_address[4],mac_address[5]);
   else
-    debug_printf("EthInit(NULL)\n");
+    debug2_printf("EthInit(NULL)\n");
 
 #if HavePHY  
   PhyReset();
@@ -679,7 +684,7 @@ static int EthInit(U08* mac_address)
   BDMATXCON = BDMATxConfigVar;
   MACTXCON =  MACTxConfigVar;
 
-  diag_printf("ks32C5000 eth: %02x:%02x:%02x:%02x:%02x:%02x  ",
+    debug2_printf("ks32C5000 eth: %02x:%02x:%02x:%02x:%02x:%02x  ",
               *((volatile unsigned char*)CAM_BaseAddr+0),
               *((volatile unsigned char*)CAM_BaseAddr+1),
               *((volatile unsigned char*)CAM_BaseAddr+2),
@@ -688,9 +693,9 @@ static int EthInit(U08* mac_address)
               *((volatile unsigned char*)CAM_BaseAddr+5));
 
 #if SoftwareCRC
-  diag_printf("Software CRC\n");
+  debug2_printf("Software CRC\n");
 #else
-  diag_printf("Hardware CRC\n");
+  debug2_printf("Hardware CRC\n");
 #endif
   
   return 0;
@@ -767,9 +772,9 @@ static cyg_uint32 MAC_Phy_isr(cyg_vector_t vector, cyg_addrword_t data)
   ++ks5000_MAC_Phy_Cnt;
   linkStatus = PhyStatus();
   if (linkStatus & PhyStatus_FullDuplex)  
-    MACConfigVar |= (1<<3);
+    MACConfigVar |= (MACON_FULL_DUP);
   else
-    MACConfigVar &= ~(1<<3);
+    MACConfigVar &= ~(MACON_FULL_DUP);
   
 #if defined(CYGPKG_NET)      
   if (linkStatus & PhyStatus_FullDuplex)
@@ -940,8 +945,8 @@ static cyg_uint32 BDMA_Tx_isr(cyg_vector_t vector, cyg_addrword_t data)
 #endif  
   if (IntBDMATxStatus & BDMASTAT_TX_CCP) 
     {
-      debug_printf("+-- Control Packet Transfered : %x\r",ERMPZCNT);
-      debug_printf("    Tx Control Frame Status : %x\r",ETXSTAT);
+      debug1_printf("+-- Control Packet Transfered : %x\r",ERMPZCNT);
+      debug1_printf("    Tx Control Frame Status : %x\r",ETXSTAT);
     }
 
   if (IntBDMATxStatus & (BDMASTAT_TX_NL|BDMASTAT_TX_NO|BDMASTAT_TX_EMPTY) )
@@ -1066,7 +1071,7 @@ static void installInterrupts(void)
   extern struct eth_drv_sc ks32c5000_sc;
   bool firstTime=true;
 
-  debug_printf("ks5000_ether: installInterrupts()\n");
+  debug1_printf("ks5000_ether: installInterrupts()\n");
   
   if (!firstTime)
     return;
@@ -1097,8 +1102,10 @@ static void installInterrupts(void)
   cyg_drv_interrupt_attach(macRxIntrHandle);
   cyg_drv_interrupt_attach(macTxIntrHandle);
   
+#if HavePHYinterrupt
   cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EXT0);
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXT0);
+#endif  
 }
 
 //======================================================================
@@ -1115,7 +1122,7 @@ typedef struct
 ks32c5000_priv_data_t ks32c5000_priv_data;    
 
 #define eth_drv_tx_done(sc,key,retval) (sc)->funs->eth_drv->tx_done(sc,key,retval)
-#define eth_drv_init(sc,enaddr)  ((sc)->funs->eth_drv->init)(sc, myMacAddr)
+#define eth_drv_init(sc,enaddr)  ((sc)->funs->eth_drv->init)(sc, enaddr)
 #define eth_drv_recv(sc,len)  ((sc)->funs->eth_drv->recv)(sc, len)
 
 static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
@@ -1123,10 +1130,8 @@ static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
 static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 {
   struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
-  *(unsigned*)0x7ff5000 |= Bit(1)+Bit(3)+Bit(5);  // enable debug output bits
-  // memcpy(myMacAddr,(unsigned char*)CAM_BaseAddr,6);
-  debug_printf("ks32c5000_eth_init()\n");
-  debug_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
+  debug1_printf("ks32c5000_eth_init()\n");
+  debug1_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
 #if defined(CYGPKG_NET)  
   ifStats.duplex = 1;      //unknown
   ifStats.operational = 1; //unknown
@@ -1146,7 +1151,7 @@ static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 
 static void ks32c5000_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
-  debug_printf("ks32c5000_eth_start()\n");
+  debug2_printf("ks32c5000_eth_start()\n");
   if (!ethernetRunning)
     {
       cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX);
@@ -1164,7 +1169,7 @@ static void ks32c5000_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, in
 
 static void ks32c5000_eth_stop(struct eth_drv_sc *sc)
 {
-  debug_printf("ks32c5000_eth_stop()\n");
+  debug1_printf("ks32c5000_eth_stop()\n");
   ethernetRunning = 0;
 }
  
@@ -1181,11 +1186,34 @@ static int ks32c5000_eth_control(struct eth_drv_sc *sc,
         {
           struct ether_drv_stats *p = (struct ether_drv_stats*)data;
           *p = ifStats;
-          strncpy(p->description,"description goes here",sizeof p->description);
-          strncpy(p->snmp_chipset,"chipset name",sizeof p->snmp_chipset);
+          strncpy(p->description,"description goes here",sizeof(p->description)-1);
+		  p->description[sizeof(p->description)-1] = '\0';
+          strncpy(p->snmp_chipset,"chipset name",sizeof(p->snmp_chipset)-1);
+		  p->snmp_chipset[sizeof(p->snmp_chipset)-1] = '\0';
           return 0;
         }
 #endif      
+     case ETH_DRV_SET_MAC_ADDRESS: {
+         int act;
+
+         if (ETHER_ADDR_LEN != len)
+             return -1;
+         debug1_printf("ks32c5000_eth_control: ETH_DRV_SET_MAC_ADDRESS.\n");
+         act = ethernetRunning;
+         ks32c5000_eth_stop(sc);
+         ks32c5000_eth_start(sc, data, 0);
+         ethernetRunning = act;
+         return 0;
+     }
+#ifdef	ETH_DRV_GET_MAC_ADDRESS
+     case ETH_DRV_GET_MAC_ADDRESS: {
+         if (len < ETHER_ADDR_LEN)
+             return -1;
+         debug1_printf("ks32c5000_eth_control: ETH_DRV_GET_MAC_ADDRESS.\n");
+         memcpy(data, (void *)CAM_BaseAddr, ETHER_ADDR_LEN);
+         return 0;
+     }
+#endif
      default:
       return -1;
     }
