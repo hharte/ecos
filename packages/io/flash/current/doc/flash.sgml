@@ -146,8 +146,6 @@ __externC int cyg_flash_get_info(cyg_uint32 devno, cyg_flash_info_t * info);
 __externC int cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info);
 __externC int cyg_flash_verify_addr(const flashaddr_t address);
 __externC int cyg_flash_code_overlaps(const flashaddr_t start, const flashaddr_t end);
-__externC int cyg_flash_get_block_info(size_t *block_size, cyg_uint32 *blocks);
-__externC int cyg_flash_get_limits(flashaddr_t *start, flashaddr_t *end);
 __extern size_t cyg_flash_block_size(const cyg_flashaddr_t flash_base);
 
 typedef struct cyg_block_info
@@ -184,16 +182,6 @@ inside the address refion given. Erase and program operations within
 this range are very likely to cause the target to crash and burn
 horribly. Note the FLASH library does allow you to shoot yourself in
 the foot in this way.</PARA>
-
-<PARA>To aid with backwards compatibility the following functions have
-been retained from the V1 API. However the only operate on the first
-FLASH driver.  The function <FUNCTION>cyg_flash_get_block_info()
-</FUNCTION> returns the size and number of blocks for the first
-driver. When the device has a mixture of block sizes, the size of the
-"normal" block will be returned. Please read the source code to
-determine exactly what this means.  <FUNCTION> cyg_flash_get_limits()
-</FUNCTION> returns the lower and upper memory address the first FLASH
-occupies.  
 </SECT2>
  <SECT2>
 

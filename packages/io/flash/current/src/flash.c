@@ -211,54 +211,6 @@ __externC bool cyg_flash_code_overlaps(const cyg_flashaddr_t start,
            ((unsigned long)&_etext < (unsigned long)end)));
 }
 
-// Get the start and end address of the first driver
-__externC int
-cyg_flash_get_limits(cyg_flashaddr_t *start, cyg_flashaddr_t *end)
-{
-    if (!init) {
-        return CYG_FLASH_ERR_NOT_INIT;
-    }
-    if (flash_head) {
-      *start = flash_head->start;
-      *end = flash_head->end;
-      return CYG_FLASH_ERR_OK;
-    }
-    return CYG_FLASH_ERR_INVALID;
-}
-
-// Get the block size and number of blocks for the first driver. For
-// devices with boot blocks, consolidate the boot blocks into the
-// figure.
-__externC int
-cyg_flash_get_block_info(size_t *block_size, cyg_uint32 *blocks)
-{
-  size_t biggest_size=0;
-  cyg_uint32 i;
-  
-  
-  if (!init) {
-    return CYG_FLASH_ERR_NOT_INIT;
-  }
-  if (!flash_head) return CYG_FLASH_ERR_INVALID;
-
-  // Find the biggest size of blocks
-  for (i=0; i < flash_head->num_block_infos; i++) {
-    if (flash_head->block_info[i].block_size > biggest_size) {
-      biggest_size = flash_head->block_info[i].block_size;
-    }
-  }
-  
-  // Calculate the number of biggest size blocks
-  *block_size = biggest_size;
-  *blocks = 0;
-  for (i=0; i < flash_head->num_block_infos; i++) {
-    *blocks += (flash_head->block_info[i].block_size *
-                flash_head->block_info[i].blocks) /
-      biggest_size;
-  }
-  return CYG_FLASH_ERR_OK;
-}
-
 // Return information about the Nth driver
 __externC int
 cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)

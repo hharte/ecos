@@ -1,3 +1,9 @@
+2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * removed the functions cyg_flash_get_limits and
+	cyg_flash_get_block_info. Reimplemented the legacy functions
+	that depended on them and flashiodev.c
+	
 2004-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flashiodev.c Ordering problem again. If an invalid name is

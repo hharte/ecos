@@ -122,9 +122,10 @@ flashiodev_lookup(struct cyg_devtab_entry **tab,
   if (dev->use_offset) {
     // dev->start the contain the offset to the beginning of the block
     // dev->end is the length of the block
-    cyg_flashaddr_t start, end;
-    cyg_flash_get_limits(&start, &end);
-    dev->start = dev->start + start;
+    cyg_flash_info_t info;
+    
+    cyg_flash_get_info(0, &info);
+    dev->start = dev->start + info.start;
     dev->end = dev->start + dev->end;
   }
   if (dev->use_absolute) {

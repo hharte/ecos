@@ -71,14 +71,50 @@ flash_verify_addr(void *target)
 int
 flash_get_limits(void *target, void **start, void **end)
 {
-  return cyg_flash_get_limits((cyg_flashaddr_t *)start, 
-                              (cyg_flashaddr_t *)end);
+  int err;
+  cyg_flash_info_t info;
+  
+  err = cyg_flash_get_info(0, &info);
+  if (err != CYG_FLASH_ERR_OK) {
+    return err;
+  }
+
+  *start = (void *)info.start;
+  *end = (void *)info.end;
+
+  return CYG_FLASH_ERR_OK;
 }
+
 
 int
 flash_get_block_info(int *block_size, int *blocks)
 {
-  return cyg_flash_get_block_info((size_t *)block_size, blocks);
+  size_t biggest_size=0;
+  cyg_uint32 i;
+  cyg_flash_info_t info;
+  int err;
+  
+  err = cyg_flash_get_info(0, &info);
+  if (err != CYG_FLASH_ERR_OK) {
+    return err;
+  }
+
+  // Find the biggest size of blocks
+  for (i=0; i < info.num_block_infos; i++) {
+    if (info.block_info[i].block_size > biggest_size) {
+      biggest_size = info.block_info[i].block_size;
+    }
+  }
+  
+  // Calculate the number of biggest size blocks
+  *block_size = biggest_size;
+  *blocks = 0;
+  for (i=0; i < info.num_block_infos; i++) {
+    *blocks += (info.block_info[i].block_size *
+                info.block_info[i].blocks) /
+      biggest_size;
+  }
+  return CYG_FLASH_ERR_OK;
 }
 
 int
