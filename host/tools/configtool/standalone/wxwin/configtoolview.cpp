@@ -314,8 +314,8 @@ void ecConfigToolView::OnChangeFilename()
         wxString name(GetDocument()->GetFilename());
         wxStripExtension(name);
 
-        ((ecConfigToolDoc*) GetDocument())->SetInstallTree(name + wxT("_build"));
-        ((ecConfigToolDoc*) GetDocument())->SetBuildTree(name + wxT("_install"));
+        ((ecConfigToolDoc*) GetDocument())->SetInstallTree(name + wxT("_install"));
+        ((ecConfigToolDoc*) GetDocument())->SetBuildTree(name + wxT("_build"));
 
         wxString title;
 
