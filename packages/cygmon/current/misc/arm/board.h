@@ -1,51 +1,12 @@
-2000-07-07  Jesper Skov  <jskov@redhat.com>
-
-	* cdl/hal_sh_sh7708_cq7708.cdl: Require sub-variant package.
-
-2000-07-05  Jesper Skov  <jskov@redhat.com>
-
-	* src/hal_diag.c: Include hal_if.c
-
-2000-06-29  Jesper Skov  <jskov@redhat.com>
-
-	* src/hal_diag.c: serial driver API changes.
-
-2000-06-28  Jesper Skov  <jskov@redhat.com>
-
-	* src/plf_stub.c: [deleted]
-	* src/plf_misc.c: 
-	* src/hal_diag.c: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.h: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.ldi: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.mlt: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.h: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.ldi: 
-	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.mlt: 
-	* include/plf_stub.h: 
-	* include/hal_diag.h: 
-	* cdl/hal_sh_sh7708_cq7708.cdl: 
-	Changed to use virtual vector code.
-
-2000-06-06  Jesper Skov  <jskov@redhat.com>
-
-	* cdl/hal_sh_sh7708_cq7708.cdl: Added CYGHWR_HAL_SH_BOARD_SPEED
-	(from Haruki Kashiwaya).
-
-2000-06-05  John Dallaway  <jld@redhat.com>
-
-	* cdl/hal_sh_sh7708_cq7708.cdl:
-
-	Tidy display strings.
-
-2000-05-31  Jesper Skov  <jskov@redhat.com>
-
-	* Munging sources to matches post-1.3.1 changes.
-
-2000-03-30  Haruki Kashiwaya  <kashiwaya@cygnus.co.jp>
-
-	* Set up directory structure.
-
-//===========================================================================
+#ifndef __CYGMON_ARM_BOARD_H__
+#define __CYGMON_ARM_BOARD_H__
+//==========================================================================
+//
+//      board.h
+//
+//      Cygmon board/platform configuration file
+//
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -69,4 +30,43 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    gthomas
+// Contributors: gthomas
+// Date:         1999-10-20
+// Purpose:      
+// Description:  
+//               
+//
+//####DESCRIPTIONEND####
+//
+//=========================================================================
+// Hardware/platform/configuration specifics
+
+#include <pkgconf/hal.h>
+#include <pkgconf/cygmon.h>
+
+#define HAVE_FLOAT_REGS         0
+#define HAVE_DOUBLE_REGS        0
+#define HAVE_CACHE              0 // FIXME
+#define HAVE_USAGE              0 // FIXME
+#define USE_CYGMON_PROTOTYPES   1
+#define NOMAIN                  1
+#define CYGMON_SYSTEM_SERVICES  0 // Not used, fall back to BSP support
+#ifdef CYGDAT_CYGMON_USE_HELP
+#define USE_HELP                1
+#endif
+
+// For breakpoint support
+#define NO_MALLOC               1
+#define MAX_BP_NUM              8
+#include "cpu_info.h"
+#define TRAP_SIZE               4
+#define __set_breakpoint        set_breakpoint
+#define __remove_breakpoint     clear_breakpoint
+#define __write_mem_safe        memcpy
+#define _breakinst              bsp_breakinsn
+
+#endif //  __CYGMON_ARM_BOARD_H__
