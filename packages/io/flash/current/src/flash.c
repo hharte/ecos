@@ -8,9 +8,10 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2003 Gary Thomas
 // Copyright (C) 2004 Andrew Lunn
+// Copyright (C) 2004 eCosCentric Ltd.
+// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -73,9 +74,6 @@
 #undef RAM_FLASH_DEV_DEBUG
 #if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
 # warning "Can only enable the flash debugging when configured for RAM startup"
-#endif
-#ifndef MIN
-#define MIN(x,y) ((x)<(y) ? (x) : (y))
 #endif
 
 // Has the FLASH IO library been initialise?
@@ -202,7 +200,7 @@ cyg_flash_verify_addr(const cyg_flashaddr_t address)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
   for (dev = flash_head; dev; dev=dev->next) {
-    if ((dev->start <= address) && (dev->end > address))
+    if ((dev->start <= address) && (address <= dev->end))
       return CYG_FLASH_ERR_OK;
   }
   return CYG_FLASH_ERR_INVALID;
@@ -249,7 +247,7 @@ cyg_flash_get_info_addr(cyg_flashaddr_t flash_base, cyg_flash_info_t * info)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
   for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= flash_base) && ( dev->end > flash_base)) {
+    if ((dev->start <= flash_base) && ( flash_base <= dev->end)) {
     info->start = dev->start;
     info->end = dev->end;
     info->num_block_infos = dev->num_block_infos;
@@ -271,7 +269,7 @@ cyg_flash_mutex_lock(const cyg_flashaddr_t from, const size_t len)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
   for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= from) && ( dev->end > from)) {
+    if ((dev->start <= from) && ( from <= dev->end)) {
       cyg_mutex_lock(&dev->mutex);
       if (dev->end > from+len) {
         return CYG_FLASH_ERR_OK;
@@ -299,7 +297,7 @@ cyg_flash_mutex_unlock(const cyg_flashaddr_t from, const size_t len)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
   for (dev = flash_head; dev ; dev=dev->next) {
-    if ((dev->start <= from) && ( dev->end > from)) {
+    if ((dev->start <= from) && ( from <= dev->end)) {
       cyg_mutex_unlock(&dev->mutex);
       if (dev->end > from+len) {
         return CYG_FLASH_ERR_OK;
@@ -344,7 +342,7 @@ cyg_flash_block_size(const cyg_flashaddr_t flash_base)
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -374,21 +372,21 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
                 const size_t len, 
                 cyg_flashaddr_t *err_address)
 {
-  cyg_flashaddr_t block, end_addr, addr;
+  cyg_flashaddr_t block, end_addr;
   struct cyg_flash_dev * dev;
-  size_t block_size;
+  size_t erase_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
 #ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-  if (plf_flash_query_soft_wp(addr,len))
+  if (plf_flash_query_soft_wp(flash_base,len))
     return CYG_FLASH_ERR_PROTECT;
 #endif
   
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -396,30 +394,40 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
 #ifdef CYGPKG_KERNEL
   cyg_mutex_lock(&dev->mutex);
 #endif
-  addr = flash_base;
-  end_addr = flash_base + len - 1;
-  if (end_addr > dev->end) {
-    end_addr = dev->end;
+
+  // Check whether or not we are going past the end of this device, on
+  // to the next one. If so the next device will be handled by a
+  // recursive call later on.
+  if (len > (dev->end + 1 - flash_base)) {
+      end_addr = dev->end;
+  } else {
+      end_addr = flash_base + len - 1;
   }
-  
-  block = flash_block_begin(addr, dev);
-  
+  // erase can only happen on a block boundary, so adjust for this
+  block         = flash_block_begin(flash_base, dev);
+  erase_count   = (end_addr + 1) - block;
+
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 #endif
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable(block, end_addr);
-  while (block <= end_addr) {
+  FLASH_Enable(flash_base, end_addr);
+  while (erase_count > 0) {
     int i;
     unsigned char *dp;
-    bool erased = true;
+    bool erased = false;
+    size_t block_size = flash_block_size(dev, block);
 
-    block_size = flash_block_size(dev, addr);
+    // Pad to the block boundary, if necessary
+    if (erase_count < block_size) {
+        erase_count = block_size;
+    }
 
     // If there is a read function it probably means the flash
     // cannot be read directly.
     if (!dev->funs->flash_read) {
+      erased = true;
       dp = (unsigned char *)block;
       for (i = 0;  i < block_size;  i++) {
         if (*dp++ != (unsigned char)0xFF) {
@@ -427,8 +435,6 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
           break;
         }
       }
-    } else {
-      erased=false;
     }
     if (!erased) {
       stat = dev->funs->flash_erase_block(dev,block);
@@ -438,12 +444,13 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
       *err_address = block;
       break;
     }
-    block += block_size;
+    block       += block_size;
+    erase_count -= block_size;
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
   }
-  FLASH_Disable(block, end_addr);
+  FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("\n");
@@ -454,11 +461,14 @@ cyg_flash_erase(const cyg_flashaddr_t flash_base,
   if (stat != CYG_FLASH_ERR_OK) {
     return stat;
   }
-  
-  if (flash_base + len - 1 > dev->end) {        
-    // The region to erase if bigger than this driver handles. Recurse
+
+  // If there are multiple flash devices in series the erase operation
+  // may touch successive devices. This can be handled by recursion.
+  // The stack overheads should be minimal because the number of
+  // devices will be small.
+  if (len > (dev->end + 1 - flash_base)) {
     return cyg_flash_erase(dev->end+1, 
-                           len - (dev->end - flash_base) - 1,
+                           len - (dev->end + 1 - flash_base),
                            err_address);
   }
   return CYG_FLASH_ERR_OK;
@@ -471,9 +481,9 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
                   cyg_flashaddr_t *err_address)
 {
   struct cyg_flash_dev * dev;
-  cyg_flashaddr_t addr, end_addr;
+  cyg_flashaddr_t addr, end_addr, block;
   unsigned char * ram = ram_base;
-  size_t block_size, size, length, offset;
+  size_t write_count, offset;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
   
@@ -485,7 +495,7 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
 #endif
   
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -494,34 +504,45 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
   cyg_mutex_lock(&dev->mutex);
 #endif
   addr = flash_base;
-  end_addr = flash_base + len - 1;
-  if (end_addr > dev->end) {
+  if (len > (dev->end + 1 - flash_base)) {
     end_addr = dev->end;
+  } else {
+    end_addr = flash_base + len - 1;
   }
-  length = end_addr - addr + 1;
+  write_count = (end_addr + 1) - flash_base;
+
+  // The first write may be in the middle of a block. Do the necessary
+  // adjustment here rather than inside the loop.
+  block = flash_block_begin(flash_base, dev);
+  if (addr == block) {
+      offset = 0;
+  } else {
+      offset = addr - block;
+  }
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Program from %p-%p to %p: ", ram_base, 
-          ((CYG_ADDRESS)ram_base)+length, addr);
+          ((CYG_ADDRESS)ram_base)+write_count, addr);
 #endif
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable((unsigned short*)addr, (unsigned short *)(addr+len));
-  while (addr <= end_addr) {
-    block_size = flash_block_size(dev, addr);
-    size = length;
-    // Only one block at once
-    if (size > block_size) size = block_size;
+  FLASH_Enable(flash_base, end_addr);
+  while (write_count > 0) {
+    size_t block_size = flash_block_size(dev, addr);
+    size_t this_write;
+    if (write_count > (block_size - offset)) {
+        this_write = block_size - offset;
+    } else {
+        this_write = write_count;
+    }
+    // Only the first block may need the offset.
+    offset       = 0;
     
-    // Writing from the middle of a block?
-    offset = (size_t)(addr - dev->start) % block_size;
-    if (offset)
-      size = MIN(block_size - offset, size);
-    stat = dev->funs->flash_program(dev, addr, ram, size);
+    stat = dev->funs->flash_program(dev, addr, ram, this_write);
     stat = dev->funs->flash_hwr_map_error(dev,stat);
 #ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
     if (CYG_FLASH_ERR_OK == stat) // Claims to be OK
-      if (!dev->funs->flash_read && memcmp((void *)addr, ram, size) != 0) {                
+      if (!dev->funs->flash_read && memcmp((void *)addr, ram, this_write) != 0) {                
         stat = CYG_FLASH_ERR_DRV_VERIFY;
 #ifdef CYGSEM_IO_FLASH_CHATTER
         dev->pf("V");
@@ -535,11 +556,11 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
-    length -= size;
-    addr += size;
-    ram += size;
+    write_count -= this_write;
+    addr        += this_write;
+    ram         += this_write;
   }
-  FLASH_Disable((unsigned short*)addr, (unsigned short *)(addr+len));
+  FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf("\n");
@@ -550,9 +571,9 @@ cyg_flash_program(const cyg_flashaddr_t flash_base,
   if (stat != CYG_FLASH_ERR_OK) {
     return (stat);
   }
-  if ( flash_base + len - 1 > dev->end) {
+  if (len > (dev->end + 1 - flash_base)) {
     return cyg_flash_program(dev->end+1, ram, 
-                             len - (dev->end - flash_base) - 1,
+                             len - (dev->end + 1 - flash_base),
                              err_address);
   }
   return CYG_FLASH_ERR_OK;
@@ -565,16 +586,16 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
                cyg_flashaddr_t *err_address)
 {
   struct cyg_flash_dev * dev;
-  cyg_flashaddr_t addr, end_addr;
+  cyg_flashaddr_t addr, end_addr, block;
   unsigned char * ram = (unsigned char *)ram_base;
-  size_t block_size, size, length, offset;
+  size_t read_count, offset;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
   
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
   
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -583,33 +604,44 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
   cyg_mutex_lock(&dev->mutex);
 #endif
   addr = flash_base;
-  end_addr = flash_base + len - 1;
-  if (end_addr > dev->end) {
-    end_addr = dev->end;
+  if (len > (dev->end + 1 - flash_base)) {
+      end_addr = dev->end;
+  } else {
+      end_addr = flash_base + len - 1;
   }
-  length = end_addr - addr + 1;
+  read_count = (end_addr + 1) - flash_base;
+
+  // The first read may be in the middle of a block. Do the necessary
+  // adjustment here rather than inside the loop.
+  block = flash_block_begin(flash_base, dev);
+  if (addr == block) {
+      offset = 0;
+  } else {
+      offset = addr - block;
+  }
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
-  dev->pf("... Read from %p-%p to %p: ", addr, addr+len, ram_base);
+  dev->pf("... Read from %p-%p to %p: ", addr, end_addr, ram_base);
 #endif
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable((unsigned short*)addr, (unsigned short *)(addr+len));
-  while (addr <= end_addr) {
-    block_size = flash_block_size(dev, addr);
-    size = length;
-    // Only one block at once
-    if (size > block_size) size = block_size;
+  FLASH_Enable(flash_base, end_addr);
+  while (read_count > 0) {
+    size_t block_size = flash_block_size(dev, addr);
+    size_t this_read;
+    if (read_count > (block_size - offset)) {
+        this_read = block_size - offset;
+    } else {
+        this_read = read_count;
+    }
+    // Only the first block may need the offset
+    offset      = 0;
     
-    // Reading from the middle of a block?
-    offset = (size_t)(addr - dev->start) % block_size;
-    if (offset)
-      size = MIN(block_size - offset, size);
     if (dev->funs->flash_read) {
-      stat = dev->funs->flash_read(dev, addr, ram, size);
+      stat = dev->funs->flash_read(dev, addr, ram, this_read);
       stat = dev->funs->flash_hwr_map_error(dev,stat);
     } else {
-      memcpy(ram, (void *)addr, size);
+      memcpy(ram, (void *)addr, this_read);
       stat = CYG_FLASH_ERR_OK;
     }
     if (CYG_FLASH_ERR_OK != stat && err_address) {
@@ -619,11 +651,11 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
-    length -= size;
-    addr += size;
-    ram += size;
+    read_count  -= this_read;
+    addr        += this_read;
+    ram         += this_read;
   }
-  FLASH_Disable((unsigned short*)addr, (unsigned short *)(addr+len));
+  FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("\n");
@@ -634,10 +666,10 @@ cyg_flash_read(cyg_flashaddr_t flash_base,
   if (stat != CYG_FLASH_ERR_OK) {
     return (stat);
   }
-  if ( flash_base + len - 1 > dev->end) {
-    return cyg_flash_read(dev->end+1, ram,
-                          len - (dev->end - flash_base) - 1,
-                          err_address);
+  if (len > (dev->end + 1 - flash_base)) {
+      return cyg_flash_read(dev->end+1, ram,
+                            len - (dev->end + 1 - flash_base),
+                            err_address);
   }
   return CYG_FLASH_ERR_OK;
 }
@@ -648,9 +680,9 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
                const size_t len, 
                cyg_flashaddr_t *err_address)
 {
-  cyg_flashaddr_t block, end_addr, addr;
+  cyg_flashaddr_t block, end_addr;
   struct cyg_flash_dev * dev;
-  size_t block_size;
+  size_t lock_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
   
@@ -662,7 +694,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
 #endif
   
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -671,21 +703,25 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
 #ifdef CYGPKG_KERNEL
   cyg_mutex_lock(&dev->mutex);
 #endif
-  addr = flash_base;
-  end_addr = flash_base + len - 1;
-  if (end_addr > dev->end) {
-    end_addr = dev->end;
+  if (len > (dev->end + 1 - flash_base)) {
+      end_addr = dev->end;
+  } else {
+      end_addr = flash_base + len - 1;
   }
-  
-  block = flash_block_begin(addr, dev);
+  block         = flash_block_begin(flash_base, dev);
+  lock_count    = (end_addr + 1) - block;
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Locking from %p-%p: ", (void*)block, (void*)end_addr);
 #endif
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable(block, end_addr);
-  while (block <= end_addr) {
+  FLASH_Enable(flash_base, end_addr);
+  while (lock_count > 0) {
+    size_t  block_size  = flash_block_size(dev, block);
+    if (lock_count < block_size) {
+        lock_count = block_size;
+    }
     stat = dev->funs->flash_block_lock(dev,block);
     stat = dev->funs->flash_hwr_map_error(dev,stat);
     
@@ -693,12 +729,13 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
       *err_address = block;
       break;
     }
-    block += flash_block_size(dev, addr);
+    block       += block_size;
+    lock_count  -= block_size;
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
   }
-  FLASH_Disable(block, end_addr);
+  FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("\n");
@@ -709,13 +746,14 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   if (stat != CYG_FLASH_ERR_OK) {
     return stat;
   }
-  
-  if (flash_base + len - 1 > dev->end) {        
-    // The region to erase if bigger than this driver handles. Recurse
+
+  // Recurse if necessary for the next device
+  if (len > (dev->end + 1 - flash_base)) {
     return cyg_flash_lock(dev->end+1, 
-                          len - (dev->end - flash_base) - 1,
+                          len - (dev->end + 1 - flash_base),
                           err_address);
   }
+
   return CYG_FLASH_ERR_OK;
 }
 
@@ -724,9 +762,9 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
                  const size_t len, 
                  cyg_flashaddr_t *err_address)
 {
-  cyg_flashaddr_t block, end_addr, addr;
+  cyg_flashaddr_t block, end_addr;
   struct cyg_flash_dev * dev;
-  size_t block_size;
+  size_t unlock_count;
   int stat = CYG_FLASH_ERR_OK;
   int d_cache, i_cache;
   
@@ -738,7 +776,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
 #endif
   
   for (dev = flash_head; 
-       dev && !((dev->start <= flash_base) && ( dev->end > flash_base));
+       dev && !((dev->start <= flash_base) && ( flash_base <= dev->end));
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
@@ -747,21 +785,25 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
 #ifdef CYGPKG_KERNEL
   cyg_mutex_lock(&dev->mutex);
 #endif
-  addr = flash_base;
-  end_addr = flash_base + len - 1;
-  if (end_addr > dev->end) {
-    end_addr = dev->end;
+  if (len > (dev->end + 1 - flash_base)) {
+      end_addr = dev->end;
+  } else {
+      end_addr = flash_base + len - 1;
   }
-  
-  block =   block = flash_block_begin(addr, dev);
+  block         = flash_block_begin(flash_base, dev);
+  unlock_count  = (end_addr + 1) - block;
   
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("... Unlocking from %p-%p: ", (void*)block, (void*)end_addr);
 #endif
   
   HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-  FLASH_Enable(block, end_addr);
-  while (block <= end_addr) {
+  FLASH_Enable(flash_base, end_addr);
+  while (unlock_count > 0) {
+    size_t    block_size  = flash_block_size(dev, block);
+    if (unlock_count < block_size) {
+        unlock_count = block_size;
+    }
     stat = dev->funs->flash_block_unlock(dev,block);
     stat = dev->funs->flash_hwr_map_error(dev,stat);
     
@@ -769,12 +811,14 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
       *err_address = block;
       break;
     }
-    block += flash_block_size(dev, addr);
+    block           += block_size;
+    unlock_count    -= block_size;
+    
 #ifdef CYGSEM_IO_FLASH_CHATTER
     dev->pf(".");
 #endif
   }
-  FLASH_Disable(block, end_addr);
+  FLASH_Disable(flash_base, end_addr);
   HAL_FLASH_CACHES_ON(d_cache, i_cache);
 #ifdef CYGSEM_IO_FLASH_CHATTER
   dev->pf("\n");
@@ -786,10 +830,10 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
     return stat;
   }
   
-  if (flash_base + len - 1 > dev->end) {        
-    // The region to erase if bigger than this driver handles. Recurse
+  // Recurse if necessary for the next device
+  if (len > (dev->end + 1 - flash_base)) {
     return cyg_flash_lock(dev->end+1, 
-                          len - (dev->end - flash_base) - 1,
+                          len - (dev->end + 1 - flash_base),
                           err_address);
   }
   return CYG_FLASH_ERR_OK;
