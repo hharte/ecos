@@ -713,7 +713,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
     stat = dev->funs->flash_hwr_map_error(dev,stat);
     
     if (CYG_FLASH_ERR_OK != stat && err_address) {
-      *err_address = (void *)block;
+      *err_address = block;
       break;
     }
     block += flash_block_size(dev, addr);
@@ -765,7 +765,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
        dev=dev->next)
     ;
   if (!dev) return CYG_FLASH_ERR_INVALID;
-  if (!dev->funs->flash_block_lock) return CYG_FLASH_ERR_INVALID;
+  if (!dev->funs->flash_block_unlock) return CYG_FLASH_ERR_INVALID;
   
 #ifdef CYGPKG_KERNEL
   cyg_mutex_lock(&dev->mutex);
@@ -790,7 +790,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
     stat = dev->funs->flash_hwr_map_error(dev,stat);
     
     if (CYG_FLASH_ERR_OK != stat && err_address) {
-      *err_address = (void *)block;
+      *err_address = block;
       break;
     }
     block += flash_block_size(dev, addr);
