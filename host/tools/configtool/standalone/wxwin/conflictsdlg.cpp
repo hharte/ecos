@@ -291,8 +291,11 @@ void ecResolveConflictsDialog::OnContinue(wxCommandEvent& event)
                         {
                             bool bEnabled=value.is_enabled();
                             str.Printf(_("%s %s and set value to %s\n"), (const wxChar*) (bEnabled? _("disable"):_("enable")), (const wxChar*) strName, (const wxChar*) strValue);
-                            CdlSimpleValue simple_value = valuable->get_simple_value ();
-                            valuable->set_enabled_and_value (m_Transaction, bEnabled, simple_value, CdlValueSource_User);
+                            // Surely this is wrong - we don't want to set the same value, we want to
+                            // set a NEW value.
+                            // CdlSimpleValue simple_value = valuable->get_simple_value ();
+                            //valuable->set_enabled_and_value (m_Transaction, bEnabled, simple_value, CdlValueSource_User);
+                            valuable->set_enabled_and_value (m_Transaction, bEnabled, ecUtils::UnicodeToStdStr (strValue), CdlValueSource_User);
                         }
                         break;
                     case CdlValueFlavor_Data :

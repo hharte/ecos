@@ -102,7 +102,7 @@ class ecPipedProcess;
 // Define a new application type, each program should derive a class from wxApp
 class ecApp : public wxApp
 {
-    friend ecMainFrame;
+    friend class ecMainFrame;
 public:
 //// Ctor & dtor
     ecApp();

@@ -74,7 +74,7 @@ class WXDLLEXPORT wxSashLayoutWindow;
 // Define a new frame type: this is going to be our main frame
 class ecMainFrame : public wxDocParentFrame
 {
-    friend ecFindDialog;
+    friend class ecFindDialog;
 
 public:
 // Ctor(s)

@@ -431,17 +431,17 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
             strName.MakeLower();
         }
 
-        int nIndex=strName.Find(strFind);
+        int nIndex = strName.Find(strFind);
         if(-1!=nIndex)
         {
             if (wxGetApp().GetSettings().m_findMatchWholeWord)
             {
                 // Enforce whole-word semantics: to left and right
-                if(nIndex>0 && IsWordChar(strName[nIndex-1])){
+                if(nIndex>0 && IsWordChar(strName[(unsigned) (nIndex-1)])){
                     continue;
                 }
                 nIndex += strFind.Length();
-                if (nIndex < strName.Length() && IsWordChar(strName[nIndex])){
+                if (nIndex < strName.Length() && IsWordChar(strName[(unsigned) nIndex])){
                     continue;
                 }
             }		
