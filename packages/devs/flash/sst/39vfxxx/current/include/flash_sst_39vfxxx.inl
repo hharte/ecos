@@ -344,7 +344,7 @@ sst_program(struct cyg_flash_dev *dev, cyg_flashaddr_t base,
     return res;
 }
 
-CYG_FLASH_FUNS(cyg_sst_funs,
+static CYG_FLASH_FUNS(cyg_sst_funs,
                sst_init,
                sst_query,
                sst_erase_block,

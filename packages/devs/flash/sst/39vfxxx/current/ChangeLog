@@ -1,3 +1,9 @@
+2004-08-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flash_sst_39vfxxx.inl: The structure declared by
+	CYG_FLASH_FUNS should be static so we can instantiate the
+	driver multiple times.
+
 2004-08-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flash_sst_39vfxxx.inl: Added support for the SST39VF160
