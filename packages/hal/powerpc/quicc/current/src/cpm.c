@@ -57,6 +57,7 @@
 #include <pkgconf/hal_powerpc_quicc.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
+#include <string.h>           // memset
 
 #ifdef CYGPKG_HAL_POWERPC_MPC860
 // eCos headers decribing PowerQUICC:
@@ -75,15 +76,15 @@ void
 _mpc8xx_reset_cpm(void)
 {
     EPPC *eppc = eppc_base();
-    int i;
     static int init_done = 0;
 
     if (init_done) return;
     init_done++;
 
     eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
-    memset(eppc->pram, 0, 0x400);
-    for (i = 0; i < 100000; i++);
+    memset(eppc->pram, 0, sizeof(eppc->pram));
+    while (eppc->cp_cr & QUICC_CPM_CR_BUSY)
+        CYG_EMPTY_STATEMENT;
 
     *nextBd = QUICC_BD_BASE;
 }
