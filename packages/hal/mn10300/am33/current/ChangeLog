@@ -1,3 +1,8 @@
+2003-03-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mn10300_am33.ld: add entries for debug sections, needed by
+	current tools
+
 2002-12-06  Mark Salter  <msalter@redhat.com>
 
 	* src/var_misc.c (hal_mn10300_mem_real_region_top): New function.
