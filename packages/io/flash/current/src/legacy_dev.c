@@ -60,6 +60,7 @@
 
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
+#include "flash_legacy.h"
 
 // When this flag is set, do not actually jump to the relocated code.
 // This can be used for running the function in place (RAM startup only),

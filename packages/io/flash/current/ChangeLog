@@ -1,5 +1,8 @@
 2004-11-22  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_priv, src/flash_legacy.h, src/flash.c,
+	src/legacy_dev.c: move cache stuff andother legacy macros
+	to an internal header.
 	* include/flash.h, include/flash_priv.h, doc/flash.sgml,
 	src/flash.c, src/legacy_dev.c: put const in the right places,
 	and rename cyg_block_info to cyg_flash_block_info
