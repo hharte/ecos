@@ -329,7 +329,7 @@ static int strata_erase_block (struct cyg_flash_dev *dev,
         if (len == 0) stat = 0;
     }
 
-    return stat;
+    return strata_hwr_map_error(dev, stat);
 }
 
 //----------------------------------------------------------------------------
@@ -434,7 +434,7 @@ strata_program_buf (struct cyg_flash_dev *dev,
  bad:
     BA[0] = FLASH_Reset;            
 
-    return stat;
+    return strata_hwr_map_error(dev, stat);
 }
 
 #ifdef CYGOPT_DEVS_FLASH_STRATA_V2_LOCKING
@@ -522,7 +522,7 @@ strata_unlock_block(struct cyg_flash_dev *dev,
     // Restore ROM to "normal" mode
     ROM[0] = FLASH_Reset;
 
-    return stat;
+    return strata_hwr_map_error(dev, stat);
 }
 
 //----------------------------------------------------------------------------
@@ -552,7 +552,7 @@ strata_lock_block(struct cyg_flash_dev *dev,
     // Restore ROM to "normal" mode
     ROM[0] = FLASH_Reset;
 
-    return stat;
+    return strata_hwr_map_error(dev, stat);
 }
 #endif
 
@@ -565,7 +565,6 @@ static CYG_FLASH_FUNS (cyg_flash_strata_v2_funs,
                 strata_erase_block,
                 strata_program_buf,
                 NULL,
-                strata_hwr_map_error,
                 strata_lock_block,
                 strata_unlock_block);
 #else
@@ -575,7 +574,6 @@ static CYG_FLASH_FUNS (cyg_flash_strata_v2_funs,
                 strata_erase_block,
                 strata_program_buf,
                 NULL,
-                strata_hwr_map_error,
                 cyg_flash_devfn_lock_nop,
                 cyg_flash_devfn_unlock_nop);
 #endif

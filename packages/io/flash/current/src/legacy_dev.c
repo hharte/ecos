@@ -124,10 +124,12 @@ legacy_flash_erase_block (struct cyg_flash_dev *dev,
   typedef int code_fun(cyg_flashaddr_t, unsigned int);
   code_fun *_flash_erase_block;
   size_t block_size = dev->block_info[0].block_size;
+  int    stat;
   
   _flash_erase_block = (code_fun*) cyg_flash_anonymizer(&flash_erase_block);
 
-  return (*_flash_erase_block)(block_base, block_size);
+  stat =  (*_flash_erase_block)(block_base, block_size);
+  return flash_hwr_map_error(stat);
 }
 
 static int
@@ -139,10 +141,12 @@ legacy_flash_program(struct cyg_flash_dev *dev,
   code_fun *_flash_program_buf;
   size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
-
+  int    stat;
+  
   _flash_program_buf = (code_fun*) cyg_flash_anonymizer(&flash_program_buf);
 
-  return (*_flash_program_buf)(base, data, len, block_mask ,block_size);
+  stat = (*_flash_program_buf)(base, data, len, block_mask ,block_size);
+  return flash_hwr_map_error(stat);
 }
 
 #ifdef CYGSEM_IO_FLASH_READ_INDIRECT
@@ -155,10 +159,11 @@ legacy_flash_read (struct cyg_flash_dev *dev,
   code_fun *_flash_read_buf;
   size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_mask -1);
-
+  int    stat;
   _flash_read_buf = (code_fun*) cyg_flash_anonymizer(&flash_read_buf);
   
-  return (*_flash_read_buf)(base, data, len, block_mask, block_size);
+  stat = (*_flash_read_buf)(base, data, len, block_mask, block_size);
+  return flash_hwr_map_error(stat);
 }
 
 # define LEGACY_FLASH_READ  legacy_flash_read
@@ -174,10 +179,11 @@ legacy_flash_block_lock (struct cyg_flash_dev *dev,
 {
   typedef int code_fun(cyg_flashaddr_t);
   code_fun *_flash_lock_block;
-  
+  int       stat;  
   _flash_lock_block = (code_fun*) cyg_flash_anonymizer(&flash_lock_block);
 
-  return (*_flash_lock_block)(block_base);
+  stat = (*_flash_lock_block)(block_base);
+  return flash_hwr_map_error(stat);
 }
 
 static int 
@@ -188,19 +194,13 @@ legacy_flash_block_unlock (struct cyg_flash_dev *dev,
   code_fun *_flash_unlock_block;
   size_t block_size = dev->block_info[0].block_size;
   cyg_uint32 blocks = dev->block_info[0].blocks;
-  
+  int        stat;  
   _flash_unlock_block = (code_fun*) cyg_flash_anonymizer(&flash_unlock_block);
   
-  return (*_flash_unlock_block)(block_base, block_size, blocks);
+  stat = (*_flash_unlock_block)(block_base, block_size, blocks);
+  return flash_hwr_map_error(stat);
 }
 #endif
-
-// Map a hardware status to a package error
-static int 
-legacy_flash_hwr_map_error (struct cyg_flash_dev *dev, int err)
-{
-  return flash_hwr_map_error(err);
-}
 
 void
 flash_dev_query(void* data)
@@ -222,7 +222,6 @@ static const CYG_FLASH_FUNS(cyg_legacy_funs,
                             legacy_flash_erase_block,
                             legacy_flash_program,
                             LEGACY_FLASH_READ,
-                            legacy_flash_hwr_map_error,
                             legacy_flash_block_lock,
                             legacy_flash_block_unlock
     );

@@ -163,15 +163,6 @@ sst_init(struct cyg_flash_dev *dev)
 }
 
 //----------------------------------------------------------------------------
-// Map a hardware status to a package error
-static int
-sst_hwr_map_error(struct cyg_flash_dev *dev, int err)
-{
-    return err;
-}
-
-
-//----------------------------------------------------------------------------
 // Flash Query
 //
 // Only reads the manufacturer and part number codes for the first
@@ -332,7 +323,6 @@ static const CYG_FLASH_FUNS(cyg_sst_funs,
 	               sst_erase_block,
 	               sst_program,
 	               NULL,              // read
-	               sst_hwr_map_error,
 	               cyg_flash_devfn_lock_nop,
 	               cyg_flash_devfn_unlock_nop);
 

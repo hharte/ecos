@@ -1,5 +1,8 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_strata_v2.inl: hwr_map_error() is now internal to
+	the driver, not exported to the generic flash code.
+	
 	* include/flash_strata_v2.inl: use the dummy lock/unlock functions
 	provided by the generic flash code.
 

@@ -1,5 +1,8 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/am29xxxxx_dev.h, src/am29xxxxx.c: eliminate
+	hwr_map_error() support, no longer needed
+	
 	* include/am29xxxxx_dev.h, src/am29xxxxx.c, src/am29xxxxx_aux.c:
 	The dummy init/query/lock/unlock functions have been moved to the
 	generic flash package. That also now exports an anonymizer

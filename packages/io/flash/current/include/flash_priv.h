@@ -75,7 +75,6 @@ struct cyg_flash_dev_funs {
   int     (*flash_read) (struct cyg_flash_dev *dev, 
                          const cyg_flashaddr_t base, 
                          void* data, size_t len);
-  int     (*flash_hwr_map_error) (struct cyg_flash_dev *dev, int err);
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING    
   int     (*flash_block_lock) (struct cyg_flash_dev *dev, 
                                const cyg_flashaddr_t block_base);
@@ -118,7 +117,7 @@ struct cyg_flash_dev {
 } CYG_HAL_TABLE_TYPE;
 
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
-# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _map_, _lock_, _unlock_) \
+# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _lock_, _unlock_) \
 struct cyg_flash_dev_funs _funs_ =      \
 {										\
 	.flash_init             = _init_,   \
@@ -126,20 +125,18 @@ struct cyg_flash_dev_funs _funs_ =      \
 	.flash_erase_block      = _erase_,  \
 	.flash_program          = _prog_,   \
 	.flash_read             = _read_,   \
-	.flash_hwr_map_error    = _map_,    \
 	.flash_block_lock       = _lock_,   \
 	.flash_block_unlock     = _unlock_  \
 }
 #else
-# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _map_, _lock_, _unlock_) \
+# define CYG_FLASH_FUNS(_funs_, _init_, _query_ , _erase_, _prog_ , _read_, _lock_, _unlock_) \
 struct cyg_flash_dev_funs _funs_ =      \
 {										\
 	.flash_init             = _init_,   \
 	.flash_query            = _query_,  \
 	.flash_erase_block      = _erase_,  \
 	.flash_program          = _prog_,   \
-	.flash_read             = _read_,   \
-	.flash_hwr_map_error    = _map_     \
+	.flash_read             = _read_    \
 }
 #endif
 

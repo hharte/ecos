@@ -1,5 +1,7 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
+	* src/synth.c: eliminate hwr_map_error() support, no longer needed
+	
 	* src/synth.c: use the dummy lock/unlock functions provided by the
 	generic flash package.
 

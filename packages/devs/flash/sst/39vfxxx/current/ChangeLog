@@ -1,5 +1,7 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
+	* include/flash_sst_39vfxxx.inl: eliminate hwr_map_error(), no
+	longer needed by the generic flash code.
 	* include/flash_sst_39vfxxx.inl: use the dummy lock/unlock
 	functions provided by the generic flash code.
 

@@ -1,4 +1,7 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
+	
+	* include/flash_priv.h, src/flash.c, src/legacy_dev.c: remove
+	hwr_map_error() from V2 drivers
 
 	* include/flash_priv.h, src/flash.c, src/legacy_dev.c: provide
 	dummy init/query/lock/unlock functions for use by device drivers

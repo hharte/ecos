@@ -52,8 +52,6 @@
 #include <cyg/io/flash.h>
 #include <cyg/io/flash_priv.h>
 
-externC int     cyg_am29xxxxx_hwr_map_error_nop(struct cyg_flash_dev*, int);
-
 externC int cyg_am29xxxxx_read_devid_8(     struct cyg_flash_dev*);
 externC int cyg_am29xxxxx_read_devid_16(    struct cyg_flash_dev*);
 externC int cyg_am29xxxxx_read_devid_32(    struct cyg_flash_dev*);

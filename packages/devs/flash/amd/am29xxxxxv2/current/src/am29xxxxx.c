@@ -195,14 +195,6 @@
 // ----------------------------------------------------------------------------
 // Generic code.
 
-// A dummy hwr_map_error routine.
-int
-cyg_am29xxxxx_hwr_map_error_nop(struct cyg_flash_dev* dev, int err)
-{
-    CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    return err;
-}
-
 // Get info about the current block, i.e. base and size.
 static void
 am29_get_block_info(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr, cyg_flashaddr_t* block_start, size_t* block_size)

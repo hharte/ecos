@@ -169,13 +169,6 @@ synth_flash_init(struct cyg_flash_dev *dev)
     return CYG_FLASH_ERR_OK;
 }
 
-// Map a hardware status to a package error
-static int
-synth_flash_hwr_map_error(struct cyg_flash_dev *dev, int err)
-{
-    return err;
-}
-
 /* This helps speed up the erase. */
 static char empty[4096];
 static cyg_bool empty_inited = false;
@@ -262,7 +255,6 @@ const CYG_FLASH_FUNS(cyg_flash_synth_funs,
                      synth_flash_erase_block,
                      synth_flash_program,
                      NULL,                 // read
-                     synth_flash_hwr_map_error,
                      cyg_flash_devfn_lock_nop,
                      cyg_flash_devfn_unlock_nop);
 

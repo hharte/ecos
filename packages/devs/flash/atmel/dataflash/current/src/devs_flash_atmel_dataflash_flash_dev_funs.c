@@ -63,11 +63,25 @@
 // -------------------------------------------------------------------------- 
 
 #define RETURN_ON_ERROR(_op_) \
-    if (CYG_DATAFLASH_ERR_OK != (err = _op_)) return err
+    if (CYG_DATAFLASH_ERR_OK != (err = _op_)) return df_flash_hwr_map_error(dev, err)
 
 #define GOTO_ON_ERROR(_op_) \
     if (CYG_DATAFLASH_ERR_OK != (err = _op_)) goto on_error
     
+static int 
+df_flash_hwr_map_error(struct cyg_flash_dev *dev, int err)
+{
+    switch (err)
+    {
+        case CYG_DATAFLASH_ERR_OK:         return CYG_FLASH_ERR_OK; 
+        case CYG_DATAFLASH_ERR_INVALID:    return CYG_FLASH_ERR_INVALID;  
+        case CYG_DATAFLASH_ERR_WRONG_PART: return CYG_FLASH_ERR_DRV_WRONG_PART; 
+        case CYG_DATAFLASH_ERR_TIMEOUT:    return CYG_FLASH_ERR_DRV_TIMEOUT;
+        case CYG_DATAFLASH_ERR_COMPARE:    return CYG_FLASH_ERR_DRV_VERIFY; 
+        default:                           return CYG_FLASH_ERR_INVALID;
+    }
+}
+
 // -------------------------------------------------------------------------- 
 
 static int 
@@ -136,7 +150,7 @@ df_flash_erase_block(struct cyg_flash_dev   *dev,
     
 on_error:
     cyg_dataflash_release(&priv->dev);
-    return err;
+    return df_flash_hwr_map_error(dev, err);
 }
 
 static int
@@ -165,7 +179,7 @@ df_flash_program(struct cyg_flash_dev *dev,
 
 on_error:
     cyg_dataflash_release(&priv->dev);
-    return err;
+    return df_flash_hwr_map_error(dev, err);
 }
 
 static int 
@@ -193,21 +207,7 @@ df_flash_read(struct cyg_flash_dev   *dev,
 
 on_error:
     cyg_dataflash_release(&priv->dev);
-    return err;    
-}
-
-static int 
-df_flash_hwr_map_error(struct cyg_flash_dev *dev, int err)
-{
-    switch (err)
-    {
-        case CYG_DATAFLASH_ERR_OK:         return CYG_FLASH_ERR_OK; 
-        case CYG_DATAFLASH_ERR_INVALID:    return CYG_FLASH_ERR_INVALID;  
-        case CYG_DATAFLASH_ERR_WRONG_PART: return CYG_FLASH_ERR_DRV_WRONG_PART; 
-        case CYG_DATAFLASH_ERR_TIMEOUT:    return CYG_FLASH_ERR_DRV_TIMEOUT;
-        case CYG_DATAFLASH_ERR_COMPARE:    return CYG_FLASH_ERR_DRV_VERIFY; 
-        default:                           return CYG_FLASH_ERR_INVALID;
-    }
+    return df_flash_hwr_map_error(dev, err);    
 }
 
 // -------------------------------------------------------------------------- 
@@ -218,7 +218,6 @@ CYG_FLASH_FUNS(cyg_dataflash_flash_dev_funs,
                df_flash_erase_block,
                df_flash_program,
                df_flash_read,
-               df_flash_hwr_map_error,
                cyg_flash_devfn_lock_nop,
                cyg_flash_devfn_unlock_nop
 );

@@ -246,7 +246,6 @@ cyg_flash_init(cyg_flash_printf *pf)
                "Block info is in the flash");
     CYG_ASSERT(dev->funs->flash_erase_block, "No erase function");
     CYG_ASSERT(dev->funs->flash_program, "No program function");
-    CYG_ASSERT(dev->funs->flash_hwr_map_error, "No hwr map error function");
 #ifdef CYGDBG_USE_ASSERTS
     {
          int i; 
@@ -490,7 +489,6 @@ cyg_flash_erase(cyg_flashaddr_t flash_base,
     }
     if (!erased) {
       stat = dev->funs->flash_erase_block(dev,block);
-      stat = dev->funs->flash_hwr_map_error(dev,stat);
     }
     if (CYG_FLASH_ERR_OK != stat && err_address) {
       *err_address = block;
@@ -572,7 +570,6 @@ cyg_flash_program(cyg_flashaddr_t flash_base,
     offset       = 0;
     
     stat = dev->funs->flash_program(dev, addr, ram, this_write);
-    stat = dev->funs->flash_hwr_map_error(dev,stat);
 #ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
     if (CYG_FLASH_ERR_OK == stat) // Claims to be OK
       if (!dev->funs->flash_read && memcmp((void *)addr, ram, this_write) != 0) {                
@@ -668,7 +665,6 @@ cyg_flash_read(const cyg_flashaddr_t flash_base,
           offset      = 0;
     
           stat = dev->funs->flash_read(dev, addr, ram, this_read);
-          stat = dev->funs->flash_hwr_map_error(dev,stat);
           if (CYG_FLASH_ERR_OK != stat && err_address) {
               *err_address = addr;
               break;
@@ -732,7 +728,6 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
         lock_count = block_size;
     }
     stat = dev->funs->flash_block_lock(dev,block);
-    stat = dev->funs->flash_hwr_map_error(dev,stat);
     
     if (CYG_FLASH_ERR_OK != stat && err_address) {
       *err_address = block;
@@ -796,7 +791,6 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
         unlock_count = block_size;
     }
     stat = dev->funs->flash_block_unlock(dev,block);
-    stat = dev->funs->flash_hwr_map_error(dev,stat);
     
     if (CYG_FLASH_ERR_OK != stat && err_address) {
       *err_address = block;
@@ -893,7 +887,7 @@ int
 cyg_flash_devfn_lock_nop(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
 {
     CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
+    CYG_UNUSED_PARAM(cyg_flashaddr_t, addr);
     return CYG_FLASH_ERR_DRV_WRONG_PART;
 }
 
@@ -901,7 +895,7 @@ int
 cyg_flash_devfn_unlock_nop(struct cyg_flash_dev* dev, const cyg_flashaddr_t addr)
 {
     CYG_UNUSED_PARAM(struct cyg_flash_dev*, dev);
-    CYG_UNUSED_PARAM(const cyg_flashaddr_t, addr);
+    CYG_UNUSED_PARAM(cyg_flashaddr_t, addr);
     return CYG_FLASH_ERR_DRV_WRONG_PART;
 }
 

@@ -1,5 +1,7 @@
 2004-11-29  Bart Veer  <bartv@ecoscentric.com>
 
+	(df_flash_hwr_map_error): this is now internal to the driver, no
+	longer needed by the generic flash code.
 	* src/devs_flash_atmel_dataflash_flash_dev_funs.c: use the dummy
 	query/lock/unlock functions provided by the generic flash code
 
