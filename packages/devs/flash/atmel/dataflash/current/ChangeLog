@@ -1,3 +1,8 @@
+2005-06-29  Jani Monoses <ani@iv.ro>
+
+	* include/dataflash.h: Allow the package to be compiled without
+	io/flash. Return correct value from cyg_dataflash_get_page_count()
+
 2004-12-02  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/dataflash.h,

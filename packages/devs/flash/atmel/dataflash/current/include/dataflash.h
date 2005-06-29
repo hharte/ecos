@@ -97,7 +97,7 @@ typedef struct cyg_dataflash_device_s
 } cyg_dataflash_device_t;
 
 //----------------------------------------------------------------------------
-
+#ifdef CYGPKG_IO_FLASH
 #include <cyg/io/flash.h>
 #include <cyg/io/flash_dev.h>
 
@@ -129,6 +129,7 @@ externC struct cyg_flash_dev_funs cyg_dataflash_flash_dev_funs;
                      & cyg_dataflash_priv_ ## name                              \
         )
     
+#endif
 //----------------------------------------------------------------------------
 
 static inline cyg_uint8
@@ -146,7 +147,7 @@ cyg_dataflash_get_page_size(cyg_dataflash_device_t *dev)
 static inline cyg_uint16
 cyg_dataflash_get_page_count(cyg_dataflash_device_t *dev)
 {
-    return dev->info->page_size;
+    return dev->info->page_count;
 }
 
 static inline cyg_uint16
