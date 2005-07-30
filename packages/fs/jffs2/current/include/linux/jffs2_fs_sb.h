@@ -14,7 +14,8 @@
 #include <linux/rwsem.h>
 
 #define JFFS2_SB_FLAG_RO 1
-#define JFFS2_SB_FLAG_MOUNTING 2
+#define JFFS2_SB_FLAG_SCANNING 2 /* Flash scanning is in progress */
+#define JFFS2_SB_FLAG_BUILDING 4 /* File system building is in progress */
 
 struct jffs2_inodirty;
 
@@ -31,7 +32,7 @@ struct jffs2_sb_info {
 	unsigned int flags;
 
 	struct task_struct *gc_task;	/* GC task struct */
-	struct semaphore gc_thread_start; /* GC thread start mutex */
+	struct completion gc_thread_start; /* GC thread start completion */
 	struct completion gc_thread_exit; /* GC thread exit completion port */
 
 	struct semaphore alloc_sem;	/* Used to protect all the following 
@@ -94,7 +95,7 @@ struct jffs2_sb_info {
 	   to an obsoleted node. I don't like this. Alternatives welcomed. */
 	struct semaphore erase_free_sem;
 
-#if defined CONFIG_JFFS2_FS_NAND || defined CONFIG_JFFS2_FS_NOR_ECC
+#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
 	/* Write-behind buffer for NAND flash */
 	unsigned char *wbuf;
 	uint32_t wbuf_ofs;

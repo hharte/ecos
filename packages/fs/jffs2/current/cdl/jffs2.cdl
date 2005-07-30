@@ -73,7 +73,7 @@ cdl_package CYGPKG_FS_JFFS2 {
     implements     CYGINT_IO_FILEIO_FS      
 
     compile        -library=libextras.a fs-ecos.c
-    compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c dir-ecos.c read.c compr.c
+    compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c dir-ecos.c read.c compr.c debug.c
     # This could be overridden by an alternative direct I/O method.
     compile        flashio.c
 
@@ -132,7 +132,7 @@ cdl_package CYGPKG_FS_JFFS2 {
     cdl_option CYGOPT_FS_JFFS2_NAND {
 	display         "Support for NAND flash"
 	flavor          bool
-	define          CONFIG_JFFS2_FS_NAND
+	define          CONFIG_JFFS2_FS_WRITEBUFFER
 	compile         wbuf.c
         requires        0
         description     "

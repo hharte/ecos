@@ -41,9 +41,6 @@
 #define JFFS2_COMPR_MODE_PRIORITY   1
 #define JFFS2_COMPR_MODE_SIZE       2
 
-void jffs2_set_compression_mode(int mode);
-int jffs2_get_compression_mode(void);
-
 struct jffs2_compressor {
         struct list_head list;
         int priority;              /* used by prirority comr. mode */
@@ -105,14 +102,6 @@ void jffs2_rtime_exit(void);
 #ifdef CONFIG_JFFS2_ZLIB
 int jffs2_zlib_init(void);
 void jffs2_zlib_exit(void);
-#endif
-#ifdef CONFIG_JFFS2_LZARI
-int jffs2_lzari_init(void);
-void jffs2_lzari_exit(void);
-#endif
-#ifdef CONFIG_JFFS2_LZO
-int jffs2_lzo_init(void);
-void jffs2_lzo_exit(void);
 #endif
 
 #endif /* __JFFS2_COMPR_H__ */

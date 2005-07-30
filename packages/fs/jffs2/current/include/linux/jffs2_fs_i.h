@@ -32,6 +32,9 @@ struct jffs2_inode_info {
 	/* Directory entries */
 	struct jffs2_full_dirent *dents;
 
+	/* The target path if this is the inode of a symlink */
+	unsigned char *target;
+
 	/* Some stuff we just have to keep in-core at all times, for each inode. */
 	struct jffs2_inode_cache *inocache;
 
