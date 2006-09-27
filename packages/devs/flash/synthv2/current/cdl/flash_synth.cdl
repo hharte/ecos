@@ -56,7 +56,8 @@ cdl_package CYGPKG_DEVS_FLASH_SYNTH_V2 {
     requires      CYGINT_ISO_ERRNO_CODES
 
     implements    CYGHWR_IO_FLASH_DEVICE
-    
+    implements    CYGHWR_IO_FLASH_DEVICE_NEEDS_CACHE_HANDLED
+
     include_dir   cyg/flash
     description   "FLASH memory device support for Synthetic target"
     compile       -library=libextras.a synth.c 
