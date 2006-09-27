@@ -98,11 +98,11 @@ cdl_package CYGPKG_IO_FLASH {
 	display	    "Device driver needs cache handled centrally"
 	flavor	    booldata
 	description "
-            Managing flash often requires interacting with the flash.
+            Managing flash often requires interacting with the cache.
             Some device drivers do not require the generic flash code to
-            manipulate the flash, either because they do it themselves or
+            manipulate the cache, either because they do it themselves or
             because the hardware does the right thing. Other drivers
-            require the generic code to disable/enable the flash before
+            require the generic code to disable/enable the cache before
             calling into the driver."
     }
     
@@ -116,9 +116,9 @@ cdl_package CYGPKG_IO_FLASH {
             current platform then this option will be implemented."
 	requires    { CYGHWR_IO_FLASH_DEVICE_LEGACY <= 1 }
 
-	# For now assume all legacy devices need the cache handled by
-	# the central code
-	implements CYGHWR_IO_FLASH_DEVICE_NEEDS_CACHE_HANDLED
+        # For now assume all legacy devices need the cache handled by
+        # the central code
+        implements CYGHWR_IO_FLASH_DEVICE_NEEDS_CACHE_HANDLED
     }
 
     cdl_option CYGSEM_IO_FLASH_READ_INDIRECT {
