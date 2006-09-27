@@ -11,6 +11,7 @@
 // copyright (C) 2004 Andrew Lunn
 // Copyright (C) 2003 Gary Thomas
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -83,6 +84,17 @@ externC cyg_bool plf_flash_query_soft_wp(void *addr, int len);
 #endif
 
 //---------------------------------------------------------------------------
+// If all of the flash devices handle cache themselves, or do not need any
+// special cache treatment, then the flash macros can be no-ops.
+#ifndef CYGHWR_IO_FLASH_DEVICE_NEEDS_CACHE_HANDLED
+# undef HAL_FLASH_CACHES_OFF
+# undef HAL_FLASH_CACHES_ON
+# undef HAL_FLASH_CACHES_STATE
+# define HAL_FLASH_CACHES_OFF(_d_, _i_)     CYG_EMPTY_STATEMENT
+# define HAL_FLASH_CACHES_ON(_d_, _i_)      CYG_EMPTY_STATEMENT
+# define HAL_FLASH_CACHES_STATE(_d_, _i_)   CYG_EMPTY_STATEMENT
+#endif
+
 // Execution of flash code must be done inside a
 // HAL_FLASH_CACHES_OFF/HAL_FLASH_CACHES_ON region - disabling the
 // cache on unified cache systems is necessary to prevent burst access
@@ -168,3 +180,7 @@ externC cyg_bool plf_flash_query_soft_wp(void *addr, int len);
 #endif  // HAL_FLASH_CACHES_OLD_MACROS
 
 #endif  // HAL_FLASH_CACHES_OFF
+
+#ifndef HAL_FLASH_CACHES_STATE
+# define HAL_FLASH_CACHES_STATE(_d_, _i_) int _d_, _i_
+#endif

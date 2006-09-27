@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 2004 Andrew Lunn
-// Copyright (C) 2004 eCosCentric Ltd.
+// Copyright (C) 2004, 2005, 2006 eCosCentric Ltd.
 // Copyright (C) 2003 Gary Thomas
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
@@ -162,8 +162,8 @@ static bool flash_sort_and_check(void)
     }
   }
   
-  // If there are no devices, abort. This could happen because none
-  // of the devices initialised. 
+  // If there are no valid devices, abort. This might happen if
+  // all drivers failed to initialize.
   if (flash_head == NULL) {
     return false;
   }
@@ -293,7 +293,7 @@ __externC int
 cyg_flash_get_info(cyg_uint32 Nth, cyg_flash_info_t * info)
 {
   struct cyg_flash_dev * dev;
-  
+
   if (!init) return CYG_FLASH_ERR_NOT_INIT;
 
 #if (1 == CYGHWR_IO_FLASH_DEVICE)
@@ -439,7 +439,7 @@ cyg_flash_erase(cyg_flashaddr_t flash_base,
   struct cyg_flash_dev * dev;
   size_t erase_count;
   int stat = CYG_FLASH_ERR_OK;
-  int d_cache, i_cache;
+  HAL_FLASH_CACHES_STATE(d_cache, i_cache);
 
   dev = find_dev(flash_base, &stat);
   if (!dev) return stat;
@@ -529,7 +529,7 @@ cyg_flash_program(cyg_flashaddr_t flash_base,
   const unsigned char * ram = ram_base;
   size_t write_count, offset;
   int stat = CYG_FLASH_ERR_OK;
-  int d_cache, i_cache;
+  HAL_FLASH_CACHES_STATE(d_cache, i_cache);
 
   dev = find_dev(flash_base, &stat);
   if (!dev) return stat;
@@ -643,9 +643,9 @@ cyg_flash_read(const cyg_flashaddr_t flash_base,
       // We have to indirect through the device driver.
       // The first read may be in the middle of a block. Do the necessary
       // adjustment here rather than inside the loop.
-      int               d_cache, i_cache;
       size_t            offset;
       cyg_flashaddr_t   block = flash_block_begin(flash_base, dev);
+      HAL_FLASH_CACHES_STATE(d_cache, i_cache);
       if (addr == block) {
           offset = 0;
       } else {
@@ -701,7 +701,7 @@ cyg_flash_lock(const cyg_flashaddr_t flash_base,
   struct cyg_flash_dev * dev;
   size_t lock_count;
   int stat = CYG_FLASH_ERR_OK;
-  int d_cache, i_cache;
+  HAL_FLASH_CACHES_STATE(d_cache, i_cache);
 
   dev = find_dev(flash_base, &stat);
   if (!dev) return stat;
@@ -764,7 +764,7 @@ cyg_flash_unlock(const cyg_flashaddr_t flash_base,
   struct cyg_flash_dev * dev;
   size_t unlock_count;
   int stat = CYG_FLASH_ERR_OK;
-  int d_cache, i_cache;
+  HAL_FLASH_CACHES_STATE(d_cache, i_cache);
 
   dev = find_dev(flash_base, &stat);
   if (!dev) return stat;

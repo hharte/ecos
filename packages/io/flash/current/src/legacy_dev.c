@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 2004 Andrew Lunn
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -141,7 +142,7 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 {
   typedef int code_fun(cyg_flashaddr_t, const void *, int, unsigned long, int);
   code_fun *_flash_program_buf;
-  size_t block_mask = ~(block_mask -1);
+  size_t block_mask = ~(block_size -1);
   int    stat;
   
   _flash_program_buf = (code_fun*) cyg_flash_anonymizer(&flash_program_buf);
@@ -159,7 +160,7 @@ legacy_flash_read (struct cyg_flash_dev *dev,
   typedef int code_fun(const cyg_flashaddr_t, void *, int, unsigned long, int);
   code_fun *_flash_read_buf;
   size_t block_size = dev->block_info[0].block_size;
-  size_t block_mask = ~(block_mask -1);
+  size_t block_mask = ~(block_size -1);
   int    stat;
   _flash_read_buf = (code_fun*) cyg_flash_anonymizer(&flash_read_buf);
   
@@ -208,7 +209,7 @@ flash_dev_query(void* data)
 {
     typedef void code_fun(void*);
     code_fun *_flash_query;
-    int d_cache, i_cache;
+    HAL_FLASH_CACHES_STATE(d_cache, i_cache);
 
     _flash_query = (code_fun*) cyg_flash_anonymizer(&flash_query);
 
