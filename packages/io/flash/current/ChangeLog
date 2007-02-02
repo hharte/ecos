@@ -1,3 +1,10 @@
+2005-02-02  Rutger Hofman   <rutger@cs.vu.nl>
+
+	* src/legacy_dev.c (legacy_flash_program): Added missing definition
+	of block_size.
+	* legacy_api.c: Added missing wrappers for flash_lock and
+	flash_unlock
+
 2005-01-28  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/legacy_dev.c (legacy_flash_init): Assign flash_info.pf from

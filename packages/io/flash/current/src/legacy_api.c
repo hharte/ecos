@@ -141,4 +141,19 @@ char *flash_errmsg(int err)
   return (char *)cyg_flash_errmsg(err);
 }
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+int flash_lock(void *base, int len, void **err_address)
+{
+    return cyg_flash_lock((const cyg_flashaddr_t)base,
+                          len, (cyg_flashaddr_t *)err_address);
+}
+
+int flash_unlock(void *base, int len, void **err_address)
+{
+    return cyg_flash_unlock((const cyg_flashaddr_t)base,
+                            len, (cyg_flashaddr_t *)err_address);
+}
+#endif
+
+
 // EOF legacy_api.c

@@ -142,6 +142,7 @@ legacy_flash_program(struct cyg_flash_dev *dev,
 {
   typedef int code_fun(cyg_flashaddr_t, const void *, int, unsigned long, int);
   code_fun *_flash_program_buf;
+  size_t block_size = dev->block_info[0].block_size;
   size_t block_mask = ~(block_size -1);
   int    stat;
   
