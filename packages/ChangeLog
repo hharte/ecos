@@ -1,3 +1,7 @@
+2009-03-19  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* ecos.db: target mac7100evb added word "Freescale" to the description.
+	
 2009-02-12  John Dallaway  <john@dallaway.org.uk>
 
 	* ecos.db: Make CYGPKG_DEVS_FLASH_SPI_M25PXX a hardware package.
