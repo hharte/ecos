@@ -822,6 +822,7 @@
     }
 
     cdl_interface CYGINT_HAL_CORTEXM_KINETIS_RTC {
+        display "System uses Real Time Clock"
     }
 
     cdl_component CYGHWR_HAL_CORTEXM_KINETIS_RTC {

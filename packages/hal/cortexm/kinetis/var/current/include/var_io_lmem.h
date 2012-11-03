@@ -80,7 +80,7 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_CACHEADDR_M       0xFFC
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_CACHEADDR_S       2
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_CACHEADDR(_ca_) \
-            (_ca_ << CYGHWR_HAL_KINETIS_LMEM_CLCR_CACHEADDR_S)
+            ((_ca_) << CYGHWR_HAL_KINETIS_LMEM_CLCR_CACHEADDR_S)
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_WSEL_M            0x4000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_TDSEL_M           0x10000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCIVB_M           0x100000
@@ -88,7 +88,7 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCWAY_M           0x400000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_S            24
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(_cmd_) \
-            (_cmd_ << CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_S)
+            ((_cmd_) << CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_S)
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LADSEL_M          0x4000000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LACC_M            0x8000000
 
@@ -97,7 +97,7 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define CYGHWR_HAL_KINETIS_LMEM_CSAR_PHYADDR_M         0xFFFFFFFC
 #define CYGHWR_HAL_KINETIS_LMEM_CSAR_PHYADDR_S         2
 #define CYGHWR_HAL_KINETIS_LMEM_CSAR_PHYADDR(_adr_) \
-            (_adr_ << CYGHWR_HAL_KINETIS_LMEM_CSAR_PHYADDR_S)
+            ((_adr_) << CYGHWR_HAL_KINETIS_LMEM_CSAR_PHYADDR_S)
 
 // CCVR Bit Fields
 #define CYGHWR_HAL_KINETIS_LMEM_CCVR_DATA_M            0xFFFFFFFF
@@ -106,23 +106,22 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 
 #define CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_M           0x3
 #define CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION(_region_,_mask_) \
-            (_mask_ << ((15 - _region_) * 2))
+            ((_mask_) << ((15 - (_region_)) * 2))
 
 #define CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M 0
 #define CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_WT_M 2
 #define CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_WB_M 3
 
-#define CYGHWR_HAL_KINETIS_LMEM_R_FLASH_0000   0
-#define CYGHWR_HAL_KINETIS_LMEM_R_DRAM_0800    1
-#define CYGHWR_HAL_KINETIS_LMEM_R_FLEXNVM_1000 2
-#define CYGHWR_HAL_KINETIS_LMEM_R_FLEXBUS_1800 3
-#define CYGHWR_HAL_KINETIS_LMEM_R_SRAM_L       4
-#define CYGHWR_HAL_KINETIS_LMEM_R_SRAM_U       5
+#define CYGHWR_HAL_KINETIS_LMEM_FLASH_0000     0
+#define CYGHWR_HAL_KINETIS_LMEM_DRAM_0800      1
+#define CYGHWR_HAL_KINETIS_LMEM_FLEXNVM_1000   2
+#define CYGHWR_HAL_KINETIS_LMEM_FLEXBUS_1800   3
+#define CYGHWR_HAL_KINETIS_LMEM_SRAM_L         4
+#define CYGHWR_HAL_KINETIS_LMEM_SRAM_U         5
 #define CYGHWR_HAL_KINETIS_LMEM_FLEXBUS_6000   6
 #define CYGHWR_HAL_KINETIS_LMEM_DRAM_7000      7
 #define CYGHWR_HAL_KINETIS_LMEM_DRAM_8000      8
 #define CYGHWR_HAL_KINETIS_LMEM_FLEXBUS_9000   9
-
 
 #define HAL_CORTEXM_KINETIS_CACHE_PC_ENABLE() \
             hal_cortexm_kinetis_cache_enable(CYGHWR_HAL_KINETIS_LMEM_PC_P)
@@ -166,24 +165,49 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define HAL_CORTEXM_KINETIS_CACHE_PC_INVALIDATE(_base, _size_) \
         hal_cortexm_kinetis_cache_invalidate(CYGHWR_HAL_KINETIS_LMEM_PC_P, _base, _size_)
 
+#if defined CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK && defined CYG_HAL_STARTUP_RAM
+
+#define CYGHWR_HAL_KINETIS_CACHE_WAIT(_lmem_p)                            \
+CYG_MACRO_START                                                           \
+    cyg_uint32 prs_tmp, prs_save;                                         \
+    cyg_uint32 m0, m1;                                                    \
+    cyghwr_hal_kinetis_axbs_t* _axbs_p = CYGHWR_HAL_KINETIS_AXBS_P;       \
+    prs_save = prs_tmp = _axbs_p->slave[5].prs;                           \
+    m0 = CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_PRIO(0, prs_tmp);             \
+    m1 = CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_PRIO(1, prs_tmp);             \
+    if(m1 > m0) {                                                         \
+        prs_tmp &= ~(CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_M(0) |            \
+                     CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_M(1));            \
+        prs_tmp |= (m0 << CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_S(1)) | m1;  \
+        _axbs_p->slave[5].prs = prs_tmp;                                  \
+    }                                                                     \
+    while((_lmem_p)->ccr & CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M);             \
+    _axbs_p->slave[5].prs = prs_save;                                     \
+CYG_MACRO_END
+
+#else // CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK
+
+#define CYGHWR_HAL_KINETIS_CACHE_WAIT(_lmem_p)          \
+            while((_lmem_p)->ccr & CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M)
+
+#endif // CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK
+
 __externC void inline
 hal_cortexm_kinetis_cache_enable(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
-    lmem_p->ccr = (CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_INVW0_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_INVW1_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_ENCACHE_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_ENWRBUF_M
-              );
+    lmem_p->ccr = ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_INVW0_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_INVW1_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_ENCACHE_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_ENWRBUF_M
+                   );
+    CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
 __externC void inline
 hal_cortexm_kinetis_cache_disable(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
-    lmem_p->ccr = (CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW1_M
-              );
+    lmem_p->ccr = 0;
 }
 
 __externC void inline
@@ -193,26 +217,29 @@ hal_cortexm_kinetis_cache_inval(cyghwr_hal_kinetis_lmem_t* lmem_p)
               CYGHWR_HAL_KINETIS_LMEM_CCR_INVW0_M |
               CYGHWR_HAL_KINETIS_LMEM_CCR_INVW1_M
               );
+    CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
 __externC void inline
 hal_cortexm_kinetis_cache_sync(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr |= ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW1_M
-              );
+                     CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
+                     CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW1_M
+                    );
+    CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
 __externC void inline
 hal_cortexm_kinetis_cache_clear(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr |= ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_INVW0_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_INVW1_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
-              CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW1_M
-              );
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_INVW0_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_INVW1_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
+                    CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW1_M
+                   );
+    CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
 __externC bool inline
@@ -227,20 +254,16 @@ hal_cortexm_kinetis_cache_invalidate(cyghwr_hal_kinetis_lmem_t* lmem_p,
                                         cyg_uint8* addr_p, cyg_uint32 size)
 {
     size = (((cyg_uint32)addr_p & 0xf) + size)/HAL_DCACHE_LINE_SIZE + 1;
+    lmem_p->clcr = CYGHWR_HAL_KINETIS_LMEM_CLCR_LADSEL_M |
+          CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(1);
     while(size--){
-        lmem_p->csar = addr_p;
-        lmem_p->clcr = CYGHWR_HAL_KINETIS_LMEM_CLCR_LADSEL_M |
-              CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(1) |
-              CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M;
+        lmem_p->csar = (cyg_uint8*)(((cyg_uint32) addr_p & 0xfffffffc) |
+                                    CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
         addr_p += HAL_DCACHE_LINE_SIZE;
-         while(lmem_p->clcr & CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
+        while(lmem_p->clcr & CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
     }
 }
 
-# define HAL_CORTEXM_KINETIS_DDRMC_INIT(__inidat) \
-        hal_cortexm_kinetis_ddrmc_init(__inidat, ((sizeof(__inidat)/2)/sizeof(__inidat[0])))
-__externC void hal_cortexm_kinetis_ddrmc_diag(void);
-
 //-----------------------------------------------------------------------------
-// end of var_io_ddrmc.h
+// end of var_io_lmem.h
 #endif // CYGONCE_HAL_VAR_IO_LMEM_H

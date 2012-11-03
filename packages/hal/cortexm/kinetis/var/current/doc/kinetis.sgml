@@ -78,7 +78,7 @@
       controller naming scheme (see respective Freescale Kinetis product brief(s) and reference manual(s)). 
       The Kinetis part builder <literal>CYGHWR_HAL_CORTEXM_KINETIS</literal>, respects this naming scheme and
       enables the user to interactively configure eCos for the desired part by selecting
-      the requested part's name segments.
+      the requested part name segments.
       Based on user input, the CDL computes the part-specific eCos configuration. This includes calculation
       of on-chip FLASH and SRAM layout as well as the activation/deactivation of options such as FPU and
       Ethernet.
@@ -230,15 +230,18 @@
       <refsect3 id="kinetis-var-memory-cache"><title>Cache</title>
       <para>
       Kinetis members with operating frequencies of 120 MHz and 150 MHz are equipped with cache memory.
-      Due to the Harvard architecture, there are two unified cache memories connected to code 
-      - <emphasis>PC</emphasis> and system - <emphasis>PS</emphasis> buses respectively. One of the
-      issues with caching is operation with bus masters such as DMA, Ethernet controller, etc.
-      In order to keep shared data such
-      as buffers and transfer descriptors synchronous, a part of cached data may have to be flushed
-      and/or invalidated. In some cases, an alternative can be the usage of non-cacheable memory
-      regions. <literal>CYGHWR_HAL_NON_CACHABLE</literal> provides for the configuration of non-cacheable
-      memory. If some bus masters have provision for non-cacheable memory, such configuration options
-      can be parented by <literal>CYGHWR_HAL_NON_CACHABLE</literal>.
+      Due to the Harvard architecture, there are two cache memories connected to code 
+      - <emphasis>PC</emphasis> and system - <emphasis>PS</emphasis> buses respectively.
+      Although both modules can cache both instructions and data (unified caches), with the provided
+      memory they act as instruction (<emphasis>PC</emphasis>) and data (<emphasis>PS</emphasis>) caches.
+      </para>
+      <para>
+      A common caching issue is sharing memory resources with bus masters such as DMA, Ethernet controller, etc.
+      In order to keep shared data such as buffers and transfer control descriptors consistent,
+      cached data have to be flushed and/or invalidated. An alternative approach, used here is usage of
+      non-cachable memory for shared data. <literal>CYGHWR_HAL_NON_CACHABLE</literal> provides for
+      the configuration of non-cachable memory. If some bus masters have provision for non-cache able memory,
+      such configuration options can be parenthed by <literal>CYGHWR_HAL_NON_CACHABLE</literal>.
       </para>
       </refsect3>
       </refsect2>

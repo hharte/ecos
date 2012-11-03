@@ -63,12 +63,8 @@
 //---------------------------------------------------------------------------
 // VTOR - Vector Table Offset Register
 #ifndef CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM
-# ifdef CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED
-#  define CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM  (BIT_(29) - \
-                                             CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE)
-# else
-#  define CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM  BIT_(29)
-# endif
+#define CYGARC_REG_NVIC_VTOR_TBLBASE_SRAM (BIT_(29) -                       \
+                                           CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE)
 #endif
 
 //=============================================================================
@@ -147,7 +143,7 @@ typedef volatile struct cyghwr_hal_kinetis_mcg_s {
     cyg_uint8 atcvl;   // MCG Auto Trim Compare Value Low Register
 #if CYGHWR_HAL_CORTEXM_KINETIS_REV == 2
     cyg_uint8 c7;      // MCG Control 7 Register
-    cyg_uint8 c8;      // MCG Control 8 Register    
+    cyg_uint8 c8;      // MCG Control 8 Register
 #endif
 #if CYGINT_HAL_CORTEXM_KINETIS_150
     cyg_uint8 c10;     // MCG Control 10 Register
@@ -155,7 +151,7 @@ typedef volatile struct cyghwr_hal_kinetis_mcg_s {
     cyg_uint8 c11;     // MCG Control 11 Register
     cyg_uint8 c12;     // MCG Control 12 Register
     cyg_uint8 s2;      // MCG Status 2 Register
-#endif //CYGINT_HAL_CORTEXM_KINETIS_150    
+#endif //CYGINT_HAL_CORTEXM_KINETIS_150
 } cyghwr_hal_kinetis_mcg_t;
 
 #define CYGHWR_HAL_KINETIS_MCG_P  ((cyghwr_hal_kinetis_mcg_t *)0x40064000)
@@ -545,7 +541,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
     cyg_uint32 uidmh;           // Unique Identification Register Mid-High
     cyg_uint32 uidml;           // Unique Identification Register Mid Low
     cyg_uint32 uidl;            // Unique Identification Register Low
-    
+
     cyg_uint32 clkdiv3;         // System Clock Divider Register 3
     cyg_uint32 clkdiv4;         // System Clock Divider Register 4
     cyg_uint32 mcr;             // Misc control register
@@ -954,7 +950,7 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 
 // The following encodes the control register and clock bit number
 // into 16 bit descriptor.
-#define CYGHWR_HAL_CLOCK( __reg, __bit ) (((__reg-1)&0xF) + ((__bit<<8)&0x1F00))
+#define CYGHWR_HAL_CLOCK( __reg, __bit ) ((((__reg)-1)&0xF) + (((__bit)<<8)&0x1F00))
 
 // Macros to extract encoded values.
 #define CYGHWR_HAL_CLOCK_REG( __desc ) ((__desc)&0xF)
@@ -968,6 +964,67 @@ __externC void hal_clock_disable( cyg_uint32 desc );
 #define CYGHWR_HAL_CLOCK_ENABLE( __desc ) hal_clock_enable( __desc )
 #define CYGHWR_HAL_CLOCK_DISABLE( __desc ) hal_clock_disable( __desc )
 
+//--------------------------------------------------------------------------
+// AXBS - Crossbar switch
+
+#define CYGHWR_HAL_KINETIS_AXBS_SLAVES_K    7
+#define CYGHWR_HAL_KINETIS_AXBS_MASTERS_K   8
+
+typedef volatile struct cyghwr_hal_kinetis_axbs_s {
+    volatile struct cyghwr_hal_kinetis_axbs_slave_s {
+        cyg_uint32 prs;
+        cyg_uint32 res0[3];
+        cyg_uint32 crs;
+        cyg_uint32 res1[59];
+    } slave[8];
+    volatile struct cyghwr_hal_kinetis_axbs_master_s {
+        cyg_uint32 res0[64];
+        cyg_uint32 mgprc;
+    } master[8];
+} cyghwr_hal_kinetis_axbs_t;
+
+#define CYGHWR_HAL_KINETIS_AXBS_P ((cyghwr_hal_kinetis_axbs_t *) 0x40004000)
+
+// PRS Fields
+#define CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_S(_master_) ((_master_) * 4)
+#define CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_M(_master_) \
+            (0x7 << CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_S(_master_))
+
+#define CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_PRIO(_master_,_prs)           \
+            (((_prs) & CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_M(_master_)) >>  \
+             CYGHWR_HAL_KINETIS_AXBS_PRS_MASTER_S(_master_))
+// CRS Fields
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_PARK_M     0x7
+
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_PCTL_M     0x30
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_PCTL_S     4
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_PCTL(_x_)  (((_x_) << CYGHWR_HAL_KINETIS_AXBS_CRS_PCTL_S) & \
+                                                         CYGHWR_HAL_KINETIS_AXBS_CRS_PCTL_M)
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_ARB_M      0x300
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_ARB_S      8
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_ARB(_x_)   (((_x_) << CYGHWR_HAL_KINETIS_AXBS_CRS_ARB_S) & \
+                                                        CYGHWR_HAL_KINETIS_AXBS_CRS_ARB_M)
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_HLP_M      0x40000000
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_RO_M       0x80000000
+
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_SET_ARB(_slave_i,_arb)          \
+CYG_MACRO_START                                                     \
+    cyg_uint32 regval;                                              \
+    cyghwr_hal_kinetis_axbs_t* _axbs_p = CYGHWR_HAL_KINETIS_AXBS_P; \
+    regval = _axbs_p->slave[_slave_i].crs;                          \
+    regval &= ~CYGHWR_HAL_KINETIS_AXBS_CRS_ARB_M;                   \
+    regval |= CYGHWR_HAL_KINETIS_AXBS_CRS_ARB(_arb);                \
+    _axbs_p->slave[_slave_i].crs = regval;                          \
+CYG_MACRO_END
+
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_SET_ARB_RR(_slave_i)    \
+            CYGHWR_HAL_KINETIS_AXBS_CRS_SET_ARB((_slave_i), 1)
+
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_SET_ARB_FIX(_slave_i)   \
+            CYGHWR_HAL_KINETIS_AXBS_CRS_SET_ARB((_slave_i), 0)
+
+// MGPCR Bit Fields
+#define CYGHWR_HAL_KINETIS_AXBS_CRS_AXBS_MGPCR_AULB_M  0x7
 
 //---------------------------------------------------------------------------
 // PORT - Peripheral register structure
@@ -1028,12 +1085,12 @@ enum {
 #define CYGHWR_HAL_KINETIS_PORT_PCR_MUX_GPIO      1
 
 #define CYGHWR_HAL_KINETIS_PIN(__port, __bit, __mux, __cnf) \
-    ((CYGHWR_HAL_KINETIS_PORT##__port << 20) | (__bit << 27) \
-     | CYGHWR_HAL_KINETIS_PORT_PCR_MUX(__mux) | __cnf)
+    ((CYGHWR_HAL_KINETIS_PORT##__port << 20) | ((__bit) << 27) \
+     | CYGHWR_HAL_KINETIS_PORT_PCR_MUX(__mux) | (__cnf))
 
-#define CYGHWR_HAL_KINETIS_PIN_PORT(__pin) ((__pin >> 20) & 0x7)
-#define CYGHWR_HAL_KINETIS_PIN_BIT(__pin)  ((__pin >> 27 ) & 0x1f)
-#define CYGHWR_HAL_KINETIS_PIN_FUNC(__pin) (__pin & 0x010f8777)
+#define CYGHWR_HAL_KINETIS_PIN_PORT(__pin) (((__pin) >> 20) & 0x7)
+#define CYGHWR_HAL_KINETIS_PIN_BIT(__pin)  (((__pin) >> 27 ) & 0x1f)
+#define CYGHWR_HAL_KINETIS_PIN_FUNC(__pin) ((__pin) & 0x010f8777)
 #define CYGHWR_HAL_KINETIS_PIN_NONE (0xffffffff)
 
 // GPCLR Bit Fields
@@ -1105,7 +1162,7 @@ typedef volatile struct cyghwr_hal_kinetis_pmc_s {
 // LVDSC1 Bit Fields
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV_M      0x3
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV(__val) \
-        (__val & CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV_M)
+        ((__val) & CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDV_M)
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDRE_M     0x10
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDRE_S     4
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC1_LVDIE_M     0x20
@@ -1117,7 +1174,7 @@ typedef volatile struct cyghwr_hal_kinetis_pmc_s {
 // LVDSC2 Bit Fields
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV_M      0x3
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV(__val) \
-        (__val & CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV_M)
+        ((__val) & CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWV_M)
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWIE_M     0x20
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWIE_S     5
 #define CYGHWR_HAL_KINETIS_PMC_LVDSC2_LVWACK_M    0x40
@@ -1163,13 +1220,13 @@ enum {
 };
 
 #define CYGHWR_HAL_KINETIS_FMC_TAG(__way,__side) \
-          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x100 + __way*0x20 + __side*4)
+          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x100 + (__way)*0x20 + (__side)*4)
 #define CYGHWR_HAL_KINETIS_FMC_DATA_U(__way,side) \
-          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x200 + --way*0x20 + __side*8)
+          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x200 + (__way)*0x20 + (__side)*8)
 #define CYGHWR_HAL_KINETIS_FMC_DATA_L(__way,side) \
-          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x204 + --way*0x40 + __side*8)
+          (CYGHWR_HAL_KINETIS_FMC_BASE + 0x204 + (__way)*0x40 + (__side)*8)
 
-#define CYGHWR_HAL_KINETIS_FMC_PFAPR_MPFD_M(__master) (1 << (__master + 16))
+#define CYGHWR_HAL_KINETIS_FMC_PFAPR_MPFD_M(__master) (1 << ((__master) + 16))
 enum {
     CYGHWR_HAL_KINETIS_FMC_PFAPR_MAP_NO_ACCESS,
     CYGHWR_HAL_KINETIS_FMC_PFAPR_MAP_RO,
@@ -1177,18 +1234,18 @@ enum {
     CYGHWR_HAL_KINETIS_FMC_PFAPR_MAP_RW
 };
 #define CYGHWR_HAL_KINETIS_FMC_PFAPR_MAP(__master, __access) \
-          (__access <<(2 * __master))
+          ((__access) <<(2 * (__master)))
 
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_RWSC_M (0xf0000000)
 
-#define CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(__way) ((1 << __way) << 24)
+#define CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(__way) ((1 << (__way)) << 24)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_ALL \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W0) | \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W1) | \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W2) | \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CLCK_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W3)
 
-#define CYGHWR_HAL_KINETIS_FMC_PFBCR_CINV_WAY(__way) ((1 << __way) << 20)
+#define CYGHWR_HAL_KINETIS_FMC_PFBCR_CINV_WAY(__way) ((1 << (__way)) << 20)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_CINV_ALL \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CINV_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W0) | \
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CINV_WAY(CYGHWR_HAL_KINETIS_FMC_CACHE_W1) | \
@@ -1205,7 +1262,7 @@ enum{
     CYGHWR_HAL_KINETIS_FMC_PFBCR_CRC_IND_LRUW02ID3D
 };
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_CRC   (__cache_repl_con) \
-                                       (__cache_repl_con << 5)
+                                       ((__cache_repl_con) << 5)
 
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BDCE  (0x10)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BICE  (0x08)

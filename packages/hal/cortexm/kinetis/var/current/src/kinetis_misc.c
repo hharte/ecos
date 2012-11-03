@@ -70,16 +70,7 @@
 
 void sst25xx_freescale_dspi_reg(void);
 
-#ifdef CYGPKG_HAL_KINETIS_CACHE
-# if defined CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP || \
-     defined CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
-
-#  define ENABLE_CACHE_ON_STARTUP
-
-# endif
-#endif // defined CYGPKG_HAL_KINETIS_CACHE
-
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined CYG_HAL_STARTUP_ROM && !defined CYG_HAL_STARTUP_RAM
 
 //===========================================================================
 // KINETIS FLASH configuration field
@@ -107,13 +98,12 @@ hal_kinetis_flash_conf_p( void )
     return &CYGHWR_HAL_KINETIS_FLASH_CONF_FIELD;
 }
 
-#endif // CYG_HAL_STARTUP_ROM
+#endif // defined CYG_HAL_STARTUP_ROM && !defined CYG_HAL_STARTUP_RAM
 
 //=== KINETIS FLASH security configuration END. ============================
 
 #if defined CYGPKG_HAL_KINETIS_CACHE
 
-# ifndef CYG_HAL_STARTUP_RAM
 // Function for demotion of caching memory regions
 static void
 hal_cortexm_kinetis_conf_cache_regions(cyghwr_hal_kinetis_lmem_t* lmem_p,
@@ -134,9 +124,22 @@ hal_cortexm_kinetis_conf_cache_regions(cyghwr_hal_kinetis_lmem_t* lmem_p,
     }
     lmem_p->rmr = regval;
 }
-# endif // ndef CYG_HAL_STARTUP_RAM
 
-const cyg_uint32 cache_reg_modes[] = {
+const cyg_uint32 cache_reg_modes_pc[] = {
+    (CYGHWR_HAL_KINETIS_LMEM_DRAM_7000 << 16) |
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M,
+
+    (CYGHWR_HAL_KINETIS_LMEM_DRAM_8000 << 16) |
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M
+};
+
+const cyg_uint32 cache_reg_modes_ps[] = {
+    (CYGHWR_HAL_KINETIS_LMEM_FLASH_0000 << 16) |
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M,
+
+    (CYGHWR_HAL_KINETIS_LMEM_DRAM_0800 << 16) |
+    CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_NC_M,
+
     (CYGHWR_HAL_KINETIS_LMEM_DRAM_7000 << 16) |
 #if defined CYGSEM_HAL_DCACHE_STARTUP_MODE_WRITETHRU
     CYGHWR_HAL_KINETIS_LMEM_CRMR_REGION_WT_M,
@@ -158,21 +161,40 @@ const cyg_uint32 cache_reg_modes[] = {
 
 void hal_variant_init( void )
 {
-    hal_update_clock_var();
 #if defined CYGPKG_HAL_KINETIS_CACHE
-# ifndef CYG_HAL_STARTUP_RAM
-    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PS_P,
-        sizeof(cache_reg_modes)/sizeof(cache_reg_modes[0]),
-        cache_reg_modes);
-    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PC_P,
-        sizeof(cache_reg_modes)/sizeof(cache_reg_modes[0]),
-        cache_reg_modes);
+# if defined CYG_HAL_STARTUP_RAM
+    register CYG_INTERRUPT_STATE oldints;
 # endif
-# ifdef ENABLE_CACHE_ON_STARTUP
-    HAL_DCACHE_ENABLE();
+#endif
+
+    hal_update_clock_var();
+
+#if defined CYGPKG_HAL_KINETIS_CACHE
+# if defined CYG_HAL_STARTUP_RAM
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    HAL_DCACHE_PURGE_ALL();
+    HAL_ICACHE_DISABLE();
+    HAL_ICACHE_INVALIDATE_ALL();
+# endif // defined CYG_HAL_STARTUP_RAM
+    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PS_P,
+        sizeof(cache_reg_modes_ps)/sizeof(cache_reg_modes_ps[0]),
+        cache_reg_modes_ps);
+    hal_cortexm_kinetis_conf_cache_regions(CYGHWR_HAL_KINETIS_LMEM_PC_P,
+        sizeof(cache_reg_modes_pc)/sizeof(cache_reg_modes_pc[0]),
+        cache_reg_modes_pc);
+# if defined CYG_HAL_STARTUP_RAM
+    HAL_RESTORE_INTERRUPTS(oldints);
+# endif
+# ifdef CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
     HAL_ICACHE_ENABLE();
 # endif
+# ifdef CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
+    HAL_DCACHE_ENABLE();
+# endif
 #endif // defined CYGPKG_HAL_KINETIS_CACHE
+
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
 #endif
@@ -259,22 +281,22 @@ void CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION_ATTR
 hal_clock_enable(cyg_uint32 desc)
 {
     volatile cyg_uint32 *scgc_p;
-    
+
     if(desc != CYGHWR_HAL_KINETIS_CLOCK_NONE) {
         scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 + CYGHWR_HAL_CLOCK_REG(desc);
         *scgc_p |= 1 << CYGHWR_HAL_CLOCK_BIT(desc);
-    }    
+    }
 }
 
 void CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION_ATTR
 hal_clock_disable(cyg_uint32 desc)
 {
     volatile cyg_uint32 *scgc_p;
-    
+
     if(desc != CYGHWR_HAL_KINETIS_CLOCK_NONE) {
         scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 + CYGHWR_HAL_CLOCK_REG(desc);
         *scgc_p &= ~(1 << CYGHWR_HAL_CLOCK_BIT(desc));
-    }    
+    }
 }
 
 //==========================================================================

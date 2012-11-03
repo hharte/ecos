@@ -1,3 +1,18 @@
+2012-09-28  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* var/current/cdl/hal_cortexm_kinetis.cdl
+	* var/current/cdl/kinetis_clocking.cdl
+	* var/current/doc/kinetis.sgml
+	* var/current/include/hal_cache.h
+	* var/current/include/var_io_ddrmc.h
+	* var/current/include/var_io_lmem.h
+	* var/current/src/kinetis_ddram.c
+	* var/current/src/kinetis_misc.c
+	Separate data and code caches, as well as text indentation suggested by Jifl.
+	Fixes to cache and SDRAM CDL and functions Improved SDRAM controller
+	support due to better manufacturer documentation: Configurable pad control.
+	                                           [Bugzilla 1001606]
+
 2012-08-01  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/var_io.h, src/kinetis_misc.c: Add functions and macros

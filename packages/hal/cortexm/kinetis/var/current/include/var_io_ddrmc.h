@@ -101,9 +101,9 @@ typedef volatile struct cyghwr_hal_kinetis_ddrmc_s {
           (CYGHWR_HAL_KINETIS_SIM_MCR_DDRSREN_M * 0 ))
 # endif
 
-__externC void hal_cortexm_kinetis_ddrmc_init(const cyg_uint32 src[], cyg_uint32 num);
+__externC void hal_cortexm_kinetis_ddrmc_init(const cyg_uint32 src[]);
 # define HAL_CORTEXM_KINETIS_DDRMC_INIT(__inidat) \
-        hal_cortexm_kinetis_ddrmc_init(__inidat, ((sizeof(__inidat)/2)/sizeof(__inidat[0])))
+        hal_cortexm_kinetis_ddrmc_init(__inidat)
 __externC void hal_cortexm_kinetis_ddrmc_diag(void);
 
 //-----------------------------------------------------------------------------
