@@ -33,7 +33,7 @@ SECTIONS
     SECTION_gcc_except_table (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_eh_frame (flash, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_got (flash, ALIGN (0x8), LMA_EQ_VMA)
-    USER_SECTION (code_sram, sram_l, 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE (NOLOAD), LMA_EQ_VMA)
+    USER_SECTION (code_sram, sram_l, 0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE + 0x400 (NOLOAD), LMA_EQ_VMA)
     USER_SECTION (data_sram, sram_u, 0x20000000 (NOLOAD), LMA_EQ_VMA)
     SECTION_data (ram, CYGHWR_HAL_KINETIS_FB_CS0_AR, FOLLOWING (.got))
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
@@ -41,6 +41,6 @@ SECTIONS
     SECTIONS_END
 }
 
-hal_vsr_table = (0x20000000);
+hal_vsr_table = (0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE);
 hal_virtual_vector_table = hal_vsr_table + 128*4;
 hal_startup_stack = (0x20000000 + CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE);

@@ -92,26 +92,6 @@ hal_system_init( void )
     hal_gpio_init();
     hal_start_clocks();
 #endif
-#if defined(CYG_HAL_STARTUP_SRAM) && !defined(CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED)
-    // Note: For CYG_HAL_STARTUP_SRAM, the SRAM_L bank simulates ROM
-    // Relocate data from ROM to RAM
-    {
-        register cyg_uint32 *ram_p, *rom_p;
-        for( ram_p = &__ram_data_start, rom_p = &__rom_data_start;
-             ram_p < &__ram_data_end;
-             ram_p++, rom_p++ )
-            *ram_p = *rom_p;
-    }
-
-    // Relocate data from ROM to SRAM
-    {
-        register cyg_uint32 *ram_p, *sram_p;
-        for( ram_p = &__sram_data_start, sram_p = &__srom_data_start;
-             ram_p < &__sram_data_end;
-             ram_p++, sram_p++ )
-            *ram_p = *sram_p;
-    }
-#endif
 }
 
 //===========================================================================

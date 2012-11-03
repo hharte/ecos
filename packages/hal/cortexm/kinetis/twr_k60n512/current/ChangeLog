@@ -1,3 +1,8 @@
+2012-10-25  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* src/twr_k60n512_misc.c: Initialization for separate SRAM regions
+	synchronized with variant.                  [Bugzilla 1001606]
+
 2012-05-19  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_cortexm_kinetis_twr_k60n512.cdl: Reference per-package
