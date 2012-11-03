@@ -93,6 +93,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
         puts $::cdl_header "#define HAL_PLATFORM_CPU    \"Cortex-M4\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Freescale TWR-K70F120M\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        puts $::cdl_system_header "#define CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES 4000000"
     }
 
     cdl_component CYG_HAL_STARTUP_ENV {
@@ -133,7 +134,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
             by RedBoot into external RAM."
     }
 
-    cdl_option CYGHWR_MEMORY_LAYOUT_PLF {
+    cdl_component CYGHWR_MEMORY_LAYOUT_PLF {
         display "Memory layout by platform"
         flavor data
         active_if { CYG_HAL_STARTUP_PLF != "ByVariant" }
@@ -151,6 +152,13 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
         description "
             Combination of 'Startup type' and 'Kinetis member in use'
             produces the memory layout."
+
+        cdl_option CYGHWR_MEMORY_RAM_RESERVED {
+            display "Reserved RAM space \[Bytes\]"
+            flavor  data
+            legal_values 0 to 0x40000
+            default_value 0x20000
+        }
     }
 
     cdl_option CYGNUM_HAL_CORTEXM_KINETIS_PLF_CLOCK_FREQ_SP {
