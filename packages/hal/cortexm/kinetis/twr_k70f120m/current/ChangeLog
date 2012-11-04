@@ -1,3 +1,12 @@
+2012-11-04  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* twr_k70f120m/current/include/pkgconf/mlt_kinetis_flash_sram2s_extram_ram.ldi
+	* twr_k70f120m/current/include/pkgconf/mlt_kinetis_flash_unisram_extram_ram.ldi:
+	Recognize 256 Bytes space for virtual vectors in sram.
+
+	* twr_k70f120m/current/cdl/hal_cortexm_kinetis_twr_k70f120m.cdl:
+	Add settings for Kinetis internal flash.  [Bugzilla 1001561]
+
 2012-09-28  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* twr_k70f120m/current/cdl/hal_cortexm_kinetis_twr_k70f120m.cdl
@@ -9,7 +18,7 @@
 	* twr_k70f120m/current/include/pkgconf/mlt_kinetis_flash_unisram_extram_ram.ldi
 	* twr_k70f120m/current/include/pkgconf/mlt_kinetis_flash_unisram_extram_rom.h
 	* twr_k70f120m/current/include/pkgconf/mlt_kinetis_flash_unisram_extram_rom.ldi
-	* twr_k70f120m/current/src/twr_k70f120m_misc.c
+	* twr_k70f120m/current/src/twr_k70f120m_misc.c:
 	Synchronized with Kinetis variant changes to SDRAM controller support.
 	Memory layouts adapted to separate data and code cacing partitions.
 	                                            [Bugzilla 1001606]

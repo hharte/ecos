@@ -62,6 +62,10 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM == 70 }
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME == "1M0" }
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_REV == 2 }
+    requires      { is_active(CYGPKG_DEVS_FLASH_KINETIS) implies
+                    CYGNUM_DEVS_KINETIS_FLASH_BLOCK_SIZE == 0x1000 }
+    requires      { is_active(CYGPKG_DEVS_FLASH_KINETIS) implies
+                    CYGNUM_DEVS_KINETIS_FLASH_LONGWORD_SIZE == 8 }
 
     implements    CYGINT_IO_SERIAL_FREESCALE_UART2
 
