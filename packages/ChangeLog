@@ -1,3 +1,9 @@
+2012-11-04  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* ecos.db: Add Kinetis internal flash driver contributed by
+	Nicolas Aujoux. Added flash driver entries
+	to: TWR-K60N512, TWR-K40X256, TWR-K70F120M and Kwikstik.
+
 2012-02-22  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* ecos.db: Add TWR-K70F120M bsp and target.

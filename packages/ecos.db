@@ -944,6 +944,16 @@ package CYGPKG_DEVS_FLASH_ARM_OLPCX2294_V2 {
             and LPC-L2294-1M boards. It uses eCos Flash v2 API."
 }
 
+package CYGPKG_DEVS_FLASH_KINETIS {
+	alias           { "Internal FLASH memory support for freescale kinetis" }
+    directory       devs/flash/freescale/kinetis
+    script          kinetis_flash.cdl
+    hardware
+    description "
+    This package contains hardware support for the internal FLASH memory
+    on kinetis devices."
+}
+
 package CYGPKG_DEVS_RAM_MICRON_CELLULARRAM {
 	alias		{ "Micron CellularRam 1.5 support" }
 	directory	hal/misc/ram/micron/cellularram
@@ -7315,6 +7325,7 @@ target freescale_twr_k60n512 {
                    CYGPKG_DEVS_SPI_FREESCALE_DSPI
                    CYGPKG_DEVS_DISK_MMC
                    CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+                   CYGPKG_DEVS_FLASH_KINETIS
                  }
         description "The freescale_twr_k60n512 target provides the packages needed
         to run eCos on the Freescale TWR-K60N512 development system."
@@ -7333,6 +7344,7 @@ target freescale_twr_k40x256 {
                    CYGPKG_DEVS_SPI_FREESCALE_DSPI
                    CYGPKG_DEVS_DISK_MMC
                    CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+                   CYGPKG_DEVS_FLASH_KINETIS
                  }
         description "The freescale_twr_k40x256 target provides the packages needed
         to run eCos on the Freescale TWR-K40X256 development system."
@@ -7346,6 +7358,7 @@ target freescale_kwikstik {
                    CYGPKG_IO_SERIAL_FREESCALE_UART_HDR
                    CYGPKG_IO_SERIAL_FREESCALE_UART
                    CYGPKG_DEVICES_WALLCLOCK_KINETIS_RTC
+                   CYGPKG_DEVS_FLASH_KINETIS
                  }
         description "The freescale_kwikstik target provides the packages needed
         to run eCos on the Freescale KwikStik development board."
@@ -7391,6 +7404,7 @@ target freescale_twr_k70f120m {
                    CYGPKG_DEVS_SPI_FREESCALE_DSPI
                    CYGPKG_DEVS_DISK_MMC
                    CYGPKG_DEVS_DISK_MMC_FREESCALE_DSPI
+                   CYGPKG_DEVS_FLASH_KINETIS
                  }
         description "The freescale_twr_k70f120m target provides the packages needed
         to run eCos on the Freescale TWR-k70f120m development system."
