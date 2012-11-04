@@ -1,3 +1,8 @@
+2012-11-04  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/var_io.h: Define register access to FTFL module. 
+	Contributed by Nicolas Aujoux at 2012-09-07 [Bugzilla 1001561]
+
 2012-09-28  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* var/current/cdl/hal_cortexm_kinetis.cdl
@@ -7,7 +12,7 @@
 	* var/current/include/var_io_ddrmc.h
 	* var/current/include/var_io_lmem.h
 	* var/current/src/kinetis_ddram.c
-	* var/current/src/kinetis_misc.c
+	* var/current/src/kinetis_misc.c:
 	Separate data and code caches, as well as text indentation suggested by Jifl.
 	Fixes to cache and SDRAM CDL and functions Improved SDRAM controller
 	support due to better manufacturer documentation: Configurable pad control.

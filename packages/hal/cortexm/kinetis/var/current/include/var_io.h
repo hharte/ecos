@@ -100,6 +100,43 @@ __externC const cyghwr_hal_kinetis_flash_conf_t *hal_kinetis_flash_conf_p( void 
 //===========================================================================
 // Kinetis Peripherals
 //---------------------------------------------------------------------------
+// Internal Flash
+
+typedef volatile struct cyghwr_hal_kinetis_flash_s {
+    cyg_uint8 fstat;    // Flash status register
+    cyg_uint8 fcnfg;    // Flash configuration register
+    cyg_uint8 fsec;     // Flash security register
+    cyg_uint8 fopt;     // Flash option register
+    cyg_uint8 fccob3;   // Flash common command object registers
+    cyg_uint8 fccob2;
+    cyg_uint8 fccob1;
+    cyg_uint8 fccob0;
+    cyg_uint8 fccob7;
+    cyg_uint8 fccob6;
+    cyg_uint8 fccob5;
+    cyg_uint8 fccob4;
+    cyg_uint8 fccobB;
+    cyg_uint8 fccobA;
+    cyg_uint8 fccob9;
+    cyg_uint8 fccob8;
+    cyg_uint8 fprot3;   // Program flash protection registers
+    cyg_uint8 fprot2;
+    cyg_uint8 fprot1;
+    cyg_uint8 fprot0;
+    cyg_uint8 reserved[2];
+    cyg_uint8 feprot;   // EEPROM Protection register
+    cyg_uint8 fdprot;   // Data flash protection register
+} cyghwr_hal_kinetis_flash_t;
+
+#define CYGHWR_HAL_KINETIS_FLASH_P ((cyghwr_hal_kinetis_flash_t *) 0x40020000)
+
+#define CYGHWR_HAL_KINETIS_FLASH_FSTAT_CCIF_M           0x80
+#define CYGHWR_HAL_KINETIS_FLASH_FSTAT_RDCOLERR_M       0x40
+#define CYGHWR_HAL_KINETIS_FLASH_FSTAT_ACCERR_M         0x20
+#define CYGHWR_HAL_KINETIS_FLASH_FSTAT_FPVIOL_M         0x10
+#define CYGHWR_HAL_KINETIS_FLASH_FSTAT_MGSTAT0_M        0x01
+
+//---------------------------------------------------------------------------
 // Oscillator
 
 #define CYGHWR_HAL_KINETIS_OSC_CR          (0x40065000)
@@ -1269,7 +1306,7 @@ enum{
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BDPE  (0x04)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BIPE  (0x02)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BSEBE (0x01)
-
+                                       
 //---------------------------------------------------------------------------
 // MPU Memory Protection unit
 
