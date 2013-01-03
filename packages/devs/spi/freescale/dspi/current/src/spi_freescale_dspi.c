@@ -92,6 +92,7 @@
 
 # define DEBUG0_PRINTF(args...) diag_printf(args)
 
+#define PUSHR_NULL (0xFFFF)
 
 //-----------------------------------------------------------------------------
 // API function call forward references.
@@ -566,6 +567,7 @@ fifo_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8*
             pushr |= data_word;
         }
     } else {
+        pushr |= PUSHR_NULL;
         for(; count > 1; count--) {
             if(!(--txfifo_n)) {
                 dspi_p->pushr = pushr |= FREESCALE_DSPI_PUSHR_EOQ_M;
@@ -639,6 +641,7 @@ dma_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8* data_p,
             pushr |= data_word;
         }
     } else {
+        pushr |= PUSHR_NULL;
         do {
             if(pushque_p == pushque_end) {
                 pushque_p[0] = pushr;
@@ -747,8 +750,15 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
     DEBUG2_PRINTF("DSPI: transaction: count=%d drop_cs=%d\n", count, drop_cs);
 
     // Set up peripheral CS field. DSPI automatically asserts and deasserts CS
-    pushr = dspi_chip_select_set(tick_only ? -1 : dspi_device->dev_num,
-                                dspi_p->mcr & FREESCALE_DSPI_MCR_PCSSE_M, true);
+    pushr = dspi_chip_select_set(
+#ifdef CYGOPT_DEVS_SPI_FREESCALE_DSPI_TICK_ONLY_DROPS_CS
+                                 // eCos Reference Manual states that CS should
+                                 // drop prior to send ticks, but other drivers
+                                 // (so far do not) touch the CS.
+                                 tick_only ? -1 :
+#endif
+                                 dspi_device->dev_num,
+                                 dspi_p->mcr & FREESCALE_DSPI_MCR_PCSSE_M, true);
     pushr |= FREESCALE_DSPI_PUSHR_CONT_M;
 
     dspi_fifo_clear(dspi_p);
@@ -941,7 +951,7 @@ static void dspi_transaction_transfer(cyg_spi_device* device, cyg_bool polled,
 
 //-----------------------------------------------------------------------------
 // Carry out a bus tick operation - this drops chip select then pushes the
-// required number of zeros onto the bus.
+// required number of NULL frames onto the bus.
 
 static void dspi_transaction_tick(cyg_spi_device* device, cyg_bool polled,
                                   cyg_uint32 count)
@@ -960,7 +970,7 @@ static void dspi_transaction_tick(cyg_spi_device* device, cyg_bool polled,
     }
 
     // Perform null transfer
-    spi_transaction_do (device, true, polled, count, NULL, NULL, true);
+    spi_transaction_do (device, true, polled, count, NULL, NULL, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -985,7 +995,8 @@ static void dspi_transaction_end(cyg_spi_device* device)
 
     if(dspi_device->chip_sel){
         // Clear peripheral CS by executing a dummy 4 bit transfer.
-        dspi_p->pushr = FREESCALE_DSPI_PUSHR_EOQ_M | FREESCALE_DSPI_PUSHR_CTAS(1);
+        dspi_p->pushr = PUSHR_NULL | FREESCALE_DSPI_PUSHR_EOQ_M |
+                        FREESCALE_DSPI_PUSHR_CTAS(1);
         DSPI_EOQ_CLEAR(dspi_p);
         while(!(dspi_p->sr & FREESCALE_DSPI_SR_EOQF_M));
         dspi_device->chip_sel = 0;

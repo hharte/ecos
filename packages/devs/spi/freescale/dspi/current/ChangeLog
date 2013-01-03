@@ -1,3 +1,13 @@
+2012-12-28  Ilija Kocho <ilijak@siva.com.mk>
+
+	* cdl/spi_freescale_dspi.cdl, src/spi_freescale_dspi.c:
+	Tick-only now has option to beehive like other drivers
+	rather than RM (see Bugzilla 1001676).
+	Fixed bug with dropping CS. Chip select options consolidated in a for loop.
+
+	* tests/spi_loopback.c: New file. Add looback test.
+	[Bugzilla 1001719]
+
 2012-05-04  Ilija Kocho <ilijak@siva.com.mk>
 
 	* cdl/spi_freescale_dspi.cdl: 

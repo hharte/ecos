@@ -64,7 +64,8 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
     cdl_option CYGHWR_DEVS_SPI_FREESCALE_DSPI_FIFO_SIZE {
         display "DSPI FIFO size"
         flavor data
-        calculated 4
+        default_value 4
+        legal_values { 4 5 6 7 8 }
     }
 
     cdl_component CYGHWR_DEVS_SPI_FREESCALE_DSPI_CTAR_NUM {
@@ -117,6 +118,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
     for { set ::spibus 0 } { $::spibus < 3 } { incr ::spibus } {
 
         cdl_interface CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus] {
+            display "Number of devices using DSPI bus [set ::spibus]"
         }
 
         cdl_component CYGHWR_DEVS_SPI_FREESCALE_DSPI[set ::spibus] {
@@ -124,7 +126,6 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
             description "Enable DSPI bus [set :: spibus]."
             flavor bool
             default_value CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus]
-            active_if CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus]
 
             implements CYGINT_HAL_DMA
             requires   CYGPKG_HAL_FREESCALE_EDMA
@@ -142,141 +143,24 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                         implies CYGHWR_FREESCALE_DSPI[set ::spibus]_CS5 == 0
                 }
 
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS0 {
-                    description "
-                        Number of devices selected by CS0.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS0 {
-                    display "CS0"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS0
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS0
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS0 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS0_IS {
-                        display "CS0 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
+                for { set ::spics 0 } { $::spics < 5 } { incr ::spics } {
+                    cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS[set ::spics] {
+                        flavor bool
+                        requires CYGHWR_FREESCALE_DSPI[set ::spibus]_CS[set ::spics] == 1
+                        display "Use CS[set ::spics]"
                     }
-                }
 
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS1 {
-                    description "
-                        Number of devices selected by CS1.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS1 {
-                    display "CS1"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS1
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS1
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS1 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS1_IS {
-                        display "CS1 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
-                    }
-                }
-
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS2 {
-                    description "
-                        Number of devices selected by CS2.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS2 {
-                    display "CS2"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS2
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS2
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS2 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS2_IS {
-                        display "CS2 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
-                    }
-                }
-
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS3 {
-                    description "
-                        Number of devices selected by CS3.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS3 {
-                    display "CS3"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS3
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS3
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS3 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS3_IS {
-                        display "CS3 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
-                    }
-                }
-
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS4 {
-                    description "
-                        Number of devices selected by CS4.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS4 {
-                    display "CS4"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS4
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS4
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS4 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS4_IS {
-                        display "CS4 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
-                    }
-                }
-
-                cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_CS5 {
-                    description "
-                        Number of devices selected by CS5.
-                        May be be 0 or 1"
-                }
-
-                cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS5 {
-                    display "CS5"
-                    flavor bool
-                    calculated CYGINT_FREESCALE_DSPI[set ::spibus]_CS5
-                    active_if CYGINT_FREESCALE_DSPI[set ::spibus]_CS5
-
-                    requires CYGINT_FREESCALE_DSPI[set ::spibus]_CS5 == 1
-
-                    cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS5_IS {
-                        display "CS5 Inactive state Hi(1) Lo(0)"
-                        flavor data
-                        no_define
-                        default_value { 1 }
-                        legal_values { 0 1 }
+                    cdl_component CYGHWR_FREESCALE_DSPI[set ::spibus]_CS[set ::spics] {
+                        display "CS[set ::spics]"
+                        flavor bool
+                        default_value 0
+                        cdl_option CYGHWR_FREESCALE_DSPI[set ::spibus]_CS[set ::spics]_IS {
+                            display "CS[set ::spics] Inactive state Hi(1) Lo(0)"
+                            flavor data
+                            no_define
+                            default_value { 1 }
+                            legal_values { 0 1 }
+                        }
                     }
                 }
 
@@ -294,20 +178,20 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
             }
 
             cdl_interface CYGINT_FREESCALE_DSPI[set ::spibus]_HAS_MASS {
-                description "SPI bus serves mas data device(s)."
+                description "SPI bus serves mass data device(s)."
             }
 
             cdl_option CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_PUSHQUE_SIZE {
                 display "Queue buffer size"
                 description "
-                DSPI requires a command for every transfer so output
-                data must be re-packed in additional buffer prior to
-                being submitted to DMA.
-                If Queue capacity is same as DSPI FIFO size, the minimal
-                legal value, the DMA is not needed so no buffer memory
-                is allocated. Note: For every entry, byte (8 bit transfer)
-                or half word (16 bit transfer) a whole 32 bit word
-                is being allocated."
+                    DSPI requires a command for every transfer so output
+                    data must be re-packed in additional buffer prior to
+                    being submitted to DMA.
+                    If Queue capacity is same as DSPI FIFO size, the minimal
+                    legal value, the DMA is not needed so no buffer memory
+                    is allocated. Note: For every entry, byte (8 bit transfer)
+                    or half word (16 bit transfer) a whole 32 bit word
+                    is being allocated."
 
                 legal_values { CYGHWR_DEVS_SPI_FREESCALE_DSPI_FIFO_SIZE to 2048 }
                 flavor data
@@ -326,7 +210,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
 
                 active_if CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_PUSHQUE_SIZE > \
                     CYGHWR_DEVS_SPI_FREESCALE_DSPI_FIFO_SIZE
-                default_value 6
+                default_value 4 + [set ::spibus] * 2
                 legal_values { 0 to (CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM-1) }
                 description "DMA channel assigned to the trasmitter of SPI bus"
 
@@ -361,7 +245,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                     display "DMA TCD section"
                     flavor data
                     default_value CYGHWR_HAL_EDMA_TCD_SECTION
- 
+
                     description "
                     Section in which will be DMA Transfer Control
                     Descriptors shall reside"
@@ -375,7 +259,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
 
                 active_if CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_PUSHQUE_SIZE > \
                     CYGHWR_DEVS_SPI_FREESCALE_DSPI_FIFO_SIZE
-                default_value 7
+                default_value 5 + [set ::spibus] * 2
                 legal_values { 0 to (CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM-1) }
                 description "DMA channel assigned to the receiver of SPI bus"
 
@@ -416,7 +300,17 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
         }
     }
 
-cdl_option CYGPKG_DEVS_SPI_FREESCALE_DSPI_DEBUG_LEVEL {
+    cdl_option CYGOPT_DEVS_SPI_FREESCALE_DSPI_TICK_ONLY_DROPS_CS {
+        display "Tick-only drops CS"
+        default_value 0
+
+        description "
+            eCos Reference Manual states that CS should drop prior to sending ticks,
+            but other drivers (so far) do not touch the CS. This option selects
+            between conformance with manual or compatibility with other drivers."
+    }
+
+    cdl_option CYGPKG_DEVS_SPI_FREESCALE_DSPI_DEBUG_LEVEL {
         display "Driver debug output level"
         flavor  data
         legal_values { 0 1 2 3 }
@@ -459,6 +353,14 @@ cdl_option CYGPKG_DEVS_SPI_FREESCALE_DSPI_DEBUG_LEVEL {
             the set of global flags if present."
         }
 
+    }
+
+    cdl_component CYGPKG_DEVS_SPI_FREESCALE_DSPI_TESTS {
+        display "Freescale DSPI tests"
+        flavor data
+        no_define
+        calculated { CYGBLD_DEVS_SPI_FREESCALE_DSPI_LOOPBACK_TEST ? "tests/spi_loopback" : "" }
+
         cdl_option CYGBLD_DEVS_SPI_FREESCALE_DSPI_LOOPBACK_TEST {
             display "Build Freescale DSPI loopback test"
             flavor bool
@@ -468,18 +370,10 @@ cdl_option CYGPKG_DEVS_SPI_FREESCALE_DSPI_DEBUG_LEVEL {
                 CYGHWR_DEVS_SPI_FREESCALE_DSPI1 ||
                 CYGHWR_DEVS_SPI_FREESCALE_DSPI2 }
             description  "
-            This option enables the building of the Freescale DSPI loopback test.
-            Refer to the comments in tests/loopback.c for details of how to
-            use this test."
-        }
-
-        cdl_option CYGPKG_DEVS_SPI_FREESCALE_DSPI_TESTS {
-            display "Freescale DSPI tests"
-            flavor data
-            no_define
-            calculated { CYGBLD_DEVS_SPI_FREESCALE_DSPI_LOOPBACK_TEST ? "tests/loopback" : "" }
+                This option enables the building of the Freescale DSPI loopback test.
+                Refer to the comments in tests/loopback.c for details of how to
+                use this test."
         }
     }
-
 }
 # EOF spi_freescale_dspi.cdl
