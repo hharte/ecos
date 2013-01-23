@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -114,7 +114,7 @@
 #define CYGHWR_HAL_STM32_TIM8           0x40010400
 #define CYGHWR_HAL_STM32_PWM2           0x40010400
 #define CYGHWR_HAL_STM32_UART1          0x40011000
-#define CYGHWR_HAL_STM32_UART6          0x40014000
+#define CYGHWR_HAL_STM32_UART6          0x40011400
 #define CYGHWR_HAL_STM32_ADC1           0x40012000
 #define CYGHWR_HAL_STM32_ADC2           CYGHWR_HAL_STM32_ADC1 + 0x0100
 #define CYGHWR_HAL_STM32_ADC3           CYGHWR_HAL_STM32_ADC1 + 0x0200
