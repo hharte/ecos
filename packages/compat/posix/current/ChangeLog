@@ -1,3 +1,8 @@
+2013-02-03  John Dallaway  <john@dallaway.org.uk>
+
+	* src/pthread.cxx (pthread_create): Include terminating NUL char
+	when initializing thread name from template. [ Bugzilla 1001743 ]
+
 2012-03-08  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* src/mqueue.cxx: Fix compiler warnings about variables that are set
@@ -1122,7 +1127,7 @@
 ## ####GPLCOPYRIGHTBEGIN####                                                
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2009, 2013 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify     
 ## it under the terms of the GNU General Public License as published by     

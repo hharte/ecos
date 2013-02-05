@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2013 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -596,7 +596,7 @@ externC int pthread_create ( pthread_t *thread,
     static char *name_template = "pthread.00000000";
     pthread_t id = nthread->id;
     
-    for( int i = 0; name_template[i]; i++ ) name[i] = name_template[i];
+    for( int i = 0; ( name[i] = name_template[i] ); i++ );
 
     // dump the id, in hex into the name.
     for( int i = 15; i >= 8; i-- )
