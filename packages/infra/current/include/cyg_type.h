@@ -467,6 +467,14 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #   define CYGBLD_ATTRIB_USED __attribute__((unused))
 #  endif
 # endif 
+
+// Enforce inlining of a C function. GCC does not inline any C
+// function when not optimizing, unless you specify "always_inline" attribute.
+// Other attributes suppress generation of standalone function.
+# if !defined(CYGBLD_FORCE_INLINE)
+#  define CYGBLD_FORCE_INLINE __externC inline __attribute((gnu_inline)) __attribute((always_inline))
+# endif
+
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_UNUSED  /* nothing */
@@ -498,6 +506,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 
 # define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__)
 
+#define CYGBLD_FORCE_INLINE
 
 #endif
 
