@@ -136,14 +136,22 @@ test( CYG_ADDRWORD data )
     ret = snprintf(y, 19, "print up to here >< and not this bit" );
     my_strcpy(z, "print up to here >");
     CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0, "simple snprintf test #1");
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+    CYG_TEST_PASS_FAIL(ret > my_strlen(z),
+#else
     CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+#endif
                        "simple snprintf test #1 return code" );
     
     // Check 4
     ret = snprintf(y, 31, "print a bit of this number: %05d nyer", 1234);
     my_strcpy(z, "print a bit of this number: 01");
     CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0, "simple snprintf test #2");
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+    CYG_TEST_PASS_FAIL(ret > my_strlen(z),
+#else
     CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+#endif
                        "simple snprintf test #2 return code" );
     
 #ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
@@ -168,7 +176,11 @@ test( CYG_ADDRWORD data )
     CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0,
                        "snprintf double test #1");
 
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+    CYG_TEST_PASS_FAIL(ret > my_strlen(z),
+#else
     CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+#endif
                        "snprintf double test #1 return code");
 
 #endif // ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT

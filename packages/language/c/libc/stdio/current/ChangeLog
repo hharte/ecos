@@ -1,3 +1,10 @@
+2012-02-19  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
+
+	* src/common/vsnprintf.c: If string truncated (C99 case), apply the
+	null termination in correct place.
+	* tests/sprintf2.c: Fix checks for return values if C99 implementation
+	snprintf() used.
+
 2009-08-20  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/stdio.cdl Added option CYGIMP_LIBC_STDIO_C99_SNPRINTF

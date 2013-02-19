@@ -113,6 +113,13 @@ vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
      */
     if ( (ret >= 0) && ((size_t)ret < size) )
         s[ret] = '\0';
+#ifdef CYGIMP_LIBC_STDIO_C99_SNPRINTF
+    /* C99 case. If no error, and string truncated, apply null termination
+     * in correct place
+     */
+    if ( (ret >= 0) && ((size_t)ret >= size) && (size > 0) )
+        s[size-1] = '\0';
+#endif
     return ret;
 } // vsnprintf()
 
