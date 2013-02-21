@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2009 Free Software Foundation, Inc.
+## Copyright (C) 2009, 2013 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      Uwe Kindler
-# Contributors:   
+# Contributors:   jld
 # Date:           2009-07-28
 #
 #####DESCRIPTIONEND####
@@ -183,11 +183,62 @@ cdl_package CYGPKG_USTL {
                 the set of global flags if present."
         }
 
+        cdl_option CYGIMP_USTL_TESTS_BVT25_ROMFS {
+            display "Build ROM filesystem for bvt25 test"
+            flavor  bool
+            active_if CYGVAR_USTL_CIN_COUT_CERR
+            requires CYGPKG_FS_ROM
+            requires CYGBLD_FS_ROMFS_MK_ROMFS
+            default_value CYGBLD_FS_ROMFS_MK_ROMFS
+            description "
+                Enable this option to build a ROM filesystem for use
+                by the bvt25 test. If you disable this option, you will
+                need to provide an alternative filesystem containing
+                the file \"bvt25.std\"."
+            make {
+                <PREFIX>/include/cyg/ustl/bvt25fs_be.h : <PACKAGE>/tests/bvt25.std
+                @mkdir -p bvt25_be
+                @cp $< bvt25_be/$(<F)
+                @chmod u+w bvt25_be/$(<F)
+                @$(PREFIX)/bin/mk_romfs -b bvt25_be $(@F:.h=.tmp)
+                @mkdir -p "$(@D)"
+                tclsh $(PREFIX)/bin/file2c.tcl $(@F:.h=.tmp) $@
+                @rm -r bvt25_be $(@F:.h=.tmp)
+            }
+            make {
+                <PREFIX>/include/cyg/ustl/bvt25fs_le.h : <PACKAGE>/tests/bvt25.std
+                @mkdir -p bvt25_le
+                @cp $< bvt25_le/$(<F)
+                @chmod u+w bvt25_le/$(<F)
+                @$(PREFIX)/bin/mk_romfs bvt25_le $(@F:.h=.tmp)
+                @mkdir -p "$(@D)"
+                tclsh $(PREFIX)/bin/file2c.tcl $(@F:.h=.tmp) $@
+                @rm -r bvt25_le $(@F:.h=.tmp)
+            }
+        }
+
+        cdl_option CYGBLD_USTL_BUILD_INTERACTIVE_TESTS {
+	    display "Build interactive uSTL tests"
+            flavor  bool
+            no_define
+            active_if CYGVAR_USTL_CIN_COUT_CERR
+            default_value 0
+            description   "
+                This option enables the building of uSTL tests which
+                require user input (bvt13, bvt17). The easiest way to
+                run these tests is to build them for the synthetic
+                (linux) target and redirect standard input from file
+                at a shell prompt. For example: ./bvt13 < bvt13.cpp"
+        }
+
         cdl_option CYGPKG_USTL_TESTS {
             display "uSTL tests"
             flavor  data
             no_define
-            calculated { (CYGVAR_USTL_CIN_COUT_CERR ? "tests/bvt00 tests/bvt01 tests/bvt02 tests/bvt03 tests/bvt04 tests/bvt05 tests/bvt06 tests/bvt07 tests/bvt08 tests/bvt09 tests/bvt10 tests/bvt11 tests/bvt12 tests/bvt13 tests/bvt14 tests/bvt15 tests/bvt16 tests/bvt17 tests/bvt18 tests/bvt19 tests/bvt20 tests/bvt21 tests/bvt22 tests/bvt23 tests/bvt24 tests/bvt25 tests/bvt26 tests/bvt27" : "" )}
+            calculated { (CYGVAR_USTL_CIN_COUT_CERR ?
+                (CYGBLD_USTL_BUILD_INTERACTIVE_TESTS ?
+                    "tests/bvt00 tests/bvt01 tests/bvt02 tests/bvt03 tests/bvt04 tests/bvt05 tests/bvt06 tests/bvt07 tests/bvt08 tests/bvt09 tests/bvt10 tests/bvt11 tests/bvt12 tests/bvt13 tests/bvt14 tests/bvt15 tests/bvt16 tests/bvt17 tests/bvt18 tests/bvt19 tests/bvt20 tests/bvt21 tests/bvt22 tests/bvt23 tests/bvt24 tests/bvt25 tests/bvt26 tests/bvt27" :
+                    "tests/bvt00 tests/bvt01 tests/bvt02 tests/bvt03 tests/bvt04 tests/bvt05 tests/bvt06 tests/bvt07 tests/bvt08 tests/bvt09 tests/bvt10 tests/bvt11 tests/bvt12 tests/bvt14 tests/bvt15 tests/bvt16 tests/bvt18 tests/bvt19 tests/bvt20 tests/bvt21 tests/bvt22 tests/bvt23 tests/bvt24 tests/bvt25 tests/bvt26 tests/bvt27") : "" )}
             description   "
                 This option specifies the set of tests for the uSTL library."
         }

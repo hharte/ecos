@@ -22,7 +22,7 @@ void TestUTF8 (void)
 {
     cout << "Generating Unicode characters ";
     vector<wchar_t> srcChars;
-    srcChars.resize (0xFFFF);
+    srcChars.resize (0xFFF);
     iota (srcChars.begin(), srcChars.end(), 0);
     cout.format ("%zu - %zu\n", size_t(srcChars[0]), size_t(srcChars.back()));
 

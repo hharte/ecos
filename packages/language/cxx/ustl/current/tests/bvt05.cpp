@@ -158,32 +158,32 @@ static void TestAlgorithms (void)
     PrintVector (v);
     v.assign (first, last);
 
-    cout << "fill 64083 uint8_t(0x41) ";
-    TestBigFill<uint8_t> (64083, 0x41);
-    cout << "fill 64083 uint16_t(0x4142) ";
-    TestBigFill<uint16_t> (64083, 0x4142);
-    cout << "fill 64083 uint32_t(0x41424344) ";
-    TestBigFill<uint32_t> (64083, 0x41424344);
-    cout << "fill 64083 float(0.4242) ";
-    TestBigFill<float> (64083, 0x4242f);
+    cout << "fill 3207 uint8_t(0x41) ";
+    TestBigFill<uint8_t> (3207, 0x41);
+    cout << "fill 3207 uint16_t(0x4142) ";
+    TestBigFill<uint16_t> (3207, 0x4142);
+    cout << "fill 3207 uint32_t(0x41424344) ";
+    TestBigFill<uint32_t> (3207, 0x41424344);
+    cout << "fill 3207 float(0.4242) ";
+    TestBigFill<float> (3207, 0x4242f);
 #if HAVE_INT64_T
-    cout << "fill 64083 uint64_t(0x4142434445464748) ";
-    TestBigFill<uint64_t> (64083, UINT64_C(0x4142434445464748));
+    cout << "fill 3207 uint64_t(0x4142434445464748) ";
+    TestBigFill<uint64_t> (3207, UINT64_C(0x4142434445464748));
 #else
     cout << "No 64bit types available on this platform\n";
 #endif
 
-    cout << "copy 64083 uint8_t(0x41) ";
-    TestBigCopy<uint8_t> (64083, 0x41);
-    cout << "copy 64083 uint16_t(0x4142) ";
-    TestBigCopy<uint16_t> (64083, 0x4142);
-    cout << "copy 64083 uint32_t(0x41424344) ";
-    TestBigCopy<uint32_t> (64083, 0x41424344);
-    cout << "copy 64083 float(0.4242) ";
-    TestBigCopy<float> (64083, 0.4242f);
+    cout << "copy 3207 uint8_t(0x41) ";
+    TestBigCopy<uint8_t> (3207, 0x41);
+    cout << "copy 3207 uint16_t(0x4142) ";
+    TestBigCopy<uint16_t> (3207, 0x4142);
+    cout << "copy 3207 uint32_t(0x41424344) ";
+    TestBigCopy<uint32_t> (3207, 0x41424344);
+    cout << "copy 3207 float(0.4242) ";
+    TestBigCopy<float> (3207, 0.4242f);
 #if HAVE_INT64_T
-    cout << "copy 64083 uint64_t(0x4142434445464748) ";
-    TestBigCopy<uint64_t> (64083, UINT64_C(0x4142434445464748));
+    cout << "copy 3207 uint64_t(0x4142434445464748) ";
+    TestBigCopy<uint64_t> (3207, UINT64_C(0x4142434445464748));
 #else
     cout << "No 64bit types available on this platform\n";
 #endif

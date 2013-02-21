@@ -1,3 +1,14 @@
+2013-02-18  John Dallaway  <john@dallaway.org.uk>
+
+	* src/fstream.cpp: Fix processing of fstream openmode. Patch
+	from uSTL HEAD.
+	* cdl/ustl.cdl: Build interactive tests under control of a CDL
+	option. Build ROM filesystem for bvt25 test under control of a
+	CDL option.
+	* tests/bvt25.cpp: Use ROM filesystem if available.
+	* tests/bvt05.cpp, tests/bvt16.cpp: Reduce data structure sizes
+	for embedded use.	
+
 2012-03-24  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* include/*:
@@ -56,7 +67,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2009, 2010, 2011, 2013 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
