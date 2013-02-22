@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -89,37 +89,21 @@ typedef volatile struct cyghwr_hal_freescale_dmamux_s {
 //---------------------------------------------------------------------------
 // eDMA
 
-// Indices for cyghwr_hal_freescale_edma_t::dchpri[]
-enum {
-    FREESCALE_DMA_PRI_CH3,  FREESCALE_DMA_PRI_CH2,
-    FREESCALE_DMA_PRI_CH1,  FREESCALE_DMA_PRI_CH0,
-    FREESCALE_DMA_PRI_CH7,  FREESCALE_DMA_PRI_CH6,
-    FREESCALE_DMA_PRI_CH5,  FREESCALE_DMA_PRI_CH4,
-    FREESCALE_DMA_PRI_CH11, FREESCALE_DMA_PRI_CH10,
-    FREESCALE_DMA_PRI_CH9,  FREESCALE_DMA_PRI_CH8,
-    FREESCALE_DMA_PRI_CH15, FREESCALE_DMA_PRI_CH14,
-    FREESCALE_DMA_PRI_CH13, FREESCALE_DMA_PRI_CH12
-#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
-    ,
-    FREESCALE_DMA_PRI_CH19, FREESCALE_DMA_PRI_CH18,
-    FREESCALE_DMA_PRI_CH17, FREESCALE_DMA_PRI_CH16,
-    FREESCALE_DMA_PRI_CH23, FREESCALE_DMA_PRI_CH22,
-    FREESCALE_DMA_PRI_CH21, FREESCALE_DMA_PRI_CH20,
-    FREESCALE_DMA_PRI_CH27, FREESCALE_DMA_PRI_CH26,
-    FREESCALE_DMA_PRI_CH25, FREESCALE_DMA_PRI_CH24,
-    FREESCALE_DMA_PRI_CH31, FREESCALE_DMA_PRI_CH30,
-    FREESCALE_DMA_PRI_CH29, FREESCALE_DMA_PRI_CH28
-#endif
-};
-
 // Transfer control descriptor
 typedef volatile struct cyghwr_hal_freescale_edma_tcd_s
                            cyghwr_hal_freescale_edma_tcd_t;
 #define CYGBLD_FREESCALE_EDMA_TCD_ALIGN CYGBLD_ATTRIB_ALIGN(32)
 struct cyghwr_hal_freescale_edma_tcd_s {
     volatile void* saddr;             //  Source Address
+
+#if (CYG_BYTEORDER == CYG_MSBFIRST)  // AKA Big endian
+    cyg_uint16 attr;         //  Transfer Attributes
+    cyg_uint16 soff;         //  Signed Source Address Offset
+#else // AKA Little endian
     cyg_uint16 soff;         //  Signed Source Address Offset
     cyg_uint16 attr;         //  Transfer Attributes
+#endif
+
     union {
         cyg_uint32 mlno;     //  Minor Byte Count (Minor Loop Dis)
         //  Signed Minor Loop Off:
@@ -128,44 +112,75 @@ struct cyghwr_hal_freescale_edma_tcd_s {
     } nbytes;
     cyg_uint32 slast;         //  Last Source Address Adjustment
     volatile void *daddr;              //  Destination Address
+
+#if (CYG_BYTEORDER == CYG_MSBFIRST)  // AKA Big endian
+
+    union {                   //  Current Minor Loop Link:
+        cyg_uint16 elinkyes;  //  Major Loop Count (Ch Lnkng Ena)
+        cyg_uint16 elinkno;   //  Major Loop Count (Ch Lnkng Dis)
+    } citer;
+    cyg_uint16 doff;          //  Signed Destination Address Offset
+#else // AKA Little endian
     cyg_uint16 doff;          //  Signed Destination Address Offset
     union {                   //  Current Minor Loop Link:
         cyg_uint16 elinkyes;  //  Major Loop Count (Ch Lnkng Ena)
         cyg_uint16 elinkno;   //  Major Loop Count (Ch Lnkng Dis)
     } citer;
+#endif
+
     union {
         cyg_uint32 dlast;     //  Last Dst Addr Adj/Scat Gath Addr
         cyghwr_hal_freescale_edma_tcd_t *sga;  //  Last Dst Addr Adj/Scat Gath Addr
-    };
+    } dlast_sga;
+
+#if (CYG_BYTEORDER == CYG_MSBFIRST)  // AKA Big endian
+    union {                   //  Beginning Minor Loop Link:
+        cyg_uint16 elinkno;   //  Major Loop Cnt (Ch Lnkng Dis)
+        cyg_uint16 elinkyes;  //  Major Loop Cnt (Ch Lnkng Ena)
+    } biter;
+    cyg_uint16 csr;           //  Control and Status
+#else // AKA Little endian
     cyg_uint16 csr;           //  Control and Status
     union {                   //  Beginning Minor Loop Link:
         cyg_uint16 elinkno;   //  Major Loop Cnt (Ch Lnkng Dis)
         cyg_uint16 elinkyes;  //  Major Loop Cnt (Ch Lnkng Ena)
     } biter;
+#endif
 };
 
 // DMA - Peripheral register structure
 typedef volatile struct cyghwr_hal_freescale_edma_s {
-    cyg_uint32 cr;                   // Control Register
-    cyg_uint32 es;                   // Error Status Register
-    cyg_uint32 reserved_0;
-    cyg_uint32 erq;                  // Enable Request Register
-    cyg_uint32 reserved_1;
-    cyg_uint32 eei;                  // Enable Error Interrupt Register
-    cyg_uint8  ceei;                 // Clear Enable Error Interrupt Register
-    cyg_uint8  seei;                 // Set Enable Error Interrupt Register
-    cyg_uint8  cerq;                 // Clear Enable Request Register
-    cyg_uint8  serq;                 // Set Enable Request Register
-    cyg_uint8  cdne;                 // Clear DONE Status Bit Register
-    cyg_uint8  ssrt;                 // Set START Bit Register
-    cyg_uint8  cerr;                 // Clear Error Register
-    cyg_uint8  cint;                 // Clear Interrupt Request Register
-    cyg_uint32 reserved_2;
-    cyg_uint32 irq;                  // Interrupt Request Register
-    cyg_uint32 reserved_3;
-    cyg_uint32 err;                  // Error Register
-    cyg_uint32 reserved_4;
-    cyg_uint32 hrs;                  // Hardware Request Status Register
+    cyg_uint32 cr;                   // Control Register			// 0x0000
+    cyg_uint32 es;                   // Error Status Register			// 0x0004
+    cyg_uint32 reserved_0;							// 0x0008
+    cyg_uint32 erq;                  // Enable Request Register			// 0x000C
+    cyg_uint32 reserved_1;							// 0x0010
+    cyg_uint32 eei;                  // Enable Error Interrupt Register		// 0x0014
+#if (CYG_BYTEORDER == CYG_MSBFIRST)  // AKA Big endian
+    cyg_uint8  serq;                 // Set Enable Request Register		// 0x0018
+    cyg_uint8  cerq;                 // Clear Enable Request Register		// 0x0019
+    cyg_uint8  seei;                 // Set Enable Error Interrupt Register	// 0x001A  
+    cyg_uint8  ceei;                 // Clear Enable Error Interrupt Register	// 0x001B
+    cyg_uint8  cint;                 // Clear Interrupt Request Register	// 0x001C
+    cyg_uint8  cerr;                 // Clear Error Register			// 0x001D
+    cyg_uint8  ssrt;                 // Set START Bit Register			// 0x001E
+    cyg_uint8  cdne;                 // Clear DONE Status Bit Register		// 0x001F
+#else // AKA Little endian
+    cyg_uint8  ceei;                 // Clear Enable Error Interrupt Register	
+    cyg_uint8  seei;                 // Set Enable Error Interrupt Register	
+    cyg_uint8  cerq;                 // Clear Enable Request Register		
+    cyg_uint8  serq;                 // Set Enable Request Register		
+    cyg_uint8  cdne;                 // Clear DONE Status Bit Register		
+    cyg_uint8  ssrt;                 // Set START Bit Register			
+    cyg_uint8  cerr;                 // Clear Error Register			
+    cyg_uint8  cint;                 // Clear Interrupt Request Register	
+#endif    
+    cyg_uint32 reserved_2;							// 0x0020
+    cyg_uint32 irq;                  // Interrupt Request Register		// 0x0024
+    cyg_uint32 reserved_3;							// 0x0028
+    cyg_uint32 err;                  // Error Register				// 0x002C
+    cyg_uint32 reserved_4;							// 0x0030
+    cyg_uint32 hrs;                  // Hardware Request Status Register	// 0x0034
     cyg_uint8  reserved_5[0x8100 - (0x8034 + 4)];
     cyg_uint8  dchpri[CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM]; // Priorities
     cyg_uint8  reserved_6[0x9000 - 0x8100 - CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM];
@@ -460,56 +475,56 @@ __externC void
 hal_freescale_edma_transfer_diag (cyghwr_hal_freescale_edma_t *edma_p,
                                   cyg_uint8 chan_i, cyg_bool recurse);
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_erq_enable(cyghwr_hal_freescale_edma_t *edma_p,
                               cyg_uint8 chan_i)
 {
     edma_p->serq = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_erq_disable(cyghwr_hal_freescale_edma_t *edma_p,
                                cyg_uint8 chan_i)
 {
     edma_p->cerq = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_cleardone(cyghwr_hal_freescale_edma_t *edma_p,
                               cyg_uint8 chan_i)
 {
     edma_p->cdne = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_irq_enable(cyghwr_hal_freescale_edma_t *edma_p,
                               cyg_uint8 chan_i)
 {
     edma_p->seei = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_irq_disable(cyghwr_hal_freescale_edma_t *edma_p,
                                cyg_uint8 chan_i)
 {
     edma_p->ceei = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_irq_clear(cyghwr_hal_freescale_edma_t *edma_p,
                                cyg_uint8 chan_i)
 {
     edma_p->cint = chan_i;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_transfer_clear(cyghwr_hal_freescale_edma_t *edma_p,
                                   cyg_uint8 chan_i)
 {
     edma_p->tcd[chan_i].csr &= ~FREESCALE_EDMA_CSR_DONE_M;
 }
 
-__externC inline void
+CYGBLD_FORCE_INLINE void
 hal_freescale_edma_transfer_start(cyghwr_hal_freescale_edma_t *edma_p,
                                   cyg_uint8 chan_i)
 {

@@ -1,3 +1,10 @@
+2013-02-06  Stefan Singer <stefan.singer@freescale.com> 
+		+ Ilija Kocho <ilijak@siva.com.mk>
+
+	* enhanced endianness support for devices with big and little endian
+	* added support for MPC5xxx in addition to Kinetis
+	(see Bugzilla 1001752).
+	
 2012-05-04  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_freescale_edma.cdl
