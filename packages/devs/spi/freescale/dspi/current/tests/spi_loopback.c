@@ -239,7 +239,7 @@ void run_test_4 (cyg_bool polled)
 void run_tests (void)
 {
     bool polled = true;
-    diag_printf ("Running Kinetis SPI driver loopback tests.\n");
+    diag_printf ("Running Freescale Kinetis/MPC5xxx DSPI driver loopback tests.\n");
 
     diag_printf ("\nPolled\n");
     run_test_tick (polled, 1024);

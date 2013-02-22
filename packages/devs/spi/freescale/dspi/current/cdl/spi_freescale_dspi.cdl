@@ -55,7 +55,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
 
     parent        CYGPKG_IO_SPI
     active_if     CYGPKG_IO_SPI
-    requires      CYGPKG_HAL_CORTEXM_KINETIS
+    requires      CYGPKG_HAL_CORTEXM_KINETIS || CYGPKG_HAL_POWERPC_MPC5xxx
 
     hardware
     include_dir   cyg/io
@@ -115,7 +115,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
     }
 
 
-    for { set ::spibus 0 } { $::spibus < 3 } { incr ::spibus } {
+    for { set ::spibus 0 } { $::spibus < 8 } { incr ::spibus } {
 
         cdl_interface CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus] {
             display "Number of devices using DSPI bus [set ::spibus]"
@@ -126,6 +126,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
             description "Enable DSPI bus [set :: spibus]."
             flavor bool
             default_value CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus]
+            active_if CYGINT_DEVS_SPI_FREESCALE_DSPI[set ::spibus]
 
             implements CYGINT_HAL_DMA
             requires   CYGPKG_HAL_FREESCALE_EDMA
@@ -295,7 +296,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
                 flavor data
                 requires CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_ISR_PRI_SP
                 calculated CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_ISR_PRI_SP
-                description "Interrupt priority set-point is provtded bu HAL"
+                description "Interrupt priority set-point is provided by HAL"
             }
         }
     }
