@@ -1,3 +1,8 @@
+2013-02-20  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/cyg_type.h: Add CYGBLD_ATTRIB_NO_INLINE (suggested by Jifl)
+	[ Bugzilla 1001768 ]
+
 2013-02-09  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/cyg_type.h: Add CYGBLD_FORCE_INLINE macro to be used

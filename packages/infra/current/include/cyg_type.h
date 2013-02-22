@@ -475,6 +475,9 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #  define CYGBLD_FORCE_INLINE __externC inline __attribute((gnu_inline)) __attribute((always_inline))
 # endif
 
+// Suppress function inlining
+#define CYGBLD_ATTRIB_NO_INLINE __attribute__((noinline))
+
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_UNUSED  /* nothing */
@@ -507,6 +510,8 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__)
 
 #define CYGBLD_FORCE_INLINE
+
+#define CYGBLD_ATTRIB_NO_INLINE
 
 #endif
 
