@@ -830,8 +830,10 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         // 0x1be, 0x1ce, 0x1de and 0x1ee. The numbers are stored little-endian
         for (i = 0; i < 4; i++) {
             partition = &(data[0x1be + (0x10 * i)]);
-            DEBUG1("Partition %d: boot %02x, first sector %02x %02x %02x, file system %02x, last sector %02x %02x %02x\n", i,   \
-                   partition[0], partition[1], partition[2], partition[3], partition[4], \
+            DEBUG1("Partition %d: boot %02x, first CHS %02x, last CHS %02x, first sector %02x %02x %02x, file system %02x, last sector %02x %02x %02x\n", i,   \
+		   partition[0], \
+		   ((partition[2] & 0xC0) << 2) | partition[3], ((partition[6] & 0xC0) << 2) | partition[7], \
+                   partition[1], partition[2], partition[3], partition[4], \
                    partition[5], partition[6], partition[7]);
             DEBUG1("           : first sector (linear) %02x %02x %02x %02x, sector count %02x %02x %02x %02x\n", \
                    partition[11], partition[10], partition[9], partition[8], \

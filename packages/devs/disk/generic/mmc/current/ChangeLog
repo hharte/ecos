@@ -1,3 +1,8 @@
+2013-02-21  Mike Jones  <mike@proclivis.com>
+
+	* src/mmc_spi.c (mmc_spi_check_for_disk): Modify DEBUG1 to to show
+	CHS in partition table.
+
 2012-05-04  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/mmc_spi.c (mmc_spi_send_init): Silence unused var warning.
