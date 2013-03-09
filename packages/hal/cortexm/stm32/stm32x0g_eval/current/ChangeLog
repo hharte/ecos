@@ -1,6 +1,9 @@
-2012-12-01  Ilija Kocho  <ilijak@siva.com.mk>
+2013-03-09  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* misc/redboot_ROM_FPU.ecm: Add ECM for RedBoot with FPU support.
+
+2012-12-01  Ilija Kocho  <ilijak@siva.com.mk>
+
 	* cdl/hal_cortexm_stm32_stm32x0g_eval.cdl: Implement CYGINT_HAL_FPV4_SP_D16.
 	[Bugzilla 1001607]
 
