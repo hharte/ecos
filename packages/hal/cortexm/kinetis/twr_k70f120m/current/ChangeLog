@@ -1,6 +1,9 @@
-2012-11-30  Ilija Kocho  <ilijak@siva.com.mk>
+2013-03-09  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* misc/redboot_K70_ROM_FPU.ecm: Add ECM file
+
+2012-11-30  Ilija Kocho  <ilijak@siva.com.mk>
+
 	* cdl/hal_cortexm_kinetis_twr_k70f120m.cdl: Sync with variant changes due to
 	hardware floating point support. Implements CYGINT_HAL_FPV4_SP_D16.
 	Changed maximum peripheral bus clocks to 75MHz.
