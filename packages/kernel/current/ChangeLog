@@ -1,3 +1,11 @@
+2013-02-10  Ilija Kocho  <ilijak@siva.com.mk>
+            Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/kernel.cdl:
+	* tests/fpinttestf.c, tests/fpinttestf1.c, tests/fpinttestf2.c,
+	* tests/fpint_thread_switch.c: Add single precision floating point tests.
+	[ Bugzilla 1001607 ]
+
 2012-10-04  Ilija Kocho <ilijak@siva.com.mk>
 
 	* tests/kcache2.c: Include CYGHWR_MEMORY_LAYOUT_H in order to
