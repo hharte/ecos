@@ -1,3 +1,8 @@
+2012-11-06 Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis_twr_k60n512_fxm.cdl:
+	Removed (obsolete) implementation of CYGINT_HAL_CORTEXM4_CODE.
+
 2012-10-25  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/pkgconf/mlt_kinetis_flash_sram2s_extram_rom.ldi:
