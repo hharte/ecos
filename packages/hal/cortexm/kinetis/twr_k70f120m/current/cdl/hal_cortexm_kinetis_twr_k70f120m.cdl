@@ -53,14 +53,26 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     include_dir   cyg/hal
     doc           ref/kinetis-twr-k70f120m.html
     hardware
+    description   "
+        The Freescale TWR K70F120M Platform HAL package provides the support
+        needed to run eCos on the TWR K70F120M development system. This package
+        can also be used for other boards that employ a controller from Kinetis
+        families."
+
+    compile       twr_k70f120m_misc.c
+
     requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
     requires      { is_active(CYGPKG_DEVS_ETH_FREESCALE_ENET)
                   implies CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "OSC" }
 
     implements    CYGINT_HAL_CACHE
 
-    requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM == 70 }
-    requires      { CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME == "1M0" }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_FPU_DEFAULT == "F" }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM_DEFAULT == 70 }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM != 30 }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM != 40 }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM != 50 }
+    requires      { CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME_DEFAULT == "1M0" }
     requires      { CYGHWR_HAL_CORTEXM_KINETIS_REV == 2 }
     requires      { is_active(CYGPKG_DEVS_FLASH_KINETIS) implies
                     CYGNUM_DEVS_KINETIS_FLASH_BLOCK_SIZE == 0x1000 }
@@ -75,17 +87,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
     implements    CYGINT_HAL_CORTEXM_KINETIS_HAS_OSC1
     implements    CYGINT_HAL_CORTEXM_KINETIS_150
 
-    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX == 60000000 }
-    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX == 60000000 }
-    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX == 30000000 }
-
-    description   "
-        The Freescale TWR K70F120M Platform HAL package provides the support
-        needed to run eCos on the TWR K70F120M development system. This package
-        can also be used for other boards that employ a controller from Kinetis
-        families."
-
-    compile       twr_k70f120m_misc.c
+    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_PER_MAX == 75000000 }
+    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLEX_BUS_MAX == 75000000 }
+    requires { CYGHWR_HAL_CORTEXM_KINETIS_CLK_FLASH_MAX == 25000000 }
 
     requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
         (1 == CYGHWR_DEVS_ETH_PHY_KSZ8041) }

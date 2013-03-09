@@ -37,4 +37,3 @@ SECTIONS
 hal_vsr_table = (0x20000000 - CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE);
 hal_virtual_vector_table = hal_vsr_table + 128*4;
 hal_startup_stack = 0x20000000 + CYGHWR_HAL_KINETIS_SRAM_BANK_SIZE;
-
