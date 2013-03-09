@@ -66,18 +66,17 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     requires      { CYGHWR_HAL_CORTEXM == "M4" }
-    requires      { CYGHWR_HAL_CORTEXM_FPU implies CYGHWR_HAL_CORTEXM_KINETIS_FPU }
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_cortexm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_cortexm_kinetis.h>"
     }
 
     cdl_component CYGHWR_HAL_CORTEXM_KINETIS {
-        display    "Kinetis part"
-        flavor     data
+        display          "Kinetis part"
+        flavor           data
         calculated { "MK" . CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM .
-            (CYGHWR_HAL_CORTEXM_KINETIS_FPU ? "F" : "D") .
-            (CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM ? "X" : "N") .
+            CYGHWR_HAL_CORTEXM_KINETIS_FPU . CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM .
             CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME }
         description   "
             Kinetis family has several sub-families, with various peripheral
@@ -88,54 +87,105 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             microcontroller's properties such as microcontroller sub-family,
             memory options, etc."
 
-        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM {
-            display          "Sub-family"
-            flavor           data
-            default_value    { 60 }
-            legal_values     { 10 20 30 40 50 60 70 }
-            description "
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM {
+            display        "Sub-family"
+            flavor         data
+            no_define
+            default_value  { CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM_DEFAULT }
+            legal_values   { 10 11 12 20 21 22 30 40 50 51 60 61 70 }
+            description    "
                 Kinetis family consists of several sub-families differing by
                 features and CPU power."
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM_DEFAULT {
+                display        "Default sub-family"
+                flavor         data
+                no_define
+                default_value  { 60 }
+                legal_values   { 10 11 12 20 21 22 30 40 50 51 60 61 70 }
+            }
         }
 
-        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FPU {
-            display          "Floating Point Unit option"
-            flavor           bool
-            default_value    0
-            description "Select whether the chip has Floating Point Unit."
-        }
-
-        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME {
-            display "Flash name segment"
-            flavor           data
-            default_value    { 512 }
-            legal_values     { 32 64 96 128 256 512 "1M0" }
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_FPU {
+            display       "Floating Point Unit part name option"
+            flavor        data
+            no_define
+            legal_values  { "D" "F" }
+            default_value { CYGHWR_HAL_CORTEXM_KINETIS_FPU_DEFAULT }
             description   "
+                Select whether the part has Floating Point Unit. \"F\" - stands for
+                parts with FPU, while \"D\" for ones without. Note:
+                Selection of part with FPU does not imply that the FPU is used -
+                CYGHWR_HAL_CORTEXM_FPU activates the FPU."
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FPU_DEFAULT {
+                display       "Default FPU part name option"
+                flavor        data
+                no_define
+                legal_values  { "D" "F" }
+                default_value { "D" }
+            }
+
+            cdl_option CYGIMP_HAL_CORTEXM_KINETIS_FPU {
+                display    "FPU implemented"
+                no_define
+                calculated { CYGHWR_HAL_CORTEXM_KINETIS_FPU == "F" }
+                active_if  { CYGHWR_HAL_CORTEXM_KINETIS_FPU == "F" }
+                implements CYGINT_HAL_FPV4_SP_D16
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM {
+            display        "FlexNVM name option"
+            flavor         data
+            no_define
+            legal_values   { "N" "X" }
+            default_value  { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_DEFAULT }
+            description    "Select whether the part has FlexNVM."
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_DEFAULT {
+                display        "Default FlexNVM name option"
+                flavor         data
+                no_define
+                legal_values   { "N" "X" }
+                default_value  { "N" }
+            }
+        }
+
+        cdl_component CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME {
+            display        "Flash name segment"
+            flavor           data
+            no_define
+            legal_values   { 32 64 96 128 256 512 "1M0" }
+            default_value  { CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME_DEFAULT }
+            description    "
                 Flash size is represented in part name encoded as KiB
                 (e.g. 512) or MiB (e.g. 1M0)."
-        }
 
-        cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM {
-            display          "FlexNVM option"
-            flavor           bool
-            default_value    { 0 }
-            description "Select whether the chip has FlexNVM."
+
+            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLASH_NAME_DEFAULT {
+                display        "Default Flash name segment"
+                flavor           data
+                no_define
+                legal_values   { 32 64 96 128 256 512 "1M0" }
+                default_value  { 512 }
+            }
         }
 
         cdl_option CYGHWR_HAL_CORTEXM_KINETIS_REV {
-            display "Kinetis revision"
+            display       "Kinetis revision"
             flavor        data
             legal_values  { 1 2 }
             default_value 1
-            description "Revision"
+            description " Revision"
         }
     }
 
     cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
-        display         "CPU exception priority level bits"
-        flavor          data
-        default_value   4
-        description  "
+        display       "CPU exception priority level bits"
+        flavor        data
+        default_value 4
+        description   "
             This option defines the number of bits used to encode the
             exception priority levels that this variant of the Cortex-M
             CPU implements."
@@ -239,7 +289,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         display "FlexNVM configuration"
         flavor none
         no_define
-        active_if CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM
+        active_if { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM == "X" }
         requires {
             CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB <=
             CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB
@@ -446,7 +496,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             display "On-chip memory layout"
             flavor data
             no_define
-            calculated {(CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM ? "flexnvm_": "flash_")
+            calculated {(CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM == "X" ? "flexnvm_": "flash_")
                 . CYGHWR_HAL_CORTEXM_KINETIS_SRAM_LAYOUT }
         }
 
@@ -478,8 +528,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         cdl_option CYGHWR_HAL_KINETIS_FLEXNVM_FLEXRAM_SIZE {
             display   "Kinetis on chip FlexRAM size"
             flavor    data
-            active_if { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM &
+            active_if { (CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM == "X") &&
                 !CYGHWR_HAL_CORTEXM_KINETIS_EEE }
+            legal_values { 4096 16384 }
             calculated { 4096 }
         }
     }
@@ -699,13 +750,17 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             no_define
             legal_values     { 0x70000000 0x80000000 }
             default_value    { 0x70000000 }
-            description   "According to Kinetis Reference Manual rev. 2,
-                the DDRAM mirror mapped at 0x80000000 (able only for write-thru caching)
-                is not accesible by ENET, SDH and some other bus masters, and that the mirror
-                at 0x70000000 (able for copy-back caching) is accessible by them.
-                The practical tests prove that it is the opposite, (actually  as it should be).
-                Until this discrepancy is removed, this option selects the default (non)cached
-                mirror and provides the user with possibilty for manual override.
+            description   "
+                According to Kinetis Reference Manual rev. 2, the DDRAM mirror
+                mapped at 0x80000000 (supporting write-thru caching only)
+                is not accesible by ENET, SDH and some other bus masters,
+                and that the mirror at 0x70000000 (supporting copy-back caching)
+                is accessible by them.
+                The practical tests prove that it is the opposite, actually as
+                it should be.
+                Until this discrepancy is resolved, this option selects the
+                default (non)cached mirror and provides the user with possibilty for
+                manual override.
                 Note: The behavior may change in future.
                 "
         }

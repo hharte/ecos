@@ -1,3 +1,13 @@
+2012-11-06  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl: Changes to Kinetis part builder related to
+	addition of archhitectural hardware floating point support.
+	CYGHWR_HAL_CORTEXM_KINETIS_FPU and CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM
+	look and feel like other name building options. Added new Kinetis
+	members to part selection.
+	* include/var_io.h, src/kinetis_misc.c: Enumerated PORT F.
+	[Bugzilla 1001607]
+
 2012-11-04  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/var_io.h: Define register access to FTFL module. 

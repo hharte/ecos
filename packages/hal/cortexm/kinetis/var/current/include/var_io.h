@@ -826,7 +826,8 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTB_M |   \
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_M |   \
              CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M)
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M)
 #endif
 
 // SCGC6 Bit Fields
@@ -1084,11 +1085,12 @@ typedef volatile struct cyghwr_hal_kinetis_port_s {
 #define CYGHWR_HAL_KINETIS_PORTC_P  (cyghwr_hal_kinetis_port_t *)0x4004B000
 #define CYGHWR_HAL_KINETIS_PORTD_P  (cyghwr_hal_kinetis_port_t *)0x4004C000
 #define CYGHWR_HAL_KINETIS_PORTE_P  (cyghwr_hal_kinetis_port_t *)0x4004D000
+#define CYGHWR_HAL_KINETIS_PORTF_P  (cyghwr_hal_kinetis_port_t *)0x4004E000
 
 enum {
     CYGHWR_HAL_KINETIS_PORTA, CYGHWR_HAL_KINETIS_PORTB,
     CYGHWR_HAL_KINETIS_PORTC, CYGHWR_HAL_KINETIS_PORTD,
-    CYGHWR_HAL_KINETIS_PORTE
+    CYGHWR_HAL_KINETIS_PORTE, CYGHWR_HAL_KINETIS_PORTF
 };
 
 // PCR Bit Fields
