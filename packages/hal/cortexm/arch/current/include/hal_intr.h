@@ -368,6 +368,16 @@ __externC cyg_uint32 hal_cortexm_systick_clock;
     *(__pvalue) = __value;                                              \
 }
 
+#define HAL_CLOCK_READ_NS( __pvalue )                                              \
+CYG_MACRO_START                                                                                  \
+    cyg_uint32 __period, __value;                                                  \
+    HAL_READ_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_RELOAD, __period ); \
+    HAL_READ_UINT32(CYGARC_REG_SYSTICK_BASE+CYGARC_REG_SYSTICK_VALUE, __value );   \
+    __value = (( __period + 1 ) - __value) * 1000;                                          \
+    __value /= (hal_cortexm_systick_clock / 1000000 );                  \
+    *(__pvalue) = __value;                                                         \
+CYG_MACRO_END
+
 #define HAL_CLOCK_LATENCY( __pvalue ) HAL_CLOCK_READ( __pvalue )
 
 #endif // CYGHWR_HAL_CLOCK_DEFINED

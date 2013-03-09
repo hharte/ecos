@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -39,8 +39,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Date:         2008-07-30
+// Author(s):      nickg
+// Contributor(s): ilijak
+// Date:           2008-07-30
 //
 //####DESCRIPTIONEND####
 //
@@ -60,9 +61,12 @@
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
-
+#include <cyg/hal/cortexm_regs.h>       // Special Cortex-M asm instructions
 #include <cyg/hal/drv_api.h>
 
+#ifdef CYGHWR_HAL_CORTEXM_FPU
+#include <cyg/hal/cortexm_fpu.h>        // Optional Floating Point Unit
+#endif
 
 #if defined(CYGPKG_KERNEL_INSTRUMENT) &&        \
     defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
@@ -82,6 +86,9 @@ __externC void hal_default_interrupt_vsr( void );
 __externC void hal_default_svc_vsr( void );
 __externC void hal_pendable_svc_vsr( void );
 __externC void hal_switch_state_vsr( void );
+#ifdef CYGHWR_HAL_CORTEXM_FPU_SWITCH_LAZY
+__externC void hal_usagefault_exception_vsr( void );
+#endif
 
 // HAL and eCos functions
 __externC void hal_system_init( void );
@@ -131,6 +138,11 @@ void hal_reset_vsr( void )
     // the main initialization.
 
     hal_system_init();
+#if defined CYGHWR_HAL_CORTEXM_FPU
+    // Floating Point Unit is disabled after reset.
+    // Enable it unless for LAZY context switching scheme.
+    hal_init_fpu();
+#endif
 
     // Initialize vector table in base of SRAM.
     {
@@ -144,12 +156,16 @@ void hal_reset_vsr( void )
 
         for( i = 2; i < 15; i++ )
             hal_vsr_table[i] = (CYG_ADDRESS)hal_default_exception_vsr;
-
-#endif
+#endif // !defined(CYG_HAL_STARTUP_RAM)
         // Always point SVC and PENDSVC vectors to our local versions
 
         hal_vsr_table[CYGNUM_HAL_VECTOR_SERVICE] = (CYG_ADDRESS)hal_default_svc_vsr;
         hal_vsr_table[CYGNUM_HAL_VECTOR_PENDSV] = (CYG_ADDRESS)hal_pendable_svc_vsr;
+#ifdef CYGHWR_HAL_CORTEXM_FPU_SWITCH_LAZY
+        // Install UsageFault and HardFault to trap the FPU usage exceptions.
+        HAL_VSR_SET(CYGNUM_HAL_VECTOR_USAGE_FAULT, hal_usagefault_exception_vsr, NULL);
+        HAL_VSR_SET(CYGNUM_HAL_VECTOR_HARD_FAULT, hal_usagefault_exception_vsr, NULL);
+#endif // CYGHWR_HAL_CORTEXM_FPU_SWITCH_LAZY
 
         // For all startup type, redirect interrupt vectors to our VSR.
         for( i = CYGNUM_HAL_VECTOR_SYS_TICK ;
@@ -157,7 +173,6 @@ void hal_reset_vsr( void )
              i++ )
             hal_vsr_table[i] = (CYG_ADDRESS)hal_default_interrupt_vsr;
     }
-
 
 #if !defined(CYG_HAL_STARTUP_RAM)
 
@@ -316,6 +331,7 @@ void hal_deliver_exception( HAL_SavedRegisters *regs )
     // This is common in discovery code, e.g. checking for a particular
     // device which may generate an exception when probing if the
     // device is not present
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     if (__mem_fault_handler )
     {
@@ -362,7 +378,6 @@ void hal_deliver_interrupt( cyg_uint32 vector )
     defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
     CYG_INSTRUMENT_INTR(RAISE, vector, 0);
 #endif
-
     isr = (cyg_isr *)hal_interrupt_handlers[vector];
 
     // Call the ISR
@@ -586,9 +601,8 @@ hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_SavedRegisters *regs )
 {
     int i;
-    cyg_uint32 *p = gdbreg->f0;
 
-    switch( regs->u.type )
+    switch(GDB_STUB_SAVEDREG_FRAME_TYPE(regs))
     {
     case HAL_SAVEDREGISTERS_THREAD:
         for( i = 0; i < 13; i++ )
@@ -596,7 +610,9 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         gdbreg->gpr[13] = regs->u.thread.sp;
         gdbreg->gpr[14] = regs->u.thread.pc;
         gdbreg->gpr[15] = regs->u.thread.pc;
-        gdbreg->ps = 0x01000000;
+        gdbreg->xpsr = 0x01000000;
+
+        GDB_STUB_SAVEDREG_FPU_THREAD_GET(gdbreg, regs);
         break;
 
     case HAL_SAVEDREGISTERS_EXCEPTION:
@@ -610,7 +626,10 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         gdbreg->gpr[13] = ((cyg_uint32)regs)+sizeof(regs->u.exception);
         gdbreg->gpr[14] = regs->u.exception.lr;
         gdbreg->gpr[15] = regs->u.exception.pc;
-        gdbreg->ps = regs->u.exception.psr;
+        gdbreg->xpsr = regs->u.exception.psr;
+#ifdef  CYGSEM_HAL_DEBUG_FPU
+        GDB_STUB_SAVEDREG_FPU_EXCEPTION_GET(gdbreg, regs);
+#endif
         break;
 
     case HAL_SAVEDREGISTERS_INTERRUPT:
@@ -622,21 +641,24 @@ __externC void hal_get_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         gdbreg->gpr[13] = ((cyg_uint32)regs)+sizeof(regs->u.interrupt);
         gdbreg->gpr[14] = regs->u.interrupt.lr;
         gdbreg->gpr[15] = regs->u.interrupt.pc;
-        gdbreg->ps = regs->u.interrupt.psr;
+        gdbreg->xpsr = regs->u.interrupt.psr;
         break;
     }
-
+#ifdef CYGARC_CORTEXM_GDB_REG_FPA
     // Clear FP state, which we don't use
-    for( i = 0; i < (8*3+1); i++ )
-        p[i] = 0;
-
+    {
+        cyg_uint32 *p = gdbreg->f0;
+        for( i = 0; i < (8*3+1); i++ )
+            p[i] = 0;
+    }
+#endif
 }
 
 __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_SavedRegisters *regs )
 {
     int i;
 
-    switch( regs->u.type )
+    switch(GDB_STUB_SAVEDREG_FRAME_TYPE(regs))
     {
     case HAL_SAVEDREGISTERS_THREAD:
         for( i = 0; i < 13; i++ )
@@ -644,6 +666,8 @@ __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         regs->u.thread.sp = gdbreg->gpr[13];
         regs->u.thread.pc = gdbreg->gpr[14];
         regs->u.thread.pc = gdbreg->gpr[15];
+
+        GDB_STUB_SAVEDREG_FPU_THREAD_SET(gdbreg, regs);
         break;
 
     case HAL_SAVEDREGISTERS_EXCEPTION:
@@ -656,7 +680,10 @@ __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         regs->u.exception.r12 = gdbreg->gpr[12];
         regs->u.exception.lr = gdbreg->gpr[14];
         regs->u.exception.pc = gdbreg->gpr[15];
-        regs->u.exception.psr = gdbreg->ps;
+        regs->u.exception.psr = gdbreg->xpsr;
+#ifdef  CYGSEM_HAL_DEBUG_FPU
+        GDB_STUB_SAVEDREG_FPU_EXCEPTION_SET(gdbreg, regs);
+#endif
         break;
 
     case HAL_SAVEDREGISTERS_INTERRUPT:
@@ -667,7 +694,7 @@ __externC void hal_set_gdb_registers( HAL_CORTEXM_GDB_Registers *gdbreg, HAL_Sav
         regs->u.interrupt.r12 = gdbreg->gpr[12];
         regs->u.interrupt.lr = gdbreg->gpr[14];
         regs->u.interrupt.pc = gdbreg->gpr[15];
-        regs->u.interrupt.psr = gdbreg->ps;
+        regs->u.interrupt.psr = gdbreg->xpsr;
         break;
     }
 }

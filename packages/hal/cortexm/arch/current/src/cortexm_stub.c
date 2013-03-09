@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -39,8 +39,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Date:         2008-07-30
+// Author(s):      nickg
+// Contributor(s): ilijak, jifl
+// Date:           2008-07-30
 //
 //####DESCRIPTIONEND####
 //
@@ -85,6 +86,8 @@ int __computeSignal (unsigned int trap_number)
     case CYGNUM_HAL_VECTOR_NMI:
     case CYGNUM_HAL_VECTOR_SYS_TICK:
         return SIGINT;
+    case CYGNUM_HAL_VECTOR_USAGE_FAULT:
+        return SIGFPE;
     default:
         return SIGTRAP;
     }
@@ -103,7 +106,7 @@ int __get_trap_number (void)
 
 
 //==========================================================================
-/* Set the currently-saved pc register value to PC. */
+// Set the currently-saved pc register value to PC.
 
 void set_pc (target_register_t pc)
 {
@@ -116,24 +119,15 @@ void set_pc (target_register_t pc)
 static int
 reg_offset(regnames_t reg)
 {
-    int base_offset;
+    int reg_i, offset = 0;
 
-    if (reg < F0)
-        return reg * 4;
-
-    base_offset = 16 * 4;
-
-    if (reg < FPS)
-        return base_offset + ((reg - F0) * 12);
-
-    base_offset += (8 * 12);
-
-    if (reg <= PS)
-        return base_offset + ((reg - FPS) * 4);
-
-    return -1;  // Should never happen!
+    for(reg_i = 0; reg_i < NUMREGS; reg_i++) {
+        if(reg_i == reg)
+            break;
+        offset += REGSIZE(reg_i);
+    }
+    return (NUMREGS == reg_i || 0 == REGSIZE(reg_i)) ? -1 : offset;
 }
-
 
 //==========================================================================
 // Return the currently-saved value corresponding to register REG of
@@ -288,9 +282,10 @@ __is_breakpoint_function ()
 void __skipinst (void)
 {
     unsigned long pc = get_register(PC);
-
+    unsigned short a, b, *pc_p;
     pc += 2;
-
+    pc_p = (unsigned short *) pc; a=pc_p[0]; b=pc_p[1];
+    diag_printf("BP = 0x%04x 0x%04x\n", a, b);
     put_register(PC, pc);
 }
 

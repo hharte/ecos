@@ -52,6 +52,11 @@
 
 #ifndef __ASSEMBLER__
 
+//--------------------------------------------------------------------------
+// No operation
+#define CYGARC_NOP() { __asm__ volatile( "nop" ); }
+
+
 //---------------------------------------------------------------------------
 // Change processor state instructions
 
@@ -75,6 +80,37 @@
 // Reverse signed halfword
 #define CYGARC_REVSH( _swapped_, _origin_ ) \
         __asm__ volatile ("revsh %0, %1\n" : "=r"(_swapped_) : "r"(_origin_))
+
+//------------------------------------------------------------------------
+// Barrier instructions
+// Data Synchronization Barrier
+#define CYGARC_DSB() __asm__ volatile( "dsb" )
+// Instruction Synchronization Barrier
+#define CYGARC_ISB() __asm__ volatile( "isb" )
+
+#define HAL_MEMORY_BARRIER() \
+CYG_MACRO_START              \
+    CYGARC_DSB();            \
+    CYGARC_ISB();            \
+CYG_MACRO_END
+
+//----------------------------------------------------------------------------
+// MSR instuctions
+// Special register instructions
+#define CYGARC_MSR(_reg_, _val_) \
+        __asm__ volatile ("msr " #_reg_", %0\n" : : "r"(_val_))
+
+#define CYGARC_MRS(_val_, _reg_) \
+        __asm__ volatile ("mrs %0," #_reg_ "\n" : "=r"(_val_) : )
+
+//----------------------------------------------------------------------------
+// VFP instuctions
+// Special floating point unit register instructions
+#define CYGARC_VMSR(_reg_, _val_) \
+        __asm__ volatile ("vmsr " #_reg_", %0\n" : : "r"(_val_))
+
+#define CYGARC_VMRS(_val_, _reg_) \
+        __asm__ volatile ("vmrs %0," #_reg_ "\n" : "=r"(_val_) : )
 
 #endif // __ASSEMBLER__
 

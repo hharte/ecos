@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,8 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
+// Author(s):      nickg
+// Contributor(s): ilijak
 // Date:         2008-07-30
 //
 //####DESCRIPTIONEND####
@@ -49,30 +50,33 @@
 //========================================================================
 */
 
+#include <pkgconf/system.h>
+#include <pkgconf/hal.h>
+
+#ifdef CYGHWR_HAL_CORTEXM_FPU
+#include <cyg/hal/cortexm_fpu.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#ifndef CYGHWR_HAL_CORTEXM_FPU
 // The ARM has float (and possibly other coprocessor) registers that are
 // larger than it can hold in a target_register_t.
-#define TARGET_HAS_LARGE_REGISTERS
+# define TARGET_HAS_LARGE_REGISTERS
 
 // ARM stub has special needs for register handling (not all regs are the
 // the same size), so special put_register and get_register are provided.
-#define CYGARC_STUB_REGISTER_ACCESS_DEFINED 1
+# define CYGARC_STUB_REGISTER_ACCESS_DEFINED 1
 
-#define NUMREGS    (16+8+2)  // 16 GPR, 8 FPR (unused), 2 PS
+# define NUMREGS    (16+8+2)  // 16 GPR, 8 FPR (unused), 2 PS
 
-#define REGSIZE( _x_ ) (((_x_) < F0 || (_x_) >= FPS) ? 4 : 12)
+# define REGSIZE( _x_ ) (((_x_) < F0 || (_x_) >= FPS) ? 4 : 12)
 
-// Comment out to allow for default gdb stub packet buffer which is larger.
-// #define NUMREGBYTES ((16*4)+(8*12)+(2*4))
-
-#ifndef TARGET_REGISTER_T_DEFINED
-#define TARGET_REGISTER_T_DEFINED
+# ifndef TARGET_REGISTER_T_DEFINED
+#  define TARGET_REGISTER_T_DEFINED
 typedef unsigned long target_register_t;
-#endif
+# endif
 
 enum regnames {
     R0, R1, R2, R3, R4, R5, R6, R7,
@@ -81,13 +85,15 @@ enum regnames {
     FPS, PS
 };
 
-#define HAL_STUB_REGISTERS_SIZE \
- ((sizeof(HAL_CORTEXM_GDB_Registers) + sizeof(target_register_t) - 1) / sizeof(target_register_t))
+#endif // CYGHWR_HAL_CORTEXM_FPU
 
-#define PS_N 0x80000000
-#define PS_Z 0x40000000
-#define PS_C 0x20000000
-#define PS_V 0x10000000
+# define HAL_STUB_REGISTERS_SIZE \
+   ((sizeof(HAL_CORTEXM_GDB_Registers) + sizeof(target_register_t) - 1) / sizeof(target_register_t))
+
+# define PS_N 0x80000000
+# define PS_Z 0x40000000
+# define PS_C 0x20000000
+# define PS_V 0x10000000
 
 typedef enum regnames regnames_t;
 

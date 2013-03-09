@@ -113,20 +113,23 @@ cdl_package CYGPKG_HAL_CORTEXM {
         flavor           data
         legal_values     { "EXTERNAL" "INTERNAL" }
         default_value    { "EXTERNAL" }
-        description      "
-             Select the Cortex-M system tick timer clock source."
+        description      "Select the Cortex-M system tick timer clock source."
     }
 
-    cdl_interface CYGINT_HAL_CORTEXM_FPU {
-        display "The platform and architecture contains floating point unit."
-    }
+    cdl_component CYGPKG_HAL_CORTEXM_FPU {
+        display        "Floating Point Support"
+        flavor         data
+        calculated     { !CYGHWR_HAL_CORTEXM_FPU ? "SOFT" :
+                          "HARD: " . CYGHWR_HAL_CORTEXM_FPU_SWITCH }
+        no_define
+        active_if      { CYGHWR_HAL_CORTEXM == "M4" }
+        description    "
+            Floating point arithmetics can be executed in software or,
+            on devices with floating point unit - FPU, in hardware.
+            FPU is optional on Cortex-M4 architecture, and is present
+            on Cortex-M4F cores."
 
-    cdl_option CYGHWR_HAL_CORTEXM_FPU {
-        display          "Floating Point Unit"
-        active_if        { CYGINT_HAL_CORTEXM_FPU != 0 }
-        default_value    CYGINT_HAL_CORTEXM_FPU
-        description      "
-            Use the Floating Point Unit."
+        script         hal_cortexm_fpu.cdl
     }
 
     cdl_option CYGIMP_HAL_ARCH_ENDIAN {
@@ -165,6 +168,92 @@ cdl_package CYGPKG_HAL_CORTEXM {
             default_value 8
             description   "
                 This option determines the number of breakpoints supported by the HAL."
+    }
+
+    cdl_component CYGBLD_ARCH_CPUFLAGS {
+        display      "Architecture related build flags"
+        flavor data
+        no_define
+
+        calculated { CYGHWR_HAL_CORTEXM == "M3" ? " -mcpu=cortex-m3" :
+                     CYGHWR_HAL_CORTEXM_FPU     ? " -mcpu=cortex-m4" : " " }
+
+        description "This component defines flags that code generation dependent on specific
+            CPU type or CPU features."
+
+        cdl_option CYGBLD_ARCH_CPUFLAGX_M3 {
+            display    "Exclude Cortex-M3 build flag"
+            flavor     data
+            no_define
+
+            calculated { CYGHWR_HAL_CORTEXM_FPU ? "-mcpu=cortex-m3" : "no_exclude" }
+        }
+
+        cdl_option CYGBLD_ARCH_CPUFLAGX_M4 {
+            display    "Exclude Cortex-M4 build flag"
+            flavor     data
+            no_define
+
+            calculated { (CYGHWR_HAL_CORTEXM != "M4") ? "-mcpu=cortex-m4" : "no_exclude" }
+        }
+
+        cdl_component CYGBLD_ARCH_CPUFLAG_FLOAT_ABI {
+            display    "Float ABI build flags"
+            flavor     data
+            no_define
+            calculated { CYGHWR_HAL_CORTEXM_FPU ? " -mfloat-abi=hard" : "" }
+
+            cdl_option CYGBLD_ARCH_CPUFLAGX_FLOAT_ABI {
+                display    "Float ABI flag to exclude"
+                flavor     data
+                no_define
+                calculated { CYGHWR_HAL_CORTEXM_FPU ? "-mfloat-abi=soft" : "-mfloat-abi=hard" }
+            }
+
+            cdl_option CYGBLD_ARCH_CPUFLAGX_HARDSOFT_FLOAT {
+                display    "Alt. float flag to exclude"
+                flavor     data
+                no_define
+                calculated { CYGHWR_HAL_CORTEXM_FPU ? "-msoft-float" : "-mhard-float" }
+            }
+
+            cdl_component CYGBLD_ARCH_CPUFLAG_FPV4SPD16 {
+                display    "FPv4-SP-D16 flags"
+                flavor     data
+                no_define
+                calculated { CYGHWR_HAL_FPV4_SP_D16 ? " -mfpu=fpv4-sp-d16" : "" }
+
+                cdl_option CYGBLD_ARCH_CPUFLAGX_FPV4SPD16 {
+                    display    "Exclude FPv4-SP-D16 flag"
+                    flavor     data
+                    no_define
+                    calculated { CYGHWR_HAL_FPV4_SP_D16 ? "do_not_exclude" : "-mfpu=fpv4-sp-d16" }
+                }
+            }
+        }
+
+        requires {
+            !is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGX_M3)             &&
+            !is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGX_M4)             &&
+            !is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGX_FLOAT_ABI)      &&
+            !is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGX_HARDSOFT_FLOAT) &&
+            !is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGX_FPV4SPD16)      &&
+
+            is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAGS)                 &&
+            is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAG_FLOAT_ABI)        &&
+            is_substr(CYGBLD_GLOBAL_CFLAGS, CYGBLD_ARCH_CPUFLAG_FPV4SPD16)
+        }
+        requires {
+            !is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGX_M3)             &&
+            !is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGX_M4)             &&
+            !is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGX_FLOAT_ABI)      &&
+            !is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGX_HARDSOFT_FLOAT) &&
+            !is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGX_FPV4SPD16)      &&
+
+            is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAGS)                 &&
+            is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAG_FLOAT_ABI)        &&
+            is_substr(CYGBLD_GLOBAL_LDFLAGS, CYGBLD_ARCH_CPUFLAG_FPV4SPD16)
+        }
     }
 }
 

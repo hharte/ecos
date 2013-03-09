@@ -216,6 +216,16 @@
 #define CYGARC_REG_NVIC_SHCSR_BUSFAULTACT       BIT_(1)
 #define CYGARC_REG_NVIC_SHCSR_MEMFAULTACT       BIT_(0)
 
+// Usage Fault register
+
+#define CYGARC_REG_UFSR                         0xE000ED2A
+#define CYGARC_REG_UFSR_DIVBYZERO               BIT_(9)
+#define CYGARC_REG_UFSR_UNALIGNED               BIT_(8)
+#define CYGARC_REG_UFSR_NOCP                    BIT_(3)
+#define CYGARC_REG_UFSR_INVPC                   BIT_(2)
+#define CYGARC_REG_UFSR_INVSTATE                BIT_(1)
+#define CYGARC_REG_UFSR_UNDEFINSTR              BIT_(0)
+
 #endif
 
 //==========================================================================

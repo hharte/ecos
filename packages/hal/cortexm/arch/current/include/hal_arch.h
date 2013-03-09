@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2012 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -41,20 +41,28 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Date:         2008-07-30
-// Description:  Define architecture abstractions
+// Author(s):      nickg
+// Contributor(s): ilijak
+// Date:           2008-07-30
+// Description:    Define architecture abstractions
 //
 //####DESCRIPTIONEND####
 //
 //========================================================================
 */
 
+#ifndef __ASSEMBLER__
+
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
 #include <cyg/hal/var_arch.h>
+#include <cyg/hal/cortexm_regs.h>
+
+#include <cyg/hal/cortexm_fpu.h>
+
+#endif //__ASSEMBLER__
 
 //==========================================================================
 // CPU save state
@@ -64,21 +72,32 @@
 // for each context. This makes the GDB state get/put slightly more
 // complex, but that is a suitable compromise.
 
+#define HAL_SAVEDREGISTERS_EXCEPTION    1
+#define HAL_SAVEDREGISTERS_THREAD       2
+#define HAL_SAVEDREGISTERS_INTERRUPT    3
+
+#ifndef __ASSEMBLER__
+
 typedef struct
 {
     union
     {
         cyg_uint32              type;           // State type
 
+        // Thread
         struct
         {
             cyg_uint32          type;           // State type
             cyg_uint32          basepri;        // BASEPRI
             cyg_uint32          sp;             // SP (R13)
+
+            HAL_SAVEDREG_FPU_THREAD_S;          // Floating Point Unit context
+
             cyg_uint32          r[13];          // R0..R12
             cyg_uint32          pc;             // PC/LR
         } thread;
 
+        // Exception
         struct
         {
             cyg_uint32          type;           // State type
@@ -87,7 +106,9 @@ typedef struct
 
             cyg_uint32          r4_11[8];       // Remaining CPU registers
             cyg_uint32          xlr;            // Exception return LR
-
+#ifdef CYGSEM_HAL_DEBUG_FPU
+            HAL_SAVEDREG_FPU_EXCEPTION_S;   // Floating Point Unit context
+#endif
             // The following are saved and restored automatically by the CPU
             // for exceptions or interrupts.
 
@@ -99,8 +120,11 @@ typedef struct
             cyg_uint32          lr;
             cyg_uint32          pc;
             cyg_uint32          psr;
+
+            HAL_SAVEDREG_AUTO_FPU_EXCEPTION_S; // Floating Point Unit context
         } exception;
 
+        // Interrupt
         struct
         {
             cyg_uint32          type;           // State type
@@ -117,20 +141,21 @@ typedef struct
             cyg_uint32          pc;
             cyg_uint32          psr;
 
+            HAL_SAVEDREG_AUTO_FPU_EXCEPTION_S; // Floating Point Unit context
         } interrupt;
     } u;
 
 } HAL_SavedRegisters;
 
-#define HAL_SAVEDREGISTERS_EXCEPTION    1
-#define HAL_SAVEDREGISTERS_THREAD       2
-#define HAL_SAVEDREGISTERS_INTERRUPT    3
-
 //==========================================================================
 // Thread context initialization
 
+#ifndef HAL_THREAD_INIT_FPU_CONTEXT
+#define HAL_THREAD_INIT_FPU_CONTEXT(__regs) CYG_EMPTY_STATEMENT
+#endif
+
 #define HAL_THREAD_INIT_CONTEXT( __sparg, __thread, __entry, __id )     \
-{                                                                       \
+CYG_MACRO_START                                                         \
     register CYG_WORD __sp = ((CYG_WORD)__sparg) & ~7;                  \
     register CYG_WORD *__ep = (CYG_WORD *)(__sp -= sizeof(CYG_WORD));   \
     register HAL_SavedRegisters *__regs;                                \
@@ -140,15 +165,16 @@ typedef struct
     __regs->u.type = HAL_SAVEDREGISTERS_THREAD;                         \
     for( __i = 1; __i < 13; __i++ )                                     \
         __regs->u.thread.r[__i] = 0;                                    \
+    HAL_THREAD_INIT_FPU_CONTEXT(__regs);                                \
     *__ep = (CYG_WORD)(__entry);                                        \
     __regs->u.thread.sp       = (CYG_WORD)(__sp);                       \
     __regs->u.thread.r[0]     = (CYG_WORD)(__thread);                   \
     __regs->u.thread.r[1]     = (CYG_WORD)(__id);                       \
-    __regs->u.thread.r[11]     = (CYG_WORD)(__ep);                      \
+    __regs->u.thread.r[11]    = (CYG_WORD)(__ep);                       \
     __regs->u.thread.pc       = (CYG_WORD)__entry;                      \
     __regs->u.thread.basepri  = 0;                                      \
     __sparg = (CYG_ADDRESS)__regs;                                      \
-}
+CYG_MACRO_END
 
 //==========================================================================
 // Context switch macros.
@@ -169,17 +195,30 @@ __externC void hal_thread_load_context( CYG_ADDRESS to ) __attribute__ ((noretur
 
 //==========================================================================
 // Fetch PC from saved state
-
-#define CYGARC_HAL_GET_PC_REG(__regs,__val)                             \
-{                                                                       \
-    switch( (__regs)->u.type )                                          \
-    {                                                                   \
-    case HAL_SAVEDREGISTERS_THREAD   : (__val) = (__regs)->u.thread.pc; break; \
+#if defined CYGHWR_HAL_CORTEXM_FPU_SWITCH_ALL || \
+    defined CYGHWR_HAL_CORTEXM_FPU_SWITCH_LAZY
+#define CYGARC_HAL_GET_PC_REG(__regs,__val)                                       \
+{                                                                                 \
+    switch(GDB_STUB_SAVEDREG_FRAME_TYPE(__regs))                                                    \
+    {                                                                             \
+    case HAL_SAVEDREGISTERS_THREAD:    (__val) = (__regs)->u.thread.pc; break;    \
     case HAL_SAVEDREGISTERS_EXCEPTION: (__val) = (__regs)->u.exception.pc; break; \
     case HAL_SAVEDREGISTERS_INTERRUPT: (__val) = (__regs)->u.interrupt.pc; break; \
-    }                                                                   \
+    default: (__val) = 0;                                                         \
+    }                                                                             \
 }
-
+#else
+#define CYGARC_HAL_GET_PC_REG(__regs,__val)                                       \
+{                                                                                 \
+    switch( (__regs)->u.type )                                                    \
+    {                                                                             \
+    case HAL_SAVEDREGISTERS_THREAD   : (__val) = (__regs)->u.thread.pc; break;    \
+    case HAL_SAVEDREGISTERS_EXCEPTION: (__val) = (__regs)->u.exception.pc; break; \
+    case HAL_SAVEDREGISTERS_INTERRUPT: (__val) = (__regs)->u.interrupt.pc; break; \
+    default: (__val) = 0;                                                         \
+    }                                                                             \
+}
+#endif
 //==========================================================================
 // Exception handling function
 // This function is defined by the kernel according to this prototype. It is
@@ -241,7 +280,8 @@ __asm__ volatile (" .globl  " #_label_ ";"              \
 //==========================================================================
 // GDB support
 
-// Register layout expected by GDB
+#ifdef CYGARC_CORTEXM_GDB_REG_FPA
+// Register layout expected by GDB FPA
 typedef struct
 {
     cyg_uint32  gpr[16];
@@ -254,8 +294,9 @@ typedef struct
     cyg_uint32  f6[3];
     cyg_uint32  f7[3];
     cyg_uint32  fps;
-    cyg_uint32  ps;
+    cyg_uint32  xpsr;
 } HAL_CORTEXM_GDB_Registers;
+#endif
 
 // Translate a stack pointer as saved by the thread context macros
 // into a pointer to a HAL_SavedRegisters structure. On the Cortex-M
@@ -313,7 +354,9 @@ __externC void hal_longjmp(hal_jmp_buf env, int val);
 #define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 20)
 
 // Stack needed for a context switch
+#if !defined CYGNUM_HAL_STACK_CONTEXT_SIZE
 #define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 20)
+#endif
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
@@ -340,6 +383,8 @@ __externC void hal_longjmp(hal_jmp_buf env, int val);
 
 #define CYGARC_HAL_SAVE_GP()
 #define CYGARC_HAL_RESTORE_GP()
+
+#endif // __ASSEMBLER__
 
 //==========================================================================
 #endif //CYGONCE_HAL_ARCH_H
