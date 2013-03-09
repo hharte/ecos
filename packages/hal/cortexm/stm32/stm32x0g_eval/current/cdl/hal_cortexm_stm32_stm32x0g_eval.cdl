@@ -125,6 +125,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"ST STM3240G-EVAL\""
             puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
         }
+        implements    CYGINT_HAL_FPV4_SP_D16
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -146,7 +147,7 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
             The 'ROMINT' type supports applications with code in on-chip flash
             and data/bss in on-chip SRAM, ignoring the external SRAM."
     }
-    
+
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data
@@ -231,9 +232,9 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
                 the J5 setting."
         }
     }
-    
+
     implements CYGINT_HAL_VIRTUAL_VECTOR_VPRINTF
-    
+
     # The 9-pin D connector is connected to PC10 and PC11, which are connected to
     # USART3 or UART4 depending on pin config. The main difference between these
     # ports is that UART4 doesn't support hardware flow control. This board doesn't

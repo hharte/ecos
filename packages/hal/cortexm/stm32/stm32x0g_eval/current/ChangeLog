@@ -1,3 +1,9 @@
+2012-12-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* misc/redboot_ROM_FPU.ecm: Add ECM for RedBoot with FPU support.
+	* cdl/hal_cortexm_stm32_stm32x0g_eval.cdl: Implement CYGINT_HAL_FPV4_SP_D16.
+	[Bugzilla 1001607]
+
 2012-03-29  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/pkgconf/mlt_cortexm_stm32x0g_eval_sram.ldi:
