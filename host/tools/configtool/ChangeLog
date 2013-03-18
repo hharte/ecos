@@ -1,3 +1,10 @@
+2013-03-15  John Dallaway  <john@dallaway.org.uk>
+
+	* standalone/wxwin/admindlg.cpp: Pass POSIX-style paths to
+	ecosadmin.tcl for recent versions of Cygwin. [ Bugzilla 1001798 ]
+	* standalone/wxwin/mainwin.cpp, standalone/wxwin/configtool.cpp:
+	Update copyright strings.
+
 2012-06-22  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/makefile.gnu: Update linker flags for recent

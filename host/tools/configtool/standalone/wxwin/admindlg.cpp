@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2003, 2013 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -240,8 +240,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 // extract the licence file
 
                 wxString strCommand;
-                strCommand.Printf(wxT("add %s --extract_license"), (const wxChar*) strPathName);
-                strCommand.Replace(wxT("\\"), wxT("/")); // backslashes -> forward slashes for Tcl_EvalFile
+                strCommand.Printf(wxT("add %s --extract_license"), (const wxChar*) ecUtils::NativeToPosixPath(strPathName));
                 EvalTclFile (3, strCommand, _("Adding package"));
 
                 wxString strLicenseFile = m_strRepository + wxString(wxFILE_SEP_PATH) + wxT("pkgadd.txt");
@@ -277,8 +276,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 
                 // add the contents of the package distribution file
                 
-                strCommand.Printf (wxT("add %s --accept_license"), (const wxChar*) strPathName);
-                strCommand.Replace (wxT("\\"), wxT("/")); // backslashes -> forward slashes for Tcl_EvalFile
+                strCommand.Printf (wxT("add %s --accept_license"), (const wxChar*) ecUtils::NativeToPosixPath(strPathName));
                 if (! EvalTclFile (3, strCommand, _("Adding package")))  // if not successful
                 {
                     // try the next file
@@ -521,14 +519,14 @@ bool ecAdminDialog::EvalTclFile(int nargc, const wxString& Argv, const wxString&
 
     wxString strArgc;
     strArgc.Printf (wxT("%d"), nargc);
-    std::string argv0 = ecUtils::UnicodeToStdStr (m_strRepository) + "/ecosadmin.tcl";
+    std::string argv0 = ecUtils::UnicodeToStdStr (ecUtils::NativeToPosixPath (m_strRepository)) + "/ecosadmin.tcl";
     std::string argv = ecUtils::UnicodeToStdStr (Argv);
     std::string argc = ecUtils::UnicodeToStdStr (strArgc);
 
     Tcl_Interp * interp = Tcl_CreateInterp ();
 
 #ifdef __WXMSW__
-    Tcl_Channel outchan = Tcl_OpenFileChannel (interp, "nul", "a+", 777);
+    Tcl_Channel outchan = Tcl_OpenFileChannel (interp, "/dev/null", "a+", 777);
     Tcl_SetStdChannel (outchan, TCL_STDOUT); // direct standard output to NUL:
 #endif
 
