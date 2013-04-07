@@ -155,12 +155,14 @@ dspi_status_clear(cyghwr_devs_freescale_dspi_t* dspi_p, cyg_uint32 sr_mask)
 static inline void
 dspi_fifo_clear(cyghwr_devs_freescale_dspi_t* dspi_p)
 {
+    DEBUG2_PRINTF("  Fifo Clear\n");
     dspi_p->mcr |= FREESCALE_DSPI_MCR_CLR_RXF_M | FREESCALE_DSPI_MCR_CLR_TXF_M;
 }
 
 static inline void
 dspi_fifo_drain(cyghwr_devs_freescale_dspi_t* dspi_p)
 {
+    DEBUG2_PRINTF("  Fifo Drain\n");
     dspi_p->sr |= FREESCALE_DSPI_SR_RFDF_M;
 }
 
@@ -207,7 +209,7 @@ static cyg_uint32 dspi_dma_ISR(cyg_vector_t vector, cyg_addrword_t data)
     edma_p = dma_set_p->edma_p;
 
     cyg_drv_isr_lock();
-
+    
     // Disable the Tx DMA channel and DSPI IRQ.
     hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, TX));
     DSPI_IRQ_DISABLE(dspi_p);
@@ -412,7 +414,8 @@ static void dspi_bus_setup(cyg_spi_freescale_dspi_bus_t* spi_bus_p)
     cyghwr_hal_freescale_edma_t* edma_p;
     cyg_uint32 dma_chan_i;
 
-    // Get the clock frequency from HAL.
+    // Set up the clocking.
+    CYGHWR_IO_CLOCK_ENABLE(spi_bus_p->setup_p->clk_gate);    
     spi_bus_p->clock_freq = CYGHWR_IO_SPI_FREESCALE_DSPI_CLOCK;
     DEBUG1_PRINTF("DSPI BUS %p: SysClk=%d\n", spi_bus_p, spi_bus_p->clock_freq);
 
@@ -750,11 +753,16 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
     DEBUG2_PRINTF("DSPI: transaction: count=%d drop_cs=%d\n", count, drop_cs);
 
     // Set up peripheral CS field. DSPI automatically asserts and deasserts CS
-    pushr = dspi_chip_select_set(
+    pushr =
+#ifndef CYGOPT_DEVS_SPI_FREESCALE_DSPI_TICK_ONLY_DROPS_CS
+          // Compatibility option
+          // eCos Reference Manual states that CS should drop prior to sending
+          // ticks, but other SPI drivers do not touch the CS.
+          tick_only ? dspi_p->pushr & 0x87FF0000 : 
+#endif
+          dspi_chip_select_set(
 #ifdef CYGOPT_DEVS_SPI_FREESCALE_DSPI_TICK_ONLY_DROPS_CS
-                                 // eCos Reference Manual states that CS should
-                                 // drop prior to send ticks, but other drivers
-                                 // (so far do not) touch the CS.
+                               // Compatibility option. See comment above.
                                  tick_only ? -1 :
 #endif
                                  dspi_device->dev_num,
@@ -767,8 +775,18 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
     pushque_n = dspi_bus->pushque_n;
     if(bus_16bit)
         txfifo_n *= 2;
-
-    if((dma_set_p=dspi_bus->setup_p->dma_set_p)) {
+    
+    if(count <= txfifo_n){
+        // If byte count fits in the FIFO don't bother with DMA.
+        if((dma_set_p = dspi_bus->setup_p->dma_set_p)) {
+            edma_p = dma_set_p->edma_p;
+            hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, RX));
+        }
+        dma_set_p = NULL;
+    } else {
+        dma_set_p = dspi_bus->setup_p->dma_set_p;
+    }
+    if(dma_set_p) {
         edma_p = dma_set_p->edma_p;
         // Set up the DMA channels.
         dma_chan_rx_i = SPI_DMA_CHAN_I(dma_set_p, RX);
@@ -841,19 +859,24 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
                 while((dspi_p->sr & FREESCALE_DSPI_SR_RFDF_M));
         } else {
             // No DMA - "manually" drain Rx FIFO
-            DEBUG2_PRINTF("DSPI FIFO: 'Manually' drain Rx fifo\n");
+            DEBUG2_PRINTF("DSPI FIFO: 'Manually' drain Rx fifo rx_data=%p bus_16bit=%d\n",
+                          rx_data, bus_16bit);
 #if DEBUG_SPI >= 3
             cyghwr_devs_freescale_dspi_diag(dspi_bus);
 #endif
             if(rx_data) {
                 if(bus_16bit) {
                     cyg_uint16* rx_data16 = (cyg_uint16*) rx_data;
-                    while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M)
+                    while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M) {
+                        DEBUG2_PRINTF("  Fifo Pull16\n");
                         *rx_data16++ = dspi_p->popr;
+                    }
                     rx_data = (cyg_uint8*) rx_data16;
                 } else {
-                    while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M)
+                    while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M) {
+                        DEBUG2_PRINTF("  Fifo Pull\n");
                         *rx_data++ = dspi_p->popr;
+                    }
                 }
             } else {
                 dspi_fifo_drain(dspi_p);
@@ -995,9 +1018,9 @@ static void dspi_transaction_end(cyg_spi_device* device)
 
     if(dspi_device->chip_sel){
         // Clear peripheral CS by executing a dummy 4 bit transfer.
+        DSPI_EOQ_CLEAR(dspi_p);
         dspi_p->pushr = PUSHR_NULL | FREESCALE_DSPI_PUSHR_EOQ_M |
                         FREESCALE_DSPI_PUSHR_CTAS(1);
-        DSPI_EOQ_CLEAR(dspi_p);
         while(!(dspi_p->sr & FREESCALE_DSPI_SR_EOQF_M));
         dspi_device->chip_sel = 0;
     }

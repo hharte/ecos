@@ -123,6 +123,7 @@ typedef struct cyg_spi_freescale_dspi_bus_setup_s
     cyg_uint32                      mcr_opt ;        // Module Configuratyon Register options
     const cyg_uint32*               spi_pin_list_p;  // List of GPIOs used by the SPI interface.
     const cyg_uint32*               cs_pin_list_p;   // List of GPIOs used as chip selects.
+    cyg_uint16                      clk_gate;        // Clock gate
     cyg_uint8                       cs_pin_num;      // Number of chip selects for this bus.
 } cyg_spi_freescale_dspi_bus_setup_t;
 

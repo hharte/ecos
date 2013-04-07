@@ -157,6 +157,7 @@ static const cyg_spi_freescale_dspi_bus_setup_t dspi ## __bus ## _setup = {   \
     .intr_prio       = CYGNUM_DEVS_SPI_FREESCALE_DSPI ## __bus ## _ISR_PRI,   \
     .spi_pin_list_p  = spi ## __bus ## _pins,                                 \
     .cs_pin_list_p   = spi ## __bus ## _cs_pins,                              \
+    .clk_gate        = CYGHWR_IO_FREESCALE_DSPI ## __bus ## _CLK,             \
     .cs_pin_num      = sizeof(spi ## __bus ## _cs_pins)/                      \
                        sizeof(spi ## __bus ## _cs_pins[0]),                   \
     .mcr_opt         = CYGHWR_FREESCALE_DSPI ## __bus ## _MCR_PCSSE |         \
