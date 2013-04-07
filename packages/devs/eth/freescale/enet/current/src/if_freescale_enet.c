@@ -6,7 +6,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -319,6 +319,7 @@ typedef struct freescale_enet_priv_t {
     cyg_uint32 *txkey_head_p;             // Last Txkey entry
     cyg_uint32 *txkey_tail_p;             // Last Txkey released
 #endif // CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
+    cyg_uint32 clock;                     // Clock gating
     const cyg_uint32 *pins_p;             // (R)MII pin configuration data
     cyg_uint8 *enaddr;                    // Default ethernet (MAC) address
     cyg_uint32 rx_intr_vector;
@@ -474,6 +475,7 @@ freescale_enet_priv_t enet0_eth0_priv = {
     .txbuf_size   = CYGNUM_DEVS_ETH_FREESCALE_ENET0_TXBUF_SIZE,
     .txbuf_p      = enet0_txbuf,
 #endif //  CYGOPT_ETH_FREESCALE_ENET_TX_NOCOPY
+    .clock       = CYGHWR_IO_FREESCALE_ENET0_CLOCK,
     .pins_p      = enet0_pins,
     .pins_n      = sizeof(enet0_pins)/sizeof(enet0_pins[0]),
     .enaddr   = enet0_macaddr,
@@ -743,6 +745,9 @@ enet_eth_init(struct cyg_netdevtab_entry *tab)
 #ifdef CYGHWR_DEVS_ETH_FREESCALE_ENET_GET_ESA
     bool esa_ok = false;
 #endif
+    // Bring clock to the sevice
+    CYGHWR_IO_CLOCK_ENABLE(enet_priv_p->clock);
+    // Assign pins
     enet_cfg_pins(enet_priv_p);
 
     HAL_WRITE_UINT32(enet_base + FREESCALE_ENET_REG_EIMR, 0);

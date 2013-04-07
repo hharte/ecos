@@ -1,3 +1,8 @@
+2013-04-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/ser_freescale_uart_chan.inl. include/ser_freescale_uart.c:
+	Add clock gating enable. [ Bugzilla 1001814 ]
+
 2012-02-07  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/ser_freescale_uart.cdl:

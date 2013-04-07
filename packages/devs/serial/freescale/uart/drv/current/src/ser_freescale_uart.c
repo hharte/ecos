@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -76,7 +76,8 @@ typedef struct uart_serial_info {
     CYG_ADDRWORD   uart_base;          // Base address of the uart port
     CYG_WORD       interrupt_num;      // NVIC interrupt vector
     cyg_priority_t interrupt_priority; // NVIC interupt priority
-    const uart_pins_t *pins_p;
+    const uart_pins_t *pins_p;         // Rx, Tx, etc.
+    cyg_uint32     clock;              // Clock gate
     cyg_bool tx_active;
     cyg_interrupt  interrupt_obj;      // Interrupt object
     cyg_handle_t   interrupt_handle;   // Interrupt handle
@@ -147,7 +148,9 @@ uart_serial_config_port(serial_channel * chan, cyg_serial_info_t * new_config,
     cyg_uint32 baud_rate = select_baud[new_config->baud];
 
     if(!baud_rate) return false;    // Invalid baud rate selected
-
+    
+    // Bring clock to the sevice
+    CYGHWR_IO_CLOCK_ENABLE(uart_chan->clock);
     // Configure PORT pins
     CYGHWR_IO_FREESCALE_UART_PIN(uart_chan->pins_p->rx);
     CYGHWR_IO_FREESCALE_UART_PIN(uart_chan->pins_p->tx);

@@ -215,7 +215,12 @@ void
 hal_freescale_edma_init(cyghwr_hal_freescale_edma_t *edma_p)
 {
     cyg_uint32 regval;
-
+    
+    CYGHWR_IO_CLOCK_ENABLE(CYGHWR_IO_FREESCALE_EDMA0_CLK);
+    CYGHWR_IO_CLOCK_ENABLE(CYGHWR_IO_FREESCALE_DMAMUX0_CLK);
+#if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
+    CYGHWR_IO_CLOCK_ENABLE(CYGHWR_IO_FREESCALE_DMAMUX1_CLK);
+#endif
     regval = edma_p->cr;
 #if CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM > 16
     regval &= ~(FREESCALE_EDMA_GR_PRI(0, 3) | FREESCALE_EDMA_GR_PRI(1, 3));

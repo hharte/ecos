@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -60,6 +60,7 @@ static uart_serial_info uart_serial_info0 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART0_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART0_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART0_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART0_CLOCK,
     pins_p             : &uart0_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART0_BUFSIZE > 0
@@ -114,6 +115,7 @@ static uart_serial_info uart_serial_info1 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART1_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART1_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART1_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART1_CLOCK,
     pins_p             : &uart1_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART1_BUFSIZE > 0
@@ -167,6 +169,7 @@ static uart_serial_info uart_serial_info2 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART2_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART2_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART2_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART2_CLOCK,
     pins_p             : &uart2_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART2_BUFSIZE > 0
@@ -221,6 +224,7 @@ static uart_serial_info uart_serial_info3 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART3_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART3_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART3_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART3_CLOCK,
     pins_p             : &uart3_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART3_BUFSIZE > 0
@@ -275,6 +279,7 @@ static uart_serial_info uart_serial_info4 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART4_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART4_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART4_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART4_CLOCK,
     pins_p             : &uart4_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART4_BUFSIZE > 0
@@ -329,6 +334,7 @@ static uart_serial_info uart_serial_info5 = {
     uart_base          : CYGADDR_IO_SERIAL_FREESCALE_UART5_BASE,
     interrupt_num      : CYGNUM_IO_SERIAL_FREESCALE_UART5_INT_VECTOR,
     interrupt_priority : CYGNUM_IO_SERIAL_FREESCALE_UART5_INT_PRIORITY,
+    clock              : CYGHWR_IO_FREESCALE_UART5_CLOCK,
     pins_p             : &uart5_pins
 };
 #if CYGNUM_IO_SERIAL_FREESCALE_UART5_BUFSIZE > 0

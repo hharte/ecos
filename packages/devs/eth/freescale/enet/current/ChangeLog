@@ -1,3 +1,7 @@
+2013-04-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* src/if_freescale_enet.c: Add clock gating enable. [ Bugzilla 1001814 ]
+
 2012-05-04  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/eth_freescale_enet.cdl:
