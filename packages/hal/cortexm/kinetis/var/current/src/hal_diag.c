@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -75,6 +75,7 @@ typedef struct {
     cyg_int32 isr_vector;
     cyg_uint32 rx_pin;
     cyg_uint32 tx_pin;
+    cyg_uint32 clock_gate;
     cyg_int32 baud_rate;
     cyg_int32 irq_state;
 } channel_data_t;
@@ -84,37 +85,37 @@ channel_data_t plf_ser_channels[] = {
     { 0, CYGADDR_IO_SERIAL_FREESCALE_UART0_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART0_RX_TX,
       CYGHWR_HAL_FREESCALE_UART0_PIN_RX, CYGHWR_HAL_FREESCALE_UART0_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
+      CYGHWR_IO_FREESCALE_UART0_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #ifdef CYGINT_HAL_FREESCALE_UART1
     { 1, CYGADDR_IO_SERIAL_FREESCALE_UART1_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART1_RX_TX,
       CYGHWR_HAL_FREESCALE_UART1_PIN_RX, CYGHWR_HAL_FREESCALE_UART1_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
+      CYGHWR_IO_FREESCALE_UART1_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #ifdef CYGINT_HAL_FREESCALE_UART2
     { 2, CYGADDR_IO_SERIAL_FREESCALE_UART2_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART2_RX_TX,
       CYGHWR_HAL_FREESCALE_UART2_PIN_RX, CYGHWR_HAL_FREESCALE_UART2_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
+      CYGHWR_IO_FREESCALE_UART2_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #ifdef CYGINT_HAL_FREESCALE_UART3
     { 3, CYGADDR_IO_SERIAL_FREESCALE_UART3_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART3_RX_TX,
       CYGHWR_HAL_FREESCALE_UART3_PIN_RX, CYGHWR_HAL_FREESCALE_UART3_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
+      CYGHWR_IO_FREESCALE_UART3_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #ifdef CYGINT_HAL_FREESCALE_UART4
     { 4, CYGADDR_IO_SERIAL_FREESCALE_UART4_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART4_RX_TX,
       CYGHWR_HAL_FREESCALE_UART4_PIN_RX, CYGHWR_HAL_FREESCALE_UART4_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
+      CYGHWR_IO_FREESCALE_UART4_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #ifdef CYGINT_HAL_FREESCALE_UART5
     { 5, CYGADDR_IO_SERIAL_FREESCALE_UART5_BASE, 1000,
       CYGNUM_HAL_INTERRUPT_UART5_RX_TX,
       CYGHWR_HAL_FREESCALE_UART5_PIN_RX, CYGHWR_HAL_FREESCALE_UART5_PIN_TX,
-      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
+      CYGHWR_IO_FREESCALE_UART5_CLOCK, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
 #endif
 };
 
@@ -138,6 +139,8 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
     channel_data_t* chan = (channel_data_t*)__ch_data;
     CYG_ADDRESS uart_p = chan->base;
 
+    // Bring clock to the device
+    CYGHWR_IO_CLOCK_ENABLE(chan->clock_gate);
     // Configure PORT pins
     hal_set_pin_function(chan->rx_pin);
     hal_set_pin_function(chan->tx_pin);

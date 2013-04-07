@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2010 Free Software Foundation, Inc.                        
+// Copyright (C) 2010, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -277,14 +277,19 @@ hal_dump_pin_setting(cyg_uint32 pin)
     }
 }
 
+//==========================================================================
+// Clock distribution
+//
+
 void CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION_ATTR
 hal_clock_enable(cyg_uint32 desc)
 {
     volatile cyg_uint32 *scgc_p;
 
-    if(desc != CYGHWR_HAL_KINETIS_CLOCK_NONE) {
-        scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 + CYGHWR_HAL_CLOCK_REG(desc);
-        *scgc_p |= 1 << CYGHWR_HAL_CLOCK_BIT(desc);
+    if(desc != CYGHWR_HAL_SCGC_NONE) {
+        scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 +
+                 CYGHWR_HAL_KINETIS_SIM_SCGC_REG(desc);
+        *scgc_p |= 1 << CYGHWR_HAL_KINETIS_SIM_SCGC_BIT(desc);
     }
 }
 
@@ -293,9 +298,10 @@ hal_clock_disable(cyg_uint32 desc)
 {
     volatile cyg_uint32 *scgc_p;
 
-    if(desc != CYGHWR_HAL_KINETIS_CLOCK_NONE) {
-        scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 + CYGHWR_HAL_CLOCK_REG(desc);
-        *scgc_p &= ~(1 << CYGHWR_HAL_CLOCK_BIT(desc));
+    if(desc != CYGHWR_HAL_SCGC_NONE) {
+        scgc_p = &CYGHWR_HAL_KINETIS_SIM_P->scgc1 +
+                 CYGHWR_HAL_KINETIS_SIM_SCGC_REG(desc);
+        *scgc_p &= ~(1 << CYGHWR_HAL_KINETIS_SIM_SCGC_BIT(desc));
     }
 }
 

@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -707,191 +707,27 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_SDID_REVID_S            12
 #define CYGHWR_HAL_KINETIS_SIM_SDID_REVID(__val)       \
         VALUE_(CYGHWR_HAL_KINETIS_SIM_SDID_REVID_S, __val)
-// SCGC1 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_OSC1_M            0x20
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_OSC1_S            5
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_M           0x400
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_S           10
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M           0x800
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_S           11
 
-#define CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M \
- (CYGHWR_HAL_KINETIS_SIM_SCGC1_UART4_M | CYGHWR_HAL_KINETIS_SIM_SCGC1_UART5_M)
+//---------------------------------------------------------------------------
+// Clock distribution
+// The following encodes the control register and clock bit number
+// into clock configuration descriptor (CLKCD).
+#define CYGHWR_HAL_KINETIS_SIM_SCGC(__reg,__bit) ((((__reg) - 1 ) & 0xF) + \
+                                                  (((__bit) << 8) & 0x1F00))
 
-// SCGC2 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M            0x1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_S            0
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC0_M            0x1000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC0_S            12
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M            0x2000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_S            13
+// Macros to extract encoded values.
+#define CYGHWR_HAL_KINETIS_SIM_SCGC_REG(__clkcd) (((__clkcd) & 0xF))
+#define CYGHWR_HAL_KINETIS_SIM_SCGC_BIT(__clkcd) (((__clkcd) >> 8) & 0x1F)
 
-#define CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M         \
-            (CYGHWR_HAL_KINETIS_SIM_SCGC2_ENET_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC0_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC2_DAC1_M)
+// Functions and macros to enable/disable clocks.
+#define CYGHWR_HAL_SCGC_NONE (0xFFFFFFFF)
+__externC void hal_clock_enable(cyg_uint32 clkcd);
+__externC void hal_clock_disable(cyg_uint32 clkcd);
 
-// SCGC3 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M            0x1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_S            0
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_M        0x10
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_S        4
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_M            0x1000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_S            12
-#ifdef CYGPKG_HAL_CORTEXM_KINETIS_DDRMC
-# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M             0x4000
-# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_S             14
-#else
-# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M             0
-# define CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_S             0
-#endif
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_M            0x20000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_S            17
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_M            0x1000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_S            24
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M            0x8000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_S            27
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_M            0x10000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_S            28
+#define CYGHWR_HAL_CLOCK_ENABLE(__clkcd) hal_clock_enable(__clkcd)
+#define CYGHWR_HAL_CLOCK_DISABLE(__clkcd) hal_clock_disable(__clkcd)
 
-#define CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M             \
-            (CYGHWR_HAL_KINETIS_SIM_SCGC3_RNGB_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_FLEXCAN1_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_SPI2_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M  |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_SDHC_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_FTM2_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC1_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC3_ADC3_M )
-
-// SCGC4 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M             0x2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_S             1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_CMT_M             0x4
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_CMT_S             2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C0_M            0x40
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C0_S            6
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C1_M            0x80
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C1_S            7
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART0_M           0x400
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART0_S           10
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART1_M           0x800
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART1_S           11
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART2_M           0x1000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART2_S           12
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART3_M           0x2000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_UART3_S           13
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_USBOTG_M          0x40000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_USBOTG_S          18
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_CMP_M             0x80000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_CMP_S             19
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_VREF_M            0x100000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_VREF_S            20
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M            0x10000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_S            28
-
-#define CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M \
- (CYGHWR_HAL_KINETIS_SIM_SCGC4_EWM_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_CMT_M |    \
- CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C0_M |CYGHWR_HAL_KINETIS_SIM_SCGC4_I2C1_M |   \
- CYGHWR_HAL_KINETIS_SIM_SCGC4_UART0_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_UART1_M |\
- CYGHWR_HAL_KINETIS_SIM_SCGC4_UART2_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_UART3_M |\
- CYGHWR_HAL_KINETIS_SIM_SCGC4_USBOTG_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_CMP_M | \
- CYGHWR_HAL_KINETIS_SIM_SCGC4_VREF_M | CYGHWR_HAL_KINETIS_SIM_SCGC4_LLWU_M)
-
-// SCGC5 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M         0x1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_S         0
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_REGFILE_M         0x2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_REGFILE_S         1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_TSI_M             0x20
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_TSI_S             5
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTA_M           0x200
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTA_S           9
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTB_M           0x400
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTB_S           10
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_M           0x800
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_S           11
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_M           0x1000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_S           12
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M           0x2000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_S           13
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M           0x4000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_S           14
-#ifndef CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M
-#define CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M            \
-            (CYGHWR_HAL_KINETIS_SIM_SCGC5_LPTIMER_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_REGFILE_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_TSI_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTA_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTB_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M)
-#endif
-
-// SCGC6 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_M            0x1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_S            0
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_M          0x2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_S          1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX0_M         0x2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX0_S         1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX1_M         0x4
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX1_S         2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FLEXCAN0_M        0x10
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FLEXCAN0_S        4
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DSPI0_M           0x1000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_DSPI0_S           12
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_SPI1_M            0x2000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_SPI1_S            13
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_I2S_M             0x8000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_I2S_S             15
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_CRC_M             0x40000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_CRC_S             18
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_USBDCD_M          0x200000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_USBDCD_S          21
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_PDB_M             0x400000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_PDB_S             22
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_PIT_M             0x800000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_PIT_S             23
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM0_M            0x1000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM0_S            24
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM1_M            0x2000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM1_S            25
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_ADC0_M            0x8000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_ADC0_S            27
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M             0x20000000
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_S             29
-
-#define CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M             \
-            (CYGHWR_HAL_KINETIS_SIM_SCGC6_FTFL_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_FLEXCAN0_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_DSPI0_M |    \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_SPI1_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_I2S_M |      \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_CRC_M |      \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_USBDCD_M |   \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_PDB_M |      \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_PIT_M |      \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM0_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_FTM1_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_ADC0_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M)
-
-// SCGC7 Bit Fields
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M         0x1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_S         0
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_DMA_M             0x2
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_DMA_S             1
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M             0x4
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_S             2
-
-#define CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M            \
-            (CYGHWR_HAL_KINETIS_SIM_SCGC7_FLEXBUS_M | \
-             CYGHWR_HAL_KINETIS_SIM_SCGC7_DMA_M |     \
-             CYGHWR_HAL_KINETIS_SIM_SCGC7_MPU_M)
+#include <cyg/hal/var_io_clkgat.h>
 
 // CLKDIV1 Bit Fields
 #define CYGHWR_HAL_KINETIS_SIM_CLKDIV1_OUTDIV4_M       0xF0000
@@ -986,21 +822,6 @@ typedef volatile struct cyghwr_hal_kinetis_sim_s {
 #define CYGHWR_HAL_KINETIS_SIM_MCR_DDRSREN_S          0
 
 
-// The following encodes the control register and clock bit number
-// into 16 bit descriptor.
-#define CYGHWR_HAL_CLOCK( __reg, __bit ) ((((__reg)-1)&0xF) + (((__bit)<<8)&0x1F00))
-
-// Macros to extract encoded values.
-#define CYGHWR_HAL_CLOCK_REG( __desc ) ((__desc)&0xF)
-#define CYGHWR_HAL_CLOCK_BIT( __desc ) (((__desc)>>8)&0x1F)
-
-// Functions and macros to enable/disable clocks.
-#define CYGHWR_HAL_KINETIS_CLOCK_NONE (0xFFFF)
-__externC void hal_clock_enable( cyg_uint32 desc );
-__externC void hal_clock_disable( cyg_uint32 desc );
-
-#define CYGHWR_HAL_CLOCK_ENABLE( __desc ) hal_clock_enable( __desc )
-#define CYGHWR_HAL_CLOCK_DISABLE( __desc ) hal_clock_disable( __desc )
 
 //--------------------------------------------------------------------------
 // AXBS - Crossbar switch
@@ -1308,7 +1129,7 @@ enum{
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BDPE  (0x04)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BIPE  (0x02)
 #define CYGHWR_HAL_KINETIS_FMC_PFBCR_BSEBE (0x01)
-                                       
+
 //---------------------------------------------------------------------------
 // MPU Memory Protection unit
 

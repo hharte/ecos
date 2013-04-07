@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -72,6 +72,15 @@ __externC cyg_uint32 hal_get_peripheral_clock(void);
 #define CYGADDR_IO_SERIAL_FREESCALE_UART3_BASE  0x4006D000
 #define CYGADDR_IO_SERIAL_FREESCALE_UART4_BASE  0x400EA000
 #define CYGADDR_IO_SERIAL_FREESCALE_UART5_BASE  0x400EB000
+
+// UART Clock gating
+
+#define CYGHWR_IO_FREESCALE_UART0_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART0
+#define CYGHWR_IO_FREESCALE_UART1_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART1
+#define CYGHWR_IO_FREESCALE_UART2_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART2
+#define CYGHWR_IO_FREESCALE_UART3_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART3
+#define CYGHWR_IO_FREESCALE_UART4_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART4
+#define CYGHWR_IO_FREESCALE_UART5_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_UART5
 
 // UART PIN configuration
 // Note: May be overriden by plf_io.h
@@ -140,6 +149,8 @@ __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 // ENET
 // Lend some HAL dependent functions to the Ethernet device driver
 #define CYGADDR_IO_ETH_FREESCALE_ENET0_BASE  (0x400C0000)
+// Clock gating
+#define CYGHWR_IO_FREESCALE_ENET0_CLOCK CYGHWR_HAL_KINETIS_SIM_SCGC_ENET
 
 #ifndef __ASSEMBLER__
 
@@ -159,12 +170,11 @@ __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 
 #define CYGHWR_IO_SPI_FREESCALE_DSPI_CLOCK hal_get_peripheral_clock();
 
-#ifndef __ASSEMBLER__
+#define CYGHWR_IO_FREESCALE_DSPI0_CLK  CYGHWR_HAL_KINETIS_SIM_SCGC_SPI0
+#define CYGHWR_IO_FREESCALE_DSPI1_CLK  CYGHWR_HAL_KINETIS_SIM_SCGC_SPI1
+#define CYGHWR_IO_FREESCALE_DSPI2_CLK  CYGHWR_HAL_KINETIS_SIM_SCGC_SPI2
 
-# define CYGHWR_IO_FREESCALE_DSPI_PIN(__pin) \
-        hal_set_pin_function(__pin)
-
-#endif
+# define CYGHWR_IO_FREESCALE_DSPI_PIN(__pin) hal_set_pin_function(__pin)
 
 #ifndef KINETIS_PIN_SPI0_OUT_OPT
 #define KINETIS_PIN_SPI0_OUT_OPT (CYGHWR_HAL_KINETIS_PORT_PCR_DSE_M | \
@@ -359,6 +369,13 @@ __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
 #define CYGHWR_IO_FREESCALE_DMAMUX0_P CYGHWR_HAL_FREESCALE_DMAMUX0_P
 #define CYGHWR_IO_FREESCALE_DMAMUX1_P CYGHWR_HAL_FREESCALE_DMAMUX1_P
 
+//Clock distribution
+#define CYGHWR_IO_CLOCK_ENABLE(__scgc) hal_clock_enable(__scgc)
+
+#define CYGHWR_IO_FREESCALE_EDMA0_CLK   CYGHWR_HAL_KINETIS_SIM_SCGC_DMA
+#define CYGHWR_IO_FREESCALE_DMAMUX0_CLK CYGHWR_HAL_KINETIS_SIM_SCGC_DMAMUX0
+#define CYGHWR_IO_FREESCALE_DMAMUX0_CLK CYGHWR_HAL_KINETIS_SIM_SCGC_DMAMUX0
+#define CYGHWR_IO_FREESCALE_DMAMUX1_CLK CYGHWR_HAL_KINETIS_SIM_SCGC_DMAMUX1
 //-----------------------------------------------------------------------------
 // end of var_io_devs.h
 #endif // CYGONCE_HAL_VAR_IO_DEVS_H

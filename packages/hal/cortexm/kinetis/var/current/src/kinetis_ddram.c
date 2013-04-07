@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2012 Free Software Foundation, Inc.                        
+// Copyright (C) 2012, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -89,8 +89,8 @@ hal_cortexm_kinetis_ddrmc_init(const cyg_uint32 inidat[])
     cyg_uint32 cr_ix;
     cyg_uint32 cr_i;
     cyg_uint32 regval;
-
-    sim_p->scgc3 |= CYGHWR_HAL_KINETIS_SIM_SCGC3_DDR_M;
+    
+    CYGHWR_IO_CLOCK_ENABLE(CYGHWR_HAL_KINETIS_SIM_SCGC_DDR);
 
     regval = sim_p->mcr & ~CYGHWR_HAL_KINETIS_SIM_MCR_DDR_SETUP_M;
     sim_p->mcr   = regval | CYGHWR_HAL_KINETIS_SIM_MCR_DDR_SETUP;
