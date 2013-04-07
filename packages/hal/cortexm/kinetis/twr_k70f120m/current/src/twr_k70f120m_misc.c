@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2012 Free Software Foundation, Inc.                        
+// Copyright (C) 2012, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -64,7 +64,7 @@
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
 
-static inline void hal_gpio_init(void);
+static inline void hal_misc_init(void);
 
 // DATA and BSS locations
 __externC cyg_uint32 __ram_data_start;
@@ -148,10 +148,17 @@ const cyg_uint32 kinetis_ddr_cfg[] = {
 __externC void CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION_ATTR
 hal_system_init( void )
 {
-//#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_SRAM)
 #if !defined(CYG_HAL_STARTUP_RAM)
+    cyghwr_hal_kinetis_pmc_t *pmc_p = CYGHWR_HAL_KINETIS_PMC_P;
+
     hal_wdog_disable();
-    hal_gpio_init();
+    hal_misc_init();
+
+    // if ACKISO is set you must clear ackiso before calling pll_init
+    //    or pll init hangs waiting for OSC to initialize
+    if(pmc_p->regsc & CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_M)
+        pmc_p->regsc |= CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_M;
+
     hal_start_clocks();
 # ifdef CYGPKG_HAL_CORTEXM_KINETIS_DDRMC
     HAL_CORTEXM_KINETIS_DDRMC_INIT( kinetis_ddr_cfg );
@@ -160,28 +167,26 @@ hal_system_init( void )
 }
 
 //===========================================================================
-// hal_gpio_init
+// hal_misc_init
 //===========================================================================
+#define CYGHWR_HAL_KINETIS_SIM_SCGC5_PORT_M           \
+            (CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTA_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTB_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTC_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTD_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTE_M |   \
+             CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M)
+
 static inline void CYGOPT_HAL_KINETIS_MISC_FLASH_SECTION_ATTR
-hal_gpio_init(void)
+hal_misc_init(void)
 {
     cyghwr_hal_kinetis_sim_t *sim_p = CYGHWR_HAL_KINETIS_SIM_P;
     cyghwr_hal_kinetis_mpu_t *mpu_p = CYGHWR_HAL_KINETIS_MPU_P;
-    cyghwr_hal_kinetis_pmc_t *pmc_p = CYGHWR_HAL_KINETIS_PMC_P;
 
-    // Enable clocks on all ports.
-    sim_p->scgc1 = CYGHWR_HAL_KINETIS_SIM_SCGC1_ALL_M;
-    sim_p->scgc2 = CYGHWR_HAL_KINETIS_SIM_SCGC2_ALL_M;
-    sim_p->scgc3 = CYGHWR_HAL_KINETIS_SIM_SCGC3_ALL_M;
-    sim_p->scgc4 = CYGHWR_HAL_KINETIS_SIM_SCGC4_ALL_M;
-    sim_p->scgc5 = CYGHWR_HAL_KINETIS_SIM_SCGC5_ALL_M | CYGHWR_HAL_KINETIS_SIM_SCGC5_PORTF_M;
-    sim_p->scgc6 = CYGHWR_HAL_KINETIS_SIM_SCGC6_ALL_M | CYGHWR_HAL_KINETIS_SIM_SCGC6_DMAMUX1_M;
-    sim_p->scgc7 = CYGHWR_HAL_KINETIS_SIM_SCGC7_ALL_M;
-
-    // if ACKISO is set you must clear ackiso before calling pll_init
-    //    or pll init hangs waiting for OSC to initialize
-    if(pmc_p->regsc & CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_M)
-        pmc_p->regsc |= CYGHWR_HAL_KINETIS_PMC_REGSC_ACKISO_M;
+    // Enable some peripherals' clocks.
+    sim_p->scgc1 |= CYGHWR_HAL_KINETIS_SIM_SCGC1_OSC1_M;
+    sim_p->scgc5 |= CYGHWR_HAL_KINETIS_SIM_SCGC5_PORT_M;
+    sim_p->scgc6 |= CYGHWR_HAL_KINETIS_SIM_SCGC6_RTC_M;
 
     // Disable MPU
     mpu_p->cesr = 0;
