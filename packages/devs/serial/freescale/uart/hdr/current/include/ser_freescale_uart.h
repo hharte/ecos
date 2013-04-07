@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -88,6 +88,7 @@ enum {
 
 // CYGHWR_IO_FREESCALE_UART_BAUD_SET(__uart_p, _baud_) should be provided by HAL.
 // CYGHWR_IO_FREESCALE_UART_PIN(__pin) should be provided by HAL.
+// CYGHWR_IO_FREESCALE_UARTn_CLOCK should be provided by HAL.
 // CYGHWR_IO_FREESCALE_UARTn_PIN_RX should be provided by HAL.
 // CYGHWR_IO_FREESCALE_UARTn_PIN_TX should be provided by HAL.
 // CYGHWR_IO_FREESCALE_UARTn_PIN_RTS should be provided by HAL.

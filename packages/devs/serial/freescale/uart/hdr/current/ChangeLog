@@ -1,3 +1,8 @@
+2013-04-01  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/ser_freescale_uart.h: Add clock gating comment.
+	[ Bugzilla 1001814 ]
+
 2011-03-26  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/ser_freescale_uart_hdr.cdl:
