@@ -41,7 +41,7 @@
 //
 // Author(s):    jlarmour based on stm3210e by nickg
 // Date:         2008-07-30
-// Description:  
+// Description:
 //
 //####DESCRIPTIONEND####
 //
@@ -82,12 +82,12 @@
 // This is run to set up the basic system, including GPIO setting,
 // clock feeds, power supply, and memory initialization. This code
 // runs before the DATA is copied from ROM and the BSS cleared, hence
-// it cannot make use of static variables or data tables. 
+// it cannot make use of static variables or data tables.
 
 __externC void hal_system_init( void )
 {
     CYG_ADDRESS base;
-    
+
     // Enable peripheral clocks in RCC
 
     base = CYGHWR_HAL_STM32_RCC;
@@ -113,7 +113,7 @@ __externC void hal_system_init( void )
                      BIT_(CYGHWR_HAL_STM32_RCC_AHB3ENR_FSMC) );
 
 #if defined(CYG_HAL_STARTUP_ROM) | defined(CYG_HAL_STARTUP_ROMINT) | defined(CYG_HAL_STARTUP_SRAM)
-    
+
     // Reset FSMC in case it was already enabled. This should set
     // all regs back to default documented values, so we don't need
     // to do any precautionary resets.
@@ -121,6 +121,18 @@ __externC void hal_system_init( void )
                      BIT_(CYGHWR_HAL_STM32_RCC_AHB3ENR_FSMC) );
     // Bring out of reset:
     HAL_WRITE_UINT32(base+CYGHWR_HAL_STM32_RCC_AHB3RSTR, 0 );
+#endif
+
+#if defined(CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO)
+    // Use HSE clock as the MCO1 clock signals for PHY
+    {
+        cyg_uint32 acr;
+
+        HAL_READ_UINT32(base + CYGHWR_HAL_STM32_RCC_CFGR, acr);
+        acr |= CYGHWR_HAL_STM32_RCC_CFGR_MCO1_HSE |
+            CYGHWR_HAL_STM32_RCC_CFGR_MCO1PRE_1;
+        HAL_WRITE_UINT32(base + CYGHWR_HAL_STM32_RCC_CFGR, acr);
+    }
 #endif
 
     // Set all unused GPIO lines to input with pull down to prevent
@@ -248,7 +260,7 @@ __externC void hal_system_init( void )
     // Latency has to be set before clock is switched to a higher speed.
     {
         cyg_uint32 acr;
-        
+
         base = CYGHWR_HAL_STM32_FLASH;
 
         HAL_READ_UINT32( base+CYGHWR_HAL_STM32_FLASH_ACR, acr );
@@ -314,10 +326,10 @@ static struct
 } hal_data_access[] =
 {
     { CYGMEM_REGION_ram,        CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE-1      },      // External SRAM
-#ifdef CYGMEM_REGION_sram    
+#ifdef CYGMEM_REGION_sram
     { CYGMEM_REGION_sram,       CYGMEM_REGION_sram+CYGMEM_REGION_sram_SIZE-1    },      // On-chip SRAM
 #endif
-#ifdef CYGMEM_REGION_flash    
+#ifdef CYGMEM_REGION_flash
     { CYGMEM_REGION_flash,      CYGMEM_REGION_flash+CYGMEM_REGION_flash_SIZE-1  },      // On-chip flash
 #endif
     { 0xE0000000,               0x00000000-1                                    },      // Cortex-M peripherals

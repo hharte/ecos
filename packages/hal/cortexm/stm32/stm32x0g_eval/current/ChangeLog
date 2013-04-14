@@ -1,3 +1,9 @@
+2013-04-06  Jerzy Dyrda  <jerzdy@gmail.com>
+
+	* cdl/hal_cortexm_stm32_stm32x0g_eval.cdl: Fix PHY name and
+	added defualt Ethernet interface.
+	* src/stm32x0g_eval_misc.c: Enabled clock for PHY. [ Bugzilla 1001219 ]
+
 2013-03-09  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* misc/redboot_ROM_FPU.ecm: Add ECM for RedBoot with FPU support.

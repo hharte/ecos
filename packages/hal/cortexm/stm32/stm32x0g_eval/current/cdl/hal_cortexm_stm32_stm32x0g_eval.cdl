@@ -218,9 +218,10 @@ cdl_package CYGPKG_HAL_CORTEXM_STM32_STM32X0G_EVAL {
         default_value 1
         requires      CYGPKG_DEVS_ETH_CORTEXM_STM32
         requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
-                         (1 == CYGHWR_DEVS_ETH_PHY_DP83847) }
-        requires        { is_active(CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO) implies \
+                         (1 == CYGHWR_DEVS_ETH_PHY_DP8384X) }
+        requires      { is_active(CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO) implies \
                             (CYGHWR_DEVS_ETH_CORTEXM_STM32_PHY_CLK_MCO == CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO) }
+        requires      { "MII" == CYGSEM_DEVS_ETH_CORTEXM_STM32_INTF }
 
         cdl_option CYGHWR_HAL_CORTEXM_STM32X0G_ETH_PHY_CLOCK_MCO {
             display         "Use MCO as PHY clock"
