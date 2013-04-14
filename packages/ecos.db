@@ -7155,6 +7155,16 @@ package CYGPKG_DEVS_USB_CORTEXM_STM32 {
         description     "USB slave support for STM32 devices."
 }
 
+package CYGPKG_DEVS_ETH_CORTEXM_STM32 {
+	alias 		{ "STM32 ethernet driver" stm32_eth_driver }
+	hardware
+	directory	devs/eth/cortexm/stm32
+	script		stm32_eth.cdl
+        description     "
+    This package provides a driver for the Ethernet interfaces found on the
+    ST STM32 microcontroller family."
+}
+
 target stm3210e_eval {
         alias { "ST STM3210E EVAL board" stm3210e }
         packages { CYGPKG_HAL_CORTEXM
@@ -7185,6 +7195,8 @@ target stm3220g_eval {
                    CYGPKG_IO_SERIAL_CORTEXM_STM32
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_CORTEXM_STM32
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_CORTEXM_STM32
                  }
         set_value CYGHWR_HAL_CORTEXM_STM32_FAMILY "F2"
         set_value CYGHWR_HAL_CORTEXM_STM32_F2 "F207IG"
@@ -7201,6 +7213,8 @@ target stm3240g_eval {
                    CYGPKG_IO_SERIAL_CORTEXM_STM32
                    CYGPKG_IO_SPI
                    CYGPKG_DEVS_SPI_CORTEXM_STM32
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_CORTEXM_STM32
                  }
         set_value CYGHWR_HAL_CORTEXM_STM32_FAMILY "F4"
         set_value CYGHWR_HAL_CORTEXM_STM32_F4 "F407IG"
