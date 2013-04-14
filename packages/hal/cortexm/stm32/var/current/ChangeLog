@@ -1,3 +1,8 @@
+2013-04-06  Jerzy Dyrda  <jerzdy@gmail.com>
+
+	* include/var_io_eth.h: 
+	* include/var_io.h: Update ETH macros for F4 device. [ Bugzilla 1001219 ]
+
 2013-01-19  John Dallaway  <john@dallaway.org.uk>
 
 	* include/var_io.h: Fix CYGHWR_HAL_STM32_UART6 definition.

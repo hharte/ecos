@@ -44,7 +44,7 @@
 // Author(s):   nickg
 // Date:        2008-07-30
 // Purpose:     STM32 variant specific registers
-// Description: 
+// Description:
 // Usage:       #include <cyg/hal/var_io.h>
 //
 //####DESCRIPTIONEND####
@@ -291,6 +291,7 @@
 #define CYGHWR_HAL_STM32_RCC_CFGR_ADCPRE_XXX    VALUE_(14,3)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSI    0
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_HSE    BIT_(16)
+#define CYGHWR_HAL_STM32_RCC_CFGR_PLLSRC_PREDIV1 BIT_(16)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLXTPRE      BIT_(17)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PLLMUL(__x)   VALUE_(18,(__x)-2)
 #define CYGHWR_HAL_STM32_RCC_CFGR_USBPRE        BIT_(22)
@@ -304,6 +305,8 @@
 #define CYGHWR_HAL_STM32_RCC_CFGR_MCO_PLL3_HALF VALUE_(24,9)
 #define CYGHWR_HAL_STM32_RCC_CFGR_MCO_XT1       VALUE_(24,10)
 #define CYGHWR_HAL_STM32_RCC_CFGR_MCO_PLL3      VALUE_(24,11)
+#define CYGHWR_HAL_STM32_RCC_CR_PLL2ON          BIT_(26)
+#define CYGHWR_HAL_STM32_RCC_CR_PLL2RDY         BIT_(27)
 # endif
 #elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
 #define CYGHWR_HAL_STM32_RCC_CFGR_PPRE1_1       VALUE_(10,0)
@@ -356,6 +359,13 @@
 #define CYGHWR_HAL_STM32_RCC_AHBENR_ETHMAC      (14)
 #define CYGHWR_HAL_STM32_RCC_AHBENR_ETHMACTX    (15)
 #define CYGHWR_HAL_STM32_RCC_AHBENR_ETHMACRX    (16)
+
+#if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
+#define CYGHWR_HAL_STM32_RCC_AHBRSTR_OTGFSRST   BIT_(12)
+#define CYGHWR_HAL_STM32_RCC_AHBRSTR_ETHMACRST  BIT_(14)
+#elif defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_HIPERFORMANCE)
+#define CYGHWR_HAL_STM32_RCC_AHB1RSTR_ETHMACRST BIT_(25)
+#endif
 #endif
 
 // Note that the following are bit numbers, not masks. They should
@@ -848,7 +858,7 @@ __externC void hal_stm32_clock_disable( cyg_uint32 desc );
 #define CYGHWR_HAL_STM32_DMA_ISR_SHIFT(__x)  ( ((__x)&0x3) == 3 ? 22 : \
                                                ((__x)&0x3) == 2 ? 16 : \
                                                ((__x)&0x3) == 1 ? 6 : 0 )
-    
+
 #define CYGHWR_HAL_STM32_DMA_ISR_FEIF(__x)      BIT_( CYGHWR_HAL_STM32_DMA_ISR_SHIFT(__x) )
 #define CYGHWR_HAL_STM32_DMA_ISR_DMEIF(__x)     BIT_( CYGHWR_HAL_STM32_DMA_ISR_SHIFT(__x) + 2 )
 #define CYGHWR_HAL_STM32_DMA_ISR_TEIF(__x)      BIT_( CYGHWR_HAL_STM32_DMA_ISR_SHIFT(__x) + 3 )
@@ -1438,14 +1448,14 @@ __externC void hal_stm32_clock_disable( cyg_uint32 desc );
 
 #if defined(CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
 
-#define CYGHWR_HAL_STM32_USB_EP0R               0x00 
-#define CYGHWR_HAL_STM32_USB_EP1R               0x04 
-#define CYGHWR_HAL_STM32_USB_EP2R               0x08 
-#define CYGHWR_HAL_STM32_USB_EP3R               0x0C 
-#define CYGHWR_HAL_STM32_USB_EP4R               0x10 
-#define CYGHWR_HAL_STM32_USB_EP5R               0x14 
-#define CYGHWR_HAL_STM32_USB_EP6R               0x18 
-#define CYGHWR_HAL_STM32_USB_EP7R               0x1C 
+#define CYGHWR_HAL_STM32_USB_EP0R               0x00
+#define CYGHWR_HAL_STM32_USB_EP1R               0x04
+#define CYGHWR_HAL_STM32_USB_EP2R               0x08
+#define CYGHWR_HAL_STM32_USB_EP3R               0x0C
+#define CYGHWR_HAL_STM32_USB_EP4R               0x10
+#define CYGHWR_HAL_STM32_USB_EP5R               0x14
+#define CYGHWR_HAL_STM32_USB_EP6R               0x18
+#define CYGHWR_HAL_STM32_USB_EP7R               0x1C
 
 #define CYGHWR_HAL_STM32_USB_CNTR               0x40
 #define CYGHWR_HAL_STM32_USB_ISTR               0x44

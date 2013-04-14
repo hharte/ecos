@@ -44,7 +44,7 @@
 // Author(s):   nickg, jlarmour
 // Date:        2008-07-30
 // Purpose:     STM32 variant ETH specific registers
-// Description: 
+// Description:
 // Usage:       Do not include this header file directly. Instead:
 //              #include <cyg/hal/var_io.h>
 //
@@ -177,7 +177,7 @@
 #define CYGHWR_HAL_STM32_ETH_MACMIIAR_MB        BIT_(0)
 #define CYGHWR_HAL_STM32_ETH_MACMIIAR_MW        BIT_(1)
 #define CYGHWR_HAL_STM32_ETH_MACMIIAR_CR(__x)   VALUE_(2,__x)
-#define CYGHWR_HAL_STM32_ETH_MACMIIAR_CR_MASK   MASK_(2,3)
+#define CYGHWR_HAL_STM32_ETH_MACMIIAR_CR_MASK   MASK_(2,4)
 
 #if defined (CYGHWR_HAL_CORTEXM_STM32_FAMILY_F1)
 # define CYGHWR_HAL_STM32_ETH_MACMIIAR_CR_MHZ_CHECK(_mhz) ((_mhz) >= 20 && (_mhz) <= 72)
@@ -190,6 +190,7 @@
 // irrelevance for >72Mhz speed, but that's checked above) but it's
 // foreseeable that this could change for future products.
 # define CYGHWR_HAL_STM32_ETH_MACMIIAR_CR_MHZ(_mhz)  (          \
+  ((_mhz) >= 150) ? CYGHWR_HAL_STM32_ETH_MACMIIAR_CR(4) :       \
   ((_mhz) >= 100) ? CYGHWR_HAL_STM32_ETH_MACMIIAR_CR(1) :       \
   ((_mhz) >= 60)  ? CYGHWR_HAL_STM32_ETH_MACMIIAR_CR(0) :       \
   ((_mhz) >= 35)  ? CYGHWR_HAL_STM32_ETH_MACMIIAR_CR(3) :       \
@@ -321,6 +322,20 @@
 
 // Transmit descriptor fields
 
+/*
+-----------------------------------------------------------------------
+TDES0|OWN(31)|CTRL[30:26]|Res[25:24]|CTRL[23:20]|Res[19:17]|Stat[16:0]|
+-----------------------------------------------------------------------
+TDES1|Res[31:29]| Buffer2 Len[28:16] | Res[15:13] | Buffer1 Len[12:0] |
+-----------------------------------------------------------------------
+TDES2|               Buffer1 Address [31:0]                           |
+-----------------------------------------------------------------------
+TDES3|               Buffer2 Address [31:0]                           |
+-----------------------------------------------------------------------
+*/
+
+// TDES0 register: DMA Tx descriptor status
+
 #define CYGHWR_HAL_STM32_ETH_TDES0_DB           BIT_(0)
 #define CYGHWR_HAL_STM32_ETH_TDES0_UF           BIT_(1)
 #define CYGHWR_HAL_STM32_ETH_TDES0_ED           BIT_(2)
@@ -350,10 +365,24 @@
 #define CYGHWR_HAL_STM32_ETH_TDES0_IC           BIT_(30)
 #define CYGHWR_HAL_STM32_ETH_TDES0_OWN          BIT_(31)
 
-#define CYGHWR_HAL_STM32_ETH_TDES1_TBS1(__x)    VALUE_(0,__x)
-#define CYGHWR_HAL_STM32_ETH_TDES1_TBS2(__x)    VALUE_(16,__x)
+#define CYGHWR_HAL_STM32_ETH_TDES1_TBS1(__x)    (VALUE_(0,__x)&0x00001FFF)
+#define CYGHWR_HAL_STM32_ETH_TDES1_TBS2(__x)    (VALUE_(16,__x)&0x1FFF0000)
 
 // Receive descriptor fields
+
+/*
+-----------------------------------------------------------------------
+RDES0| OWN(31) |                Status [30:0]                         |
+-----------------------------------------------------------------------
+RDES1|DIC(31)|Res[30:29]|Not Used|CTRL[15:14]|Res(13)|Buffer Len[12:0]|
+-----------------------------------------------------------------------
+RDES2|                Buffer1 Address [31:0]                          |
+-----------------------------------------------------------------------
+RDES3|                      Not Used                                  |
+-----------------------------------------------------------------------
+*/
+
+// RDES0 register: DMA Rx descriptor status
 
 #define CYGHWR_HAL_STM32_ETH_RDES0_PCE          BIT_(0)
 #define CYGHWR_HAL_STM32_ETH_RDES0_CE           BIT_(1)
@@ -374,6 +403,8 @@
 #define CYGHWR_HAL_STM32_ETH_RDES0_FL(__x)      (((__x)>>16)&0x3FFF)
 #define CYGHWR_HAL_STM32_ETH_RDES0_AFM          BIT_(30)
 #define CYGHWR_HAL_STM32_ETH_RDES0_OWN          BIT_(31)
+
+// RDES1 register : DMA Rx descriptor control and buffer length
 
 #define CYGHWR_HAL_STM32_ETH_RDES1_RBS1(__x)    VALUE_(0,__x)
 #define CYGHWR_HAL_STM32_ETH_RDES1_RCH          BIT_(14)
@@ -414,9 +445,6 @@
 #define CYGHWR_HAL_STM32_ETH_RMII_MDC           CYGHWR_HAL_STM32_ETH_MII_MDC
 #define CYGHWR_HAL_STM32_ETH_RMII_REF_CLK       CYGHWR_HAL_STM32_ETH_MII_RX_CLK
 #define CYGHWR_HAL_STM32_ETH_RMII_MDIO          CYGHWR_HAL_STM32_ETH_MII_MDIO
-#define CYGHWR_HAL_STM32_ETH_RMII_CRS_DV        CYGHWR_HAL_STM32_ETH_MII_RX_DV
-#define CYGHWR_HAL_STM32_ETH_RMII_RXD0          CYGHWR_HAL_STM32_ETH_MII_RXD0
-#define CYGHWR_HAL_STM32_ETH_RMII_RXD1          CYGHWR_HAL_STM32_ETH_MII_RXD1
 #define CYGHWR_HAL_STM32_ETH_RMII_TX_EN         CYGHWR_HAL_STM32_ETH_MII_TX_EN
 #define CYGHWR_HAL_STM32_ETH_RMII_TXD0          CYGHWR_HAL_STM32_ETH_MII_TXD0
 #define CYGHWR_HAL_STM32_ETH_RMII_TXD1          CYGHWR_HAL_STM32_ETH_MII_TXD1
