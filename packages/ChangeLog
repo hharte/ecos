@@ -1,6 +1,12 @@
+2013-04-26  Tomas Frydrych <tomas@sleepfive.com>
+2013-04-26  Mike Jones <mike@proclivis.com>
+
+	* ecos.db: Add Freescale I2C driver and I2C driver entries for
+	Kinetis targets.
+
 2013-04-14  Jerzy Dyrda  <jerzdy@gmail.com>
 
-	* ecos.db: Add STM32 Erhernet driver and Ethetnet  driver entries
+	* ecos.db: Add STM32 Erhernet driver and Ethernet  driver entries
 	to STM3220G-eval and STM3240G-eval boards.
 
 2012-11-04  Ilija Kocho  <ilijak@siva.com.mk>
