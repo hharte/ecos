@@ -82,6 +82,10 @@ typedef struct cyg_i2c_device {
 // The information needed for interacting over a particular I2C bus.
 // Most hardware will only have one bus, but multiple buses are
 // supported. Thread synchronization happens on a per-bus level.
+#ifndef CYGBLD_I2C_DEVICE_CONST
+#define CYGBLD_I2C_DEVICE_CONST const
+#endif
+
 typedef struct cyg_i2c_bus {
     cyg_drv_mutex_t         i2c_lock;
 #ifdef CYGDBG_USE_ASSERTS
@@ -89,8 +93,8 @@ typedef struct cyg_i2c_bus {
 #endif
     // The hardware-specific functions that do the real work
     void                    (*i2c_init_fn)(struct cyg_i2c_bus*);
-    cyg_uint32              (*i2c_tx_fn)(const cyg_i2c_device*, cyg_bool, const cyg_uint8*, cyg_uint32, cyg_bool);
-    cyg_uint32              (*i2c_rx_fn)(const cyg_i2c_device*, cyg_bool, cyg_uint8*, cyg_uint32, cyg_bool, cyg_bool);
+    cyg_uint32              (*i2c_tx_fn)(CYGBLD_I2C_DEVICE_CONST cyg_i2c_device*, cyg_bool, const cyg_uint8*, cyg_uint32, cyg_bool);
+    cyg_uint32              (*i2c_rx_fn)(CYGBLD_I2C_DEVICE_CONST cyg_i2c_device*, cyg_bool, cyg_uint8*, cyg_uint32, cyg_bool, cyg_bool);
     void                    (*i2c_stop_fn)(const cyg_i2c_device*);
     // A spare field for use by the driver
     void*                   i2c_extra;

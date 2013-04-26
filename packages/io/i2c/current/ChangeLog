@@ -1,3 +1,8 @@
+2013-04-10  Ilija Kocho <ilijak@siva.com.mk
+
+	* include/i2c.h: Add CYGBLD_I2C_DEVICE_CONST. This will allow driver
+	to modify cyg_i2c_device streucture. [ Bugzilla 1001816 ]
+
 2009-02-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/i2c.cdl, src/i2c.cxx, doc/i2c.sgml: I2C buses now initialize
