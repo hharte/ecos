@@ -70,7 +70,7 @@
 #ifndef HAL_CLOCK_READ_NS
 #define HAL_CLOCK_READ_NS(__pvalue) \
 CYG_MACRO_START                     \
-    HAL_CLOCK_READ(__pvalue)        \
+    HAL_CLOCK_READ(__pvalue);       \
     *__pvalue *= 1000;              \
 CYG_MACRO_END
 #endif

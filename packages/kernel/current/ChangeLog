@@ -1,3 +1,8 @@
+2013-04-26  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/fpint_thread_switch.c: Fix missing semicolon.
+	Bug spotted and patch provided by John Dallaway. [ Bugzilla 1001835 ]
+
 2013-02-10  Ilija Kocho  <ilijak@siva.com.mk>
             Jonathan Larmour  <jifl@eCosCentric.com>
 
