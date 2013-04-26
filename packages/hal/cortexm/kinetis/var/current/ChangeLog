@@ -1,3 +1,9 @@
+2013-04-09  Tomas Frydrych <tomas@sleepfive.com>
+
+	* cdl/kinetis_irq_scheme.cdl:
+	* include/var_io_devs.h:
+	Implemented support for I2C  [Bugzilla 1001397]
+
 2013-04-01  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/var_io.h, include/var_io_clkgat.h, include/var_io_devs.h,

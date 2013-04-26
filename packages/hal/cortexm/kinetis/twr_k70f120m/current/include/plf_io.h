@@ -143,6 +143,12 @@
 #define CYGHWR_IO_FREESCALE_SPI1_PIN_CS4  CYGHWR_HAL_KINETIS_PIN_NONE
 #define CYGHWR_IO_FREESCALE_SPI1_PIN_CS5  CYGHWR_HAL_KINETIS_PIN_NONE
 
+// I2C
+// I2C Pins
+
+# define CYGHWR_IO_I2C_FREESCALE_I2C0_PIN_SDA CYGHWR_HAL_KINETIS_PIN(E, 18, 4, 0)
+# define CYGHWR_IO_I2C_FREESCALE_I2C0_PIN_SCL CYGHWR_HAL_KINETIS_PIN(E, 19, 4, 0)
+
 //=============================================================================
 // Memory access checks.
 //

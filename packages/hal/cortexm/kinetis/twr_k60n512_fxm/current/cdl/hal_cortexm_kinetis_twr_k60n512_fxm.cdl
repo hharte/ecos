@@ -55,6 +55,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512_FXM {
     requires      { CYGHWR_HAL_CORTEXM_SYSTICK_CLK_SOURCE == "INTERNAL" }
 
     implements    CYGINT_HAL_CORTEXM_KINETIS_RTC
+    implements    CYGINT_IO_FREESCALE_I2C0
 
     description   "
     The Freescale TWR K60N512 FXM Platform package provides the support

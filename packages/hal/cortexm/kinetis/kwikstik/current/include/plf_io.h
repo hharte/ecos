@@ -86,12 +86,8 @@
 #endif
 
 // I2C pins
-#ifndef CYGHWR_HAL_I2C0_PIN_SDA
-# define CYGHWR_HAL_I2C0_PIN_SDA CYGHWR_HAL_KINETIS_PIN(B, 1, 2, 0)
-# define CYGHWR_HAL_I2C0_PIN_SCL CYGHWR_HAL_KINETIS_PIN(B, 0, 2, 0)
-# define CYGHWR_HAL_I2C1_PIN_SDA CYGHWR_HAL_KINETIS_PIN(C, 11, 2, 0)
-# define CYGHWR_HAL_I2C1_PIN_SCL CYGHWR_HAL_KINETIS_PIN(C, 10, 2, 0)
-#endif
+# define CYGHWR_HAL_I2C1_PIN_SDA CYGHWR_HAL_KINETIS_PIN(E, 0, 6, 0)
+# define CYGHWR_HAL_I2C1_PIN_SCL CYGHWR_HAL_KINETIS_PIN(E, 1, 6, 0)
 
 //=============================================================================
 // Memory access checks.

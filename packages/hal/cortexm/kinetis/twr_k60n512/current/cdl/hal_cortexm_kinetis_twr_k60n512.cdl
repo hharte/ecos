@@ -58,9 +58,10 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K60N512 {
                   implies CYGOPT_HAL_CORTEXM_KINETIS_MCG_REF_EXT_IS == "OSC" }
 
     implements    CYGINT_IO_SERIAL_FREESCALE_UART3
+    implements    CYGINT_IO_FREESCALE_I2C0
+    
     implements    CYGINT_HAL_FREESCALE_UART3
     implements    CYGINT_HAL_CORTEXM_KINETIS_RTC
-
 
     description   "
         The Freescale TWR K60N512 Platform HAL package provides the support

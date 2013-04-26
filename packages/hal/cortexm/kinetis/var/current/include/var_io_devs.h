@@ -214,6 +214,40 @@ __externC void hal_freescale_uart_setbaud( CYG_ADDRESS uart, cyg_uint32 baud );
                                  CYGHWR_HAL_KINETIS_PORT_PCR_PS_M)
 #endif
 
+//---------------------------------------------------------------------------
+// I2C
+// Lend some HAL dependent macros to I2C device driver
+// Base pointers
+#define CYGADDR_IO_I2C_FREESCALE_I2C0_BASE  (0x40066000)
+#define CYGADDR_IO_I2C_FREESCALE_I2C1_BASE  (0x40067000)
+// Clocking
+#define CYGHWR_IO_I2C_FREESCALE_I2C_CLOCK hal_get_peripheral_clock()
+#define CYGHWR_IO_FREESCALE_I2C0_CLK  CYGHWR_HAL_KINETIS_SIM_SCGC_I2C0
+#define CYGHWR_IO_FREESCALE_I2C1_CLK  CYGHWR_HAL_KINETIS_SIM_SCGC_I2C1
+// Pins
+# define CYGHWR_IO_FREESCALE_I2C_PIN(__pin) hal_set_pin_function(__pin)
+
+# ifndef CYGHWR_IO_FREESCALE_I2C_FREQUENCY_TABLE
+// Fix an error in Kinetis I2C Manual. There is an unconfirmed
+// error in Kinetis I2C divider and hold value table.
+#if 0 // Values as are in Kinetis Reference Manuals
+#define I2C_FREQ_TABLE_ENTRY_8 28
+#define I2C_FREQ_TABLE_ENTRY_9 32
+#else // Values that give correct result according to measurements
+#define I2C_FREQ_TABLE_ENTRY_8 30
+#define I2C_FREQ_TABLE_ENTRY_9 34
+#endif
+typedef cyg_uint16 dev_i2c_freescale_frequency_entry_t;
+#  define CYGHWR_IO_FREESCALE_I2C_FREQUENCY_TABLE                                    \
+    20, 22, 24, 26, 28, 30, 34, 40, I2C_FREQ_TABLE_ENTRY_8, I2C_FREQ_TABLE_ENTRY_9,  \
+    36, 40, 44, 48, 56, 68, 48, 56, 64,                                              \
+    72, 80, 88, 104, 128, 80, 96, 112, 128, 144, 160, 192, 240, 160, 192, 224,       \
+    256, 288, 320, 384, 480, 320, 384, 448, 512, 576, 640, 768, 960, 640, 768,       \
+    896, 1024, 1152, 1280, 1536, 1920, 1280, 1536, 1792, 2048, 2304, 2560, 3072, 3840
+
+
+# endif // CYGHWR_IO_FREESCALE_I2C_FREQUENCY_TABLE
+
 // DMA MUX ------------------------------------------------------------------
 // DMAMUX DMA request sources
 #define FREESCALE_DMAMUX_SRC_KINETIS_DISABLE      0

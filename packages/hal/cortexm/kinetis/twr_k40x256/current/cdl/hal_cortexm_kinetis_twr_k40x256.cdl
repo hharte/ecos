@@ -68,6 +68,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K40X256 {
                     implies CYGHWR_HAL_KINETIS_FLEXRAM_SIZE == 4096 }
 
     implements    CYGINT_IO_SERIAL_FREESCALE_UART3
+    implements    CYGINT_IO_FREESCALE_I2C0
+    implements    CYGINT_IO_FREESCALE_I2C1
+    
     implements    CYGINT_HAL_FREESCALE_UART3
     implements    CYGINT_HAL_CORTEXM_KINETIS_RTC
 

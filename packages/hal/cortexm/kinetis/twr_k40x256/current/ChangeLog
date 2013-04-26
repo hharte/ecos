@@ -1,3 +1,9 @@
+2013-04-09  Tomas Frydrych <tomas@sleepfive.com>
+
+	* cdl/hal_cortexm_kinetis_twr_k40x256.cdl:
+	* include/plf_io.h:
+	Implemented support for I2C  [Bugzilla 1001397]
+
 2013-04-01  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* src/twr_k40x256_misc.c: Clock gating synchronised with variant.
