@@ -282,10 +282,7 @@ __is_breakpoint_function ()
 void __skipinst (void)
 {
     unsigned long pc = get_register(PC);
-    unsigned short a, b, *pc_p;
     pc += 2;
-    pc_p = (unsigned short *) pc; a=pc_p[0]; b=pc_p[1];
-    diag_printf("BP = 0x%04x 0x%04x\n", a, b);
     put_register(PC, pc);
 }
 
