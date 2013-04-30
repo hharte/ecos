@@ -1,3 +1,8 @@
+2013-04-30  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* src/i2c_freescale.cdl: Add requirement of CYGPKG_KERNEL.
+	[ Bugzilla 1001397 ]
+
 2011-11-20  Tomas Frydrych <tomas@sleepfive.com>
 2013-03-21  Mike Jones <mike@proclivis.com>
 

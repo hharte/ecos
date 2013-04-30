@@ -54,6 +54,7 @@ cdl_package CYGPKG_DEVS_I2C_FREESCALE_I2C {
     display       "Freescale I2C driver"
     parent        CYGPKG_IO_I2C
     requires      CYGPKG_IO_I2C
+    active_if     CYGPKG_KERNEL
     requires      CYGPKG_HAL_CORTEXM_KINETIS
     include_dir   cyg/io
     description   "
