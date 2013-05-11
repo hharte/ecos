@@ -9,7 +9,7 @@
 <!-- =============================================================== -->
 <!-- ####ECOSDOCCOPYRIGHTBEGIN####                                       -->
 <!-- ===============================================================     -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc. -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2013 Free Software Foundation, Inc. -->
 <!-- This material may be distributed only subject to the terms          -->
 <!-- and conditions set forth in the Open Publication License, v1.0      -->
 <!-- or later (the latest version is presently available at              -->
@@ -52,11 +52,9 @@ porting application software to new processor architectures. </PARA>
 	  System for Embedded Systems</CITETITLE>. 
 	The book can be purchased from the IEEE Press, and
 	an ASCII version of the standard can be found online at
-<ulink url="http://www.itron.gr.jp/">http://www.itron.gr.jp/</ulink>.
-The old address 
-<ulink url="http://tron.um.u-tokyo.ac.jp/TRON/ITRON/">
-http://tron.um.u-tokyo.ac.jp/TRON/ITRON/</ulink>
-still exists as a mirror site. </PARA>
+<ulink url="http://www.t-engine.org/specifications">
+http://www.t-engine.org/specifications</ulink>.
+</PARA>
 </SECT1>
 <SECT1 id="compat-uitron-over-ecos">
 <TITLE><!-- <index></index> -->&micro;ITRON and <EMPHASIS>eCos</EMPHASIS></TITLE>
