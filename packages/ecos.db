@@ -5139,6 +5139,7 @@ target olpce2294 {
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
                    CYGPKG_IO_SERIAL_ARM_LPC2XXX
                    CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+                   CYGPKG_DEVS_CAN_LPC2XXX
         }
         description "
             The olpce2294 target provides the packages needed to run

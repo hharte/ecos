@@ -1,3 +1,8 @@
+2013-05-2013  Uwe Kindler  <uwe_kindler@web.de>
+
+	* ecos.db: Add CAN driver entry for olcpe2294 target (Olimex
+	LPC-E2294 development board).
+
 2013-04-26  Tomas Frydrych <tomas@sleepfive.com>
 2013-04-26  Mike Jones <mike@proclivis.com>
 
