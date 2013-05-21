@@ -54,6 +54,10 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_OLPCE2294 {
     define_header hal_arm_lpc2xxx_olpce2294.h
     include_dir   cyg/hal
     hardware
+    implements CYGINT_DEVS_CAN_LPC2XXX_CAN0
+    implements CYGINT_DEVS_CAN_LPC2XXX_CAN1
+    implements CYGINT_DEVS_CAN_LPC2XXX_CAN2
+    implements CYGINT_DEVS_CAN_LPC2XXX_CAN3
     description   "
         The OLPCE2294 HAL package provides the support needed to run
         eCos on Olimex LPC-E2294 development board."

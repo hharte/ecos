@@ -1,3 +1,8 @@
+2013-05-13  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc2xxx_olpce2294.cdl: Add support for all 4 CAN
+	interfaces.
+
 2012-03-07  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* include/hal_platform_setup.h: Fix assembler warning (s suffix on
