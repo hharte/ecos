@@ -52,10 +52,8 @@ cdl_package CYGPKG_HAL_FREESCALE_EDMA {
 
     include_dir cyg/hal
     compile hal_freescale_edma.c
-
+    
     active_if CYGINT_HAL_DMA
-
-    requires { CYGSEM_HAL_DCACHE_STARTUP_MODE == "WRITETHRU" }
 
     cdl_option CYGNUM_HAL_FREESCALE_EDMA_CHAN_NUM {
         display "Number of DMA channels"

@@ -1,3 +1,9 @@
+2013-05-04  Ilija Kocho <ilijak@siva.com.mk>
+
+	* cdl/hal_freescale_edma.cdl: Remove requirement for WRITETHRU cache mode
+	that raised conflict when cache was disabled. Bug reported by Mike Jones.
+	[ Bugzilla 1001838 ]
+
 2013-04-01  Ilija Kocho <ilijak@siva.com.mk>
 
 	* src/hal_freescale_edma.c:	Add clock gating enable.
