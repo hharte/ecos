@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.                  
+## Copyright (C) 2010, 2011, 2012, 2013 Free Software Foundation, Inc.                  
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -179,6 +179,14 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             default_value 1
             description " Revision"
         }
+
+        cdl_interface CYGINT_HAL_CORTEXM_KINETIS_150 {
+            display       "Is a 150MHz device"
+            description   "
+                150Mhz and 120MHz devices have some properties different than 100MHz
+                devices of same types. This interface shall be implemented if the
+                device is 150Mhz or 120MHz."
+        }
     }
 
     cdl_option CYGNUM_HAL_CORTEXM_PRIORITY_LEVEL_BITS {
@@ -302,8 +310,11 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             cdl_option CYGHWR_HAL_KINETIS_EEE_SIZE {
                 display      "EEE Size \[Bytes\]"
                 flavor        data
-                legal_values  { 32 64 128 256 512 1024 2048 4096 }
-                default_value 4096
+                legal_values  { 0 32 64 128 256 512 1024 2048 4096
+                    CYGHWR_HAL_KINETIS_FLEXRAM_SIZE == 16384 ? 8196 : 0
+                    CYGHWR_HAL_KINETIS_FLEXRAM_SIZE == 16384 ? 16384 : 0
+                }
+                default_value CYGHWR_HAL_KINETIS_FLEXRAM_SIZE
             }
 
             cdl_component CYGHWR_HAL_KINETIS_EEE_SPLIT {
@@ -340,11 +351,29 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
                 }
             }
 
-            cdl_option CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB {
+            cdl_component CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB {
                 display "FlexNVM partition used for EEE \[KiB\]"
-                flavor data
-                default_value  32
-                legal_values { 32 64 128 192 224 256 }
+                flavor     data
+                calculated { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB == 512 ?
+                             CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_512_PART_KIB :
+                             CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_256_PART_KIB
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_256_PART_KIB {
+                    display "FlexNVM partition used for EEE \[KiB\]"
+                    flavor data
+                    active_if      CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB == 256
+                    default_value  32
+                    legal_values { 32 64 128 192 224 256 }
+                }
+
+                cdl_option CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_512_PART_KIB {
+                    display "FlexNVM partition used for EEE \[KiB\]"
+                    flavor data
+                    active_if      CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB == 512
+                    default_value  64
+                    legal_values { 64 128 256 384 448 512 }
+                }
             }
         }
 
@@ -369,7 +398,8 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         cdl_component CYGHWR_HAL_KINETIS_FLEXRAM_SIZE {
             display "Flexram size"
             flavor data
-            default_value 4096
+            legal_values  { 4096 16384 }
+            default_value CYGHWR_HAL_CORTEXM_KINETIS_SUBFAM == 70 ? 16384 : 4096
         }
 
         cdl_option CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB {
@@ -521,7 +551,8 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         cdl_option CYGHWR_HAL_KINETIS_FLEXNVM_FLASH_SIZE {
             display "Kinetis on chip FlexNVM FLASH size"
             flavor data
-            calculated { (CYGHWR_HAL_CORTEXM_KINETIS_FLASH_KIB
+            active_if { CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM == "X" }
+            calculated { (CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM_KIB
                           - CYGHWR_HAL_CORTEXM_KINETIS_EEE_NVM_PART_KIB)* 0x400 }
             }
 
@@ -530,8 +561,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
             flavor    data
             active_if { (CYGHWR_HAL_CORTEXM_KINETIS_FLEXNVM == "X") &&
                 !CYGHWR_HAL_CORTEXM_KINETIS_EEE }
-            legal_values { 4096 16384 }
-            calculated { 4096 }
+            calculated { CYGHWR_HAL_KINETIS_FLEXRAM_SIZE }
         }
     }
 
@@ -540,8 +570,8 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         flavor bool
     }
 
-    cdl_interface CYGINT_HAL_HAS_NONCACHEABLE {
-        display "Platform has non-cacheable regions"
+    cdl_interface CYGINT_HAL_HAS_NONCACHED {
+        display "Platform has non-cached regions"
         flavor bool
     }
 
@@ -551,63 +581,121 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
 
         default_value CYGINT_HAL_CACHE
         active_if (CYGINT_HAL_CACHE)
+    }
 
-        cdl_component CYGHWR_HAL_NON_CACHABLE {
-            display "Non cacheable RAM memory regions"
+    cdl_component CYGHWR_HAL_NONCACHED {
+        display "Non cached RAM memory regions"
+        flavor        booldata
+        active_if     CYGINT_HAL_HAS_NONCACHED
+        legal_values  { "\".sram\"" "\".noncache\"" }
+        default_value { "\".noncache\"" }
+        description   "
+            Non cached memory sections may be usful for storage that
+            is unsuitable for caching, such as sharing buffers between
+            the CPU and other bus masters such as DMA, ENET, etc.
+            The  \".sram\" section is located in the internal SRAM,
+            which is is always present and never cached.
+            Additionaly, as an option, a partition of external memory:
+            DDRAM or FlexRAM, if one is present, can be configured
+            non-cached and accommodate \".noncache\" section."
+
+        cdl_option CYGHWR_HAL_ENET_TCD_SECTION {
+            display       "Ethernet buffer descriptor memory section"
+            flavor data
+            legal_values  { "\".sram\"" "\".noncache\"" }
+            default_value { "\".sram\"" }
+
+            description "Ethernet is a bus master so buffers/buffer
+                descriptos must reside in non-cached memory"
+        }
+
+        cdl_option CYGHWR_HAL_ENET_BUF_SECTION {
+            display       "Ethernet buffer memory section"
             flavor        data
-            active_if     CYGINT_HAL_HAS_NONCACHEABLE
             legal_values  { "\".sram\"" "\".noncache\"" }
             default_value { "\".noncache\"" }
-            description   "
-                Non cacheable memory sections may be usful for storage that
-                is unsuitable for caching, such as sharing buffers between
-                the CPU and other bus masters such as DMA, ENET, etc.
-                The  \".sram\" section is located in the internal SRAM,
-                which is is always present and never cached.
-                Additionaly, as an option, a partition of external memory:
-                DDRAM or FlexRAM, if one is present, can be configured
-                non-cachable and accommodate \".noncache\" section."
 
-            cdl_option CYGHWR_HAL_ENET_TCD_SECTION {
-                display       "Ethernet buffer descriptor memory section"
-                flavor data
-                legal_values  { "\".sram\"" "\".noncache\"" }
-                default_value { "\".sram\"" }
-
-                description "Ethernet is a bus master so buffers/buffer
-                    descriptos must reside in non-cacheable memory"
-            }
-
-            cdl_option CYGHWR_HAL_ENET_BUF_SECTION {
-                display       "Ethernet buffer memory section"
-                flavor        data
-                legal_values  { "\".sram\"" "\".noncache\"" }
-                default_value { "\".noncache\"" }
-
-                description "Ethernet is a bus master so buffers/buffer
-                    descriptos must reside in non-cacheable memory"
-            }
-
-            cdl_option CYGHWR_HAL_EDMA_TCD_SECTION {
-                display       "eDMA transfer control descriptor memory section"
-                flavor        data
-                legal_values  { "\".sram\"" "\".noncache\"" }
-                default_value { "\".sram\"" }
-
-                description   "eDMA is a bus master so buffers/buffer
-                    descriptos must reside in non-cacheable memory"
-            }
-
-            cdl_option CYGHWR_HAL_EDMA_BUF_SECTION {
-                display       "eDMA buffer memory section"
-                flavor data
-                legal_values  { "\".sram\"" "\".noncache\"" }
-                default_value { "\".noncache\"" }
-
-                description   "eDMA is a bus master so buffers/buffer
-                    descriptos must reside in non-cacheable memory"
-            }
+            description "Ethernet is a bus master so buffers/buffer
+                descriptos must reside in non-cached memory"
         }
+
+        cdl_option CYGHWR_HAL_EDMA_TCD_SECTION {
+            display       "eDMA transfer control descriptor memory section"
+            flavor        data
+            legal_values  { "\".sram\"" "\".noncache\"" }
+            default_value { "\".sram\"" }
+
+            description   "eDMA is a bus master so buffers/buffer
+                descriptos must reside in non-cached memory"
+        }
+
+        cdl_option CYGHWR_HAL_EDMA_BUF_SECTION {
+            display       "eDMA buffer memory section"
+            flavor data
+            legal_values  { "\".sram\"" "\".noncache\"" }
+            default_value { "\".noncache\"" }
+
+            description   "eDMA is a bus master so buffers/buffer
+                descriptos must reside in non-cached memory"
+        }
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_KINETIS_DDRAM {
+        display "Platform uses DDRAM"
+        flavor bool
+        description "
+            This interface will be implemented if the specific
+            controller being used provides DDRAM and if DDRAM is
+            used on target hardware"
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_KINETIS_DDRMC {
+        display       "DDRAM"
+        flavor bool
+        active_if     CYGINT_HAL_CORTEXM_KINETIS_DDRAM
+        default_value CYGINT_HAL_CORTEXM_KINETIS_DDRAM
+        description   "DDRAM on Kinetis is mirrored at several address ranges.
+                Each mirror has its own caching options that may include:
+                non-cached, write-through and write-back.
+                By eCos configuration, DDRAM is split in 3 partitions:
+                Cached, Non-cached and Code.
+                Cached partition is intended for general purpose main memory.
+                Non-cached partition is convenient for sharing
+                buffers with other bus masters such as Ethernet controller,
+                DMA, etc. Code partition is for executable code."
+
+        requires       CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL1
+        compile        kinetis_ddram.c
+
+        script kinetis_ddram.cdl
+    }
+
+    cdl_interface CYGINT_HAL_CORTEXM_KINETIS_FBRAM {
+        display "Platform uses FlexBus RAM"
+        flavor bool
+        description "
+            This interface will be implemented if the specific
+            controller being used provides FlexBus and if FlexBus is
+            used on target hardware"
+    }
+
+    cdl_component CYGPKG_HAL_CORTEXM_KINETIS_FBRAM {
+        display       "FlexBus RAM"
+        flavor bool
+        active_if     CYGINT_HAL_CORTEXM_KINETIS_FBRAM
+        default_value CYGINT_HAL_CORTEXM_KINETIS_FBRAM
+        requires      CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS
+        description   "FBRAM on Kinetis is mirrored at several address ranges.
+                Each mirror has its own caching options that may include:
+                non-cached, write-through and write-back.
+                By eCos configuration, FlexBus RAM is split in 3 partitions:
+                Cached, Non-cached and Code.
+                Cached partition is intended for general purpose main memory.
+                Non-cached partition is convenient for sharing
+                buffers with other bus masters such as Ethernet controller,
+                DMA, etc. Code partition is for executable code."
+
+        script kinetis_fbram.cdl
     }
 
     cdl_interface CYGINT_HAL_CORTEXM_KINETIS_FLEXBUS {
@@ -626,36 +714,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         default_value CYGINT_HAL_CORTEXM_KINETIS_FLEXBUS
         description   "FlexBus provides access for external memory."
 
-        for { set ::chipsel 0 } { $::chipsel < 6 } { incr ::chipsel } {
-
-            cdl_interface CYGINT_HAL_KINETIS_FB_CS[set ::chipsel] {
-                display     "Platform uses Chip select [set ::chipsel]"
-                flavor      bool
-                description "
-                This interface will be implemented if the specific
-                controller being used provides chip select [set ::chipsel], and if
-                that chip select is used on target hardware."
-            }
-
-            cdl_component CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel] {
-                display       "Chip select [set ::chipsel]"
-                flavor        bool
-                active_if     CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
-                default_value CYGINT_HAL_KINETIS_FB_CS[set ::chipsel]
-                description   "
-                This option includes initialization data for
-                chip select [set ::chipsel]."
-
-                cdl_option CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PS {
-                    display    "Port size (encoded)"
-                    flavor     data
-                    calculated ( \
-                                CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 32 ? 0 : \
-                                CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 8  ? 1 : \
-                                CYGHWR_HAL_KINETIS_FB_CS[set ::chipsel]_CR_PSB == 16 ? 2 : 3)
-                }
-            }
-        }
+        script        kinetis_flexbus.cdl
     }
 
     cdl_component CYGHWR_HAL_KINETIS_FLASH_CONF {
@@ -717,219 +776,6 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         }
     }
 
-    cdl_interface CYGINT_HAL_CORTEXM_KINETIS_DDRAM {
-        display "Platform uses DDRAM"
-        flavor bool
-        description "
-            This interface will be implemented if the specific
-            controller being used provides FlexBus and if FlexBus is
-            used on target hardware"
-    }
-
-    cdl_component CYGPKG_HAL_CORTEXM_KINETIS_DDRMC {
-        display       "DDRAM"
-        flavor bool
-        active_if     CYGINT_HAL_CORTEXM_KINETIS_DDRAM
-        default_value CYGINT_HAL_CORTEXM_KINETIS_DDRAM
-        description   "DDRAM on Kinetis is mirrored at several address ranges.
-                Each mirror has its own caching options that may include:
-                non-cachable, write-through and write-back.
-                By eCos configuration, DDRAM is partitioned in two partitions:
-                Cachable and Non-Cachable.
-                Cachable partition is intended for general purpose main memory,
-                while non-cachable partition is convenient for sharing
-                buffers with other bus masters such as Ethernet controller,
-                DMA, etc."
-
-        requires       CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL1
-        compile        kinetis_ddram.c
-
-        cdl_component CYGHWR_HAL_KINETIS_DDR_CACHED_MIRROR {
-            display         "Cached DDRAM mirror base"
-            flavor data
-            no_define
-            legal_values     { 0x70000000 0x80000000 }
-            default_value    { 0x70000000 }
-            description   "
-                According to Kinetis Reference Manual rev. 2, the DDRAM mirror
-                mapped at 0x80000000 (supporting write-thru caching only)
-                is not accesible by ENET, SDH and some other bus masters,
-                and that the mirror at 0x70000000 (supporting copy-back caching)
-                is accessible by them.
-                The practical tests prove that it is the opposite, actually as
-                it should be.
-                Until this discrepancy is resolved, this option selects the
-                default (non)cached mirror and provides the user with possibilty for
-                manual override.
-                Note: The behavior may change in future.
-                "
-        }
-
-        cdl_option CYGHWR_HAL_KINETIS_DDR_NON_NON_CACHED_MIRROR {
-            display       "Non-cached DDRAM mirror base"
-            flavor        data
-            no_define
-            calculated    { CYGHWR_HAL_KINETIS_DDR_CACHED_MIRROR == 0x70000000 ?
-                            0x80000000 : 0x70000000 }
-        }
-
-        cdl_component CYGHWR_HAL_KINETIS_DDR_SIZE_MIB {
-            display       "DDRAM size \[MiB\]"
-            flavor        data
-            default_value 128
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_SIZE {
-                display    "DDRAM size \[Bytes\]"
-                flavor     data
-                calculated { CYGHWR_HAL_KINETIS_DDR_SIZE_MIB * (1024 * 1024) * 0x1 }
-            }
-        }
-
-        cdl_component CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE_MIB {
-            display      "Non-cacheable DDRAM partition \[MiB\]"
-            requires     { CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE_MIB <=
-                           CYGHWR_HAL_KINETIS_DDR_SIZE_MIB }
-            flavor       data
-
-            implements   CYGINT_HAL_HAS_NONCACHEABLE
-
-            legal_values { 1 to (CYGHWR_HAL_KINETIS_DDR_SIZE_MIB - 8) }
-
-            default_value 8
-
-            description "
-                Non-cachable DDRAM partition, intended for sharing
-                buffers with other bus masters such as Ethernet controller,
-                DMA, etc."
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE {
-                display    "Non-cacheable DDRAM size \[Bytes\]"
-                flavor     data
-                calculated { CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE_MIB
-                             * (1024 * 1024) * 0x1 }
-            }
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_NON_CACHED_BASE {
-                display    "Non-cacheable DDRAM base address"
-                flavor     data
-
-                calculated { CYGHWR_HAL_KINETIS_DDR_NON_NON_CACHED_MIRROR +
-                             CYGHWR_HAL_KINETIS_DDR_CACHED_SIZE +
-                             CYGHWR_HAL_KINETIS_DDR_CODE_SIZE }
-            }
-        }
-
-        cdl_component CYGHWR_HAL_KINETIS_DDR_CODE_SIZE_MIB {
-            display       "DDRAM code partition \[MiB\]"
-            requires      { CYGHWR_HAL_KINETIS_DDR_CODE_SIZE_MIB <=
-                            CYGHWR_HAL_KINETIS_DDR_SIZE_MIB }
-            flavor        data
-
-            legal_values  { 1 to (CYGHWR_HAL_KINETIS_DDR_SIZE_MIB - 8) }
-
-            default_value 8
-
-            description "
-                DDRAM code partition"
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_CODE_SIZE {
-                display    "DDRAM code partition size \[Bytes\]"
-                flavor     data
-                calculated { CYGHWR_HAL_KINETIS_DDR_CODE_SIZE_MIB
-                             * (1024 * 1024) * 0x1 }
-            }
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_CODE_BASE {
-                display    "DDRAM code partition base address"
-                flavor     data
-
-                calculated { 0x08000000 }
-            }
-        }
-
-        cdl_component CYGHWR_HAL_KINETIS_DDR_CACHED_SIZE_MIB {
-            display    "Cacheable DDRAM partition \[MiB\]"
-            flavor     data
-            requires   { CYGHWR_HAL_KINETIS_DDR_CACHED_SIZE_MIB >= 8 }
-            calculated { CYGHWR_HAL_KINETIS_DDR_SIZE_MIB -
-                         CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE_MIB -
-                         CYGHWR_HAL_KINETIS_DDR_CODE_SIZE_MIB }
-
-            description "Cachable DDRAM partition - for general use as main memory."
-
-            cdl_option CYGHWR_HAL_KINETIS_DDR_CACHED_SIZE {
-                display    "Cacheable DDRAM size \[Bytes\]"
-                flavor      data
-                calculated  { (CYGHWR_HAL_KINETIS_DDR_SIZE -
-                              CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE -
-                              CYGHWR_HAL_KINETIS_DDR_CODE_SIZE) * 0x1 }
-                }
-
-                cdl_option CYGHWR_HAL_KINETIS_DDR_CACHED_BASE {
-                    display       "Cacheable DDRAM base address"
-                    flavor        data
-                    calculated    { CYGHWR_HAL_KINETIS_DDR_CACHED_MIRROR +
-                                    CYGHWR_HAL_KINETIS_DDR_CODE_SIZE }
-                }
-
-                cdl_option CYGHWR_HAL_KINETIS_DDR_CACHE_TYPE {
-                    display     "DDRAM cache type"
-                    flavor       data
-                    calculated  CYGSEM_HAL_DCACHE_STARTUP_MODE
-                    description "DDRAM cache type is determined by general cache setting"
-                }
-        }
-
-        cdl_option CYGHWR_HAL_DDR_SYNC_MODE {
-            display       "Use synchronous mode"
-            flavor        bool
-            requires      { CYGOPT_HAL_CORTEXM_KINETIS_MCG_MCGOUTCLK == "PLL1" }
-            default_value { 1 }
-        }
-
-        cdl_option CYGHWR_HAL_KINETIS_SIM_MCR_DDRBUS {
-            display      "DDRAM bus configuration"
-            flavor        data
-            legal_values  0 1 2 3 6
-            default_value 6
-            description "
-                DDRAM configuration: 0 - LPDDR Half Strength,
-                1 - LPDDR Full Strength, 2 - DDR2 Half Strength,
-                3 - DDR1, 6 - DDR2 Full Strength"
-        }
-
-        cdl_component CYGHWR_HAL_KINETIS_DDRMC_PAD_CTRL {
-            display    "Pad control"
-            flavor     data
-
-            calculated {
-                (CYGHWR_HAL_KINETIS_DDRMC_PAD_CTRL_ODT << 24) |
-                CYGHWR_HAL_KINETIS_DDRMC_PAD_CTRL_SPARE_DLY_CTRL |
-                0x00000200
-            }
-
-            cdl_option CYGHWR_HAL_KINETIS_DDRMC_PAD_CTRL_ODT {
-                display       "On Die Termination"
-                flavor        data
-                legal_values  { 0 1 2 3 }
-                default_value 1
-
-                description   "On Die Termination \[Ohm\]: 0 - Off, 1 - 75,
-                    2 - 150, 3 - 50"
-            }
-
-            cdl_option CYGHWR_HAL_KINETIS_DDRMC_PAD_CTRL_SPARE_DLY_CTRL {
-                display       "Delay chains in spare logic"
-                flavor        data
-                legal_values  { 0 1 2 3 }
-                default_value 3
-
-                description "Delay chains in spare logic: 0 - No buffer, 1 - 4 buffers,
-                    2 - 7 buffers, 11 - 10 buffers"
-            }
-        }
-    }
-
     cdl_option CYGNUM_HAL_KINETIS_MEM_SEGMENTS {
         display    "RAM memory segments"
         flavor     data
@@ -940,7 +786,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         calculated {
             ((CYGHWR_HAL_CORTEXM_KINETIS_SRAM_UNIFIED ? 1 : 2) +
             (CYGPKG_HAL_CORTEXM_KINETIS_DDRMC        ? 2 : 0) +
-            (CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE  ? 1 : 0))
+            (CYGHWR_HAL_KINETIS_DDR_NON_CACHED_SIZE  ? 1 : 0) +
+            (CYGPKG_HAL_CORTEXM_KINETIS_FBRAM        ? 2 : 0) +
+            (CYGHWR_HAL_KINETIS_FBR_NON_CACHED_SIZE  ? 1 : 0))
         }
     }
 

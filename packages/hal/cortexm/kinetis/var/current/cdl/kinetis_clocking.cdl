@@ -854,10 +854,6 @@
         display "MCG Has OSC1"
     }
 
-    cdl_interface CYGINT_HAL_CORTEXM_KINETIS_150 {
-        display "120 - 150 MHz line"
-    }
-
     cdl_component CYGOPT_HAL_CORTEXM_KINETIS_MCGOUT_PLL1 {
         display "PLL1 oscillator"
         parent CYGOPT_HAL_CORTEXM_KINETIS_MCG_FLL_PLL

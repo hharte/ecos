@@ -87,8 +87,14 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCIMB_M           0x200000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCWAY_M           0x400000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_S            24
+
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(_cmd_) \
             ((_cmd_) << CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_S)
+#define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_SRCH         0
+#define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_INVAL        1
+#define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_PUSH         2
+#define CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_CLR          3
+
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LADSEL_M          0x4000000
 #define CYGHWR_HAL_KINETIS_LMEM_CLCR_LACC_M            0x8000000
 
@@ -159,11 +165,25 @@ typedef volatile struct cyghwr_hal_kinetis_lmem_s {
 #define HAL_CORTEXM_KINETIS_CACHE_PS_IS_ENABLED() \
             hal_cortexm_kinetis_cache_is_enabled(CYGHWR_HAL_KINETIS_LMEM_PS_P)
 
+#define HAL_CORTEXM_KINETIS_CACHE_PS_SRCH(_base, _size_) \
+        hal_cortexm_kinetis_cache_lines(CYGHWR_HAL_KINETIS_LMEM_PS_P, _base, _size_, \
+                                       CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_SRCH)
+
 #define HAL_CORTEXM_KINETIS_CACHE_PS_INVALIDATE(_base, _size_) \
-        hal_cortexm_kinetis_cache_invalidate(CYGHWR_HAL_KINETIS_LMEM_PS_P, _base, _size_)
+        hal_cortexm_kinetis_cache_lines(CYGHWR_HAL_KINETIS_LMEM_PS_P, _base, _size_, \
+                                       CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_INVAL)
+
+#define HAL_CORTEXM_KINETIS_CACHE_PS_PUSH(_base, _size_) \
+        hal_cortexm_kinetis_cache_lines(CYGHWR_HAL_KINETIS_LMEM_PS_P, _base, _size_, \
+                                       CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_PUSH)
+
+#define HAL_CORTEXM_KINETIS_CACHE_PS_CLR(_base, _size_) \
+        hal_cortexm_kinetis_cache_lines(CYGHWR_HAL_KINETIS_LMEM_PS_P, _base, _size_, \
+                                       CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_CLR)
 
 #define HAL_CORTEXM_KINETIS_CACHE_PC_INVALIDATE(_base, _size_) \
-        hal_cortexm_kinetis_cache_invalidate(CYGHWR_HAL_KINETIS_LMEM_PC_P, _base, _size_)
+        hal_cortexm_kinetis_cache_lines(CYGHWR_HAL_KINETIS_LMEM_PC_P, _base, _size_, \
+                                       CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD_INVAL)
 
 #if defined CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK && defined CYG_HAL_STARTUP_RAM
 
@@ -192,7 +212,7 @@ CYG_MACRO_END
 
 #endif // CYGSEM_HAL_DCACHE_STARTUP_MODE_COPYBACK
 
-__externC void inline
+CYGBLD_FORCE_INLINE void
 hal_cortexm_kinetis_cache_enable(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr = ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
@@ -204,13 +224,13 @@ hal_cortexm_kinetis_cache_enable(cyghwr_hal_kinetis_lmem_t* lmem_p)
     CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
-__externC void inline
+CYGBLD_FORCE_INLINE void
 hal_cortexm_kinetis_cache_disable(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr = 0;
 }
 
-__externC void inline
+CYGBLD_FORCE_INLINE void
 hal_cortexm_kinetis_cache_inval(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr |= ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
@@ -220,8 +240,8 @@ hal_cortexm_kinetis_cache_inval(cyghwr_hal_kinetis_lmem_t* lmem_p)
     CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
-__externC void inline
-hal_cortexm_kinetis_cache_sync(cyghwr_hal_kinetis_lmem_t* lmem_p)
+CYGBLD_FORCE_INLINE void
+hal_cortexm_kinetis_cache_store(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr |= ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
                      CYGHWR_HAL_KINETIS_LMEM_CCR_PUSHW0_M |
@@ -230,7 +250,7 @@ hal_cortexm_kinetis_cache_sync(cyghwr_hal_kinetis_lmem_t* lmem_p)
     CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
-__externC void inline
+CYGBLD_FORCE_INLINE void
 hal_cortexm_kinetis_cache_clear(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     lmem_p->ccr |= ( CYGHWR_HAL_KINETIS_LMEM_CCR_GO_M |
@@ -242,26 +262,39 @@ hal_cortexm_kinetis_cache_clear(cyghwr_hal_kinetis_lmem_t* lmem_p)
     CYGHWR_HAL_KINETIS_CACHE_WAIT(lmem_p);
 }
 
-__externC bool inline
+CYGBLD_FORCE_INLINE void
+hal_cortexm_kinetis_cache_sync(cyghwr_hal_kinetis_lmem_t* lmem_p)
+{
+    hal_cortexm_kinetis_cache_store(lmem_p);
+    hal_cortexm_kinetis_cache_clear(lmem_p);
+}
+
+CYGBLD_FORCE_INLINE bool
 hal_cortexm_kinetis_cache_is_enabled(cyghwr_hal_kinetis_lmem_t* lmem_p)
 {
     return lmem_p->ccr & CYGHWR_HAL_KINETIS_LMEM_CCR_ENCACHE_M;
 }
 
 
-__externC void inline
-hal_cortexm_kinetis_cache_invalidate(cyghwr_hal_kinetis_lmem_t* lmem_p,
-                                        cyg_uint8* addr_p, cyg_uint32 size)
+CYGBLD_FORCE_INLINE void
+hal_cortexm_kinetis_cache_lines(cyghwr_hal_kinetis_lmem_t* lmem_p,
+                               cyg_uint8* addr_p, cyg_uint32 size,
+                               const cyg_uint32 oper)
 {
-    size = (((cyg_uint32)addr_p & 0xf) + size)/HAL_DCACHE_LINE_SIZE + 1;
+    cyg_uint32 line_k;
+    line_k = (((cyg_uint32)addr_p & (HAL_DCACHE_LINE_SIZE-1)) + size) / HAL_DCACHE_LINE_SIZE + 1;
+
     lmem_p->clcr = CYGHWR_HAL_KINETIS_LMEM_CLCR_LADSEL_M |
-          CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(1);
-    while(size--){
-        lmem_p->csar = (cyg_uint8*)(((cyg_uint32) addr_p & 0xfffffffc) |
-                                    CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
-        addr_p += HAL_DCACHE_LINE_SIZE;
+                   CYGHWR_HAL_KINETIS_LMEM_CLCR_TDSEL_M  |
+                   CYGHWR_HAL_KINETIS_LMEM_CLCR_LCMD(oper);
+
+    addr_p = (cyg_uint8*)((((cyg_uint32) addr_p) & 0xfffffff0) |
+                          CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
+    do {
+        lmem_p->csar = addr_p;
         while(lmem_p->clcr & CYGHWR_HAL_KINETIS_LMEM_CLCR_LGO_M);
-    }
+        addr_p += HAL_DCACHE_LINE_SIZE;
+    } while(--line_k);
 }
 
 //-----------------------------------------------------------------------------

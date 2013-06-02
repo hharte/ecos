@@ -1,3 +1,16 @@
+2013-04-28  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl: 
+	* cdl/kinetis_ddram.cdl: (New file)
+	* cdl/kinetis_fbram.cdl: (New file)
+	Add FlexBus RAM configuration and caching, DDRAM CDL moved
+	to a separate file. Updated FlexNVM configuration with 512KiB FlexNVM
+	and 16KiB FlexMemory.
+	* cdl/kinetis_clocking.cdl: CYGINT_HAL_CORTEXM_KINETIS_150
+	moved to hal_cortexm_kinetis.cdl
+	* include/var_io_lmem.h, include/hal_cache.h: Add more cache functions.
+	[ Bugzilla 1001837 ]
+	
 2013-04-09  Tomas Frydrych <tomas@sleepfive.com>
 
 	* cdl/kinetis_irq_scheme.cdl:

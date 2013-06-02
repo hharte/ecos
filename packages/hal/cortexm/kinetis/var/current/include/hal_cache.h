@@ -107,6 +107,10 @@
 #define HAL_DCACHE_INVALIDATE( _base_ , _size_ )                  \
             HAL_CORTEXM_KINETIS_CACHE_PS_INVALIDATE(_base_, _size_)
 
+// Write dirty cache lines to memory and invalidate the cache entries
+#define HAL_DCACHE_FLUSH( _base_ , _size_ )                  \
+            HAL_CORTEXM_KINETIS_CACHE_PS_CLR(_base_, _size_)
+
 //-----------------------------------------------------------------------------
 // Global control of Instruction cache
 
@@ -212,7 +216,7 @@
 
 // Write dirty cache lines to memory and invalidate the cache entries
 // for the given address range.
-//#define HAL_DCACHE_FLUSH( _base_ , _size_ )
+#define HAL_DCACHE_FLUSH( _base_ , _size_ )
 
 // Invalidate cache lines in the given range without writing to memory.
 #define HAL_DCACHE_INVALIDATE( _base_ , _size_ )
