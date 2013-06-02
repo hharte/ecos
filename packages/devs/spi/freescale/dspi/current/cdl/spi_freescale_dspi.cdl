@@ -114,6 +114,11 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
         }
     }
 
+    cdl_interface CYGINT_DEVS_SPI_DSPI_DMA_USE {
+        display  "DSPI DMA use"
+        flavor   data
+        description "Number of DMA channels used by DSPI buses."
+    }
 
     for { set ::spibus 0 } { $::spibus < 8 } { incr ::spibus } {
 
@@ -207,6 +212,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
             cdl_component CYGHWR_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_TX_DMA_CHAN {
                 display "TX DMA channel"
                 flavor data
+                implements CYGINT_DEVS_SPI_DSPI_DMA_USE
                 implements CYGINT_DEVS_SPI_DSPI[set ::spibus]_USES_DMA
 
                 active_if CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_PUSHQUE_SIZE > \
@@ -256,6 +262,7 @@ cdl_package CYGPKG_DEVS_SPI_FREESCALE_DSPI {
             cdl_component CYGHWR_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_RX_DMA_CHAN {
                 display "RX DMA channel"
                 flavor data
+                implements CYGINT_DEVS_SPI_DSPI_DMA_USE
                 implements CYGINT_DEVS_SPI_DSPI[set ::spibus]_USES_DMA
 
                 active_if CYGNUM_DEVS_SPI_FREESCALE_DSPI[set ::spibus]_PUSHQUE_SIZE > \

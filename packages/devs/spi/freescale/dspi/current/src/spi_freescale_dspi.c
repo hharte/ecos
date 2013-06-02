@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2013 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -155,14 +155,12 @@ dspi_status_clear(cyghwr_devs_freescale_dspi_t* dspi_p, cyg_uint32 sr_mask)
 static inline void
 dspi_fifo_clear(cyghwr_devs_freescale_dspi_t* dspi_p)
 {
-    DEBUG2_PRINTF("  Fifo Clear\n");
     dspi_p->mcr |= FREESCALE_DSPI_MCR_CLR_RXF_M | FREESCALE_DSPI_MCR_CLR_TXF_M;
 }
 
 static inline void
 dspi_fifo_drain(cyghwr_devs_freescale_dspi_t* dspi_p)
 {
-    DEBUG2_PRINTF("  Fifo Drain\n");
     dspi_p->sr |= FREESCALE_DSPI_SR_RFDF_M;
 }
 
@@ -209,7 +207,7 @@ static cyg_uint32 dspi_dma_ISR(cyg_vector_t vector, cyg_addrword_t data)
     edma_p = dma_set_p->edma_p;
 
     cyg_drv_isr_lock();
-    
+
     // Disable the Tx DMA channel and DSPI IRQ.
     hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, TX));
     DSPI_IRQ_DISABLE(dspi_p);
@@ -415,7 +413,7 @@ static void dspi_bus_setup(cyg_spi_freescale_dspi_bus_t* spi_bus_p)
     cyg_uint32 dma_chan_i;
 
     // Set up the clocking.
-    CYGHWR_IO_CLOCK_ENABLE(spi_bus_p->setup_p->clk_gate);    
+    CYGHWR_IO_CLOCK_ENABLE(spi_bus_p->setup_p->clk_gate);
     spi_bus_p->clock_freq = CYGHWR_IO_SPI_FREESCALE_DSPI_CLOCK;
     DEBUG1_PRINTF("DSPI BUS %p: SysClk=%d\n", spi_bus_p, spi_bus_p->clock_freq);
 
@@ -453,11 +451,6 @@ static void dspi_bus_setup(cyg_spi_freescale_dspi_bus_t* spi_bus_p)
 #if DEBUG_SPI >= 1
         hal_freescale_edma_transfer_diag(edma_p, dma_chan_i, true);
 #endif
-        // Enable SPI DMA requests
-        dspi_p->rser = FREESCALE_DSPI_RSER_TFFF_DIRS_M |
-                       FREESCALE_DSPI_RSER_RFDF_DIRS_M |
-                       FREESCALE_DSPI_RSER_TFFF_RE_M |
-                       FREESCALE_DSPI_RSER_RFDF_RE_M;
     }
 #if DEBUG_SPI >= 1
     cyghwr_devs_freescale_dspi_diag(spi_bus_p);
@@ -524,6 +517,7 @@ rx_dma_channel_setup(cyghwr_hal_freescale_dma_set_t *dma_set_p,
 
 #if DEBUG_SPI >= 2
 static const char debug_format[] = "BUFF %dbit %s: %p 0x%08x remain %d:\n";
+static const char debug_format1[] = "PUSHR 0x%08x %s: %p 0x%08x remain %d:\n";
 #endif
 
 static inline volatile cyg_uint32
@@ -540,13 +534,13 @@ fifo_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8*
                 if(!(--txfifo_n)) {
                     dspi_p->pushr = pushr |= *data_p | FREESCALE_DSPI_PUSHR_EOQ_M;
                     count--;
-                    DEBUG2_PRINTF(debug_format, 8, "FBK", &dspi_p->pushr,
+                    DEBUG2_PRINTF(debug_format, 8, "FBK", data_p,
                                   pushr | *data_p, count);
                     return count;
                 }
+                DEBUG3_PRINTF(debug_format, 8, "FAD", data_p,
+                              pushr | *data_p, count-1);
                 dspi_p->pushr = pushr | *data_p++;
-                DEBUG3_PRINTF(debug_format, 8, "FAD", &dspi_p->pushr,
-                              pushr | data_p[-1], count-1);
             }
             pushr |= *data_p;
         } else {
@@ -557,14 +551,14 @@ fifo_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8*
                 if(!(--txfifo_n)) {
                     dspi_p->pushr = pushr |= *data16_p | FREESCALE_DSPI_PUSHR_EOQ_M;
                     count-=2;
-                    DEBUG2_PRINTF(debug_format, 16, "FBK", &dspi_p->pushr,
+                    DEBUG2_PRINTF(debug_format, 16, "FBK", data_p,
                                   pushr, count);
                     return count;
                 }
+                DEBUG3_PRINTF(debug_format, 16, "FAD", data16_p,
+                              pushr | *data16_p, (count-1)*2);
                 data_word = *data16_p++;
                 dspi_p->pushr = pushr | data_word;
-                DEBUG3_PRINTF(debug_format, 16, "FAD", &dspi_p->pushr,
-                              pushr | data_word, (count-1)*2);
             }
             data_word = *data16_p;
             pushr |= data_word;
@@ -587,8 +581,8 @@ fifo_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8*
     if(drop_cs)
         pushr &= ~FREESCALE_DSPI_PUSHR_CONT_M;
     dspi_p->pushr = pushr |= FREESCALE_DSPI_PUSHR_EOQ_M;
-    DEBUG3_PRINTF(debug_format, data_p ? (bus_16bit ? 16 :8) : pushr,
-                  (drop_cs ? "FEN" : "FSG"), &dspi_p->pushr, pushr, 0);
+    DEBUG2_PRINTF(data_p ? debug_format : debug_format1, data_p ? (bus_16bit ? 16 :8) : pushr,
+                  (drop_cs ? "FEN" : "FSG"), data_p /*&dspi_p->pushr*/, pushr, 0);
     return 0;
 }
 
@@ -607,16 +601,17 @@ dma_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8* data_p,
     volatile cyg_uint32* pushque_end;
 
     pushque_p = dspi_bus->pushque_p;
-    pushque_end = pushque_p + dspi_bus->pushque_n;
+    pushque_end = pushque_p + (dspi_bus->pushque_n - (bus_16bit ? 2 : 1));
     pushque_p = dspi_bus->pushque_p;
     if(data_p) {
         if(!bus_16bit) {
             do {
                 if(pushque_p == pushque_end) {
-                    pushque_p[0] = pushr;
-                    pushque_p[-1] |= FREESCALE_DSPI_PUSHR_EOQ_M;
-                    DEBUG2_PRINTF(debug_format, 8, "BRK", pushque_p-1,
-                                  pushque_p[-1], count);
+                    *pushque_p = pushr | *data_p | FREESCALE_DSPI_PUSHR_EOQ_M;
+                    count--;
+
+                    DEBUG2_PRINTF(debug_format, 8, "BRK", pushque_p,
+                                  pushque_p[0], count);
                     return count;
                 }
                 *pushque_p++ = pushr | *data_p++;
@@ -629,10 +624,12 @@ dma_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8* data_p,
             cyg_uint16 data_word;
             do {
                 if(pushque_p == pushque_end) {
-                    pushque_p[0] = pushr;
-                    pushque_p[-1] |= FREESCALE_DSPI_PUSHR_EOQ_M;
-                    DEBUG2_PRINTF(debug_format, 16, "BRK", pushque_p-1,
-                                  pushque_p[-1], count);
+                    data_word = *data16_p;
+                    *pushque_p = pushr | data_word | FREESCALE_DSPI_PUSHR_EOQ_M;
+                    count-=2;
+
+                    DEBUG2_PRINTF(debug_format, 16, "BRK", pushque_p,
+                                  pushque_p[0], count);
                     return count;
                 }
                 data_word = *data16_p++;
@@ -647,22 +644,23 @@ dma_pushque_fill(cyg_spi_freescale_dspi_bus_t* dspi_bus, cyg_uint8* data_p,
         pushr |= PUSHR_NULL;
         do {
             if(pushque_p == pushque_end) {
-                pushque_p[0] = pushr;
-                pushque_p[-1] |= FREESCALE_DSPI_PUSHR_EOQ_M;
-                DEBUG2_PRINTF(debug_format, 0, "BRK", pushque_p-1,
-                              pushque_p[-1], count);
+                *pushque_p = pushr | FREESCALE_DSPI_PUSHR_EOQ_M;
+                count--;
+
+                DEBUG2_PRINTF(debug_format, 0, "BRK", pushque_p,
+                              pushque_p[0], count);
                 return count;
             }
             *pushque_p++ = pushr;
-            DEBUG3_PRINTF(debug_format, 0, "BRK", pushque_p-1, pushque_p[-1],
+            DEBUG3_PRINTF(debug_format, 0, "ADD", pushque_p-1, pushque_p[-1],
                           count-1);
         } while(--count > 1);
     }
     if(drop_cs) pushr &= ~FREESCALE_DSPI_PUSHR_CONT_M;
-    pushque_p[1] = pushr;
     *pushque_p = pushr |= FREESCALE_DSPI_PUSHR_EOQ_M;
     DEBUG2_PRINTF(debug_format, data_p ? (bus_16bit ? 16 :8) : 0,
                   (drop_cs ? "END" : "SGM"), pushque_p, pushque_p[0], 0);
+
     return 0;
 }
 
@@ -745,12 +743,14 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
     cyg_uint32 pushque_n;
     cyg_uint32 dma_chan_rx_i = 0;
     cyg_uint32 dma_chan_tx_i = 0;
+    cyg_uint8* rx_data0;
 
 #if DEBUG_SPI >= 2
     cyg_uint32 first_turn = 1;
 #endif
 
-    DEBUG2_PRINTF("DSPI: transaction: count=%d drop_cs=%d\n", count, drop_cs);
+    DEBUG2_PRINTF("DSPI: transaction: count=%d drop_cs=%d tick_only=%d\n",
+                  count, drop_cs, tick_only);
 
     // Set up peripheral CS field. DSPI automatically asserts and deasserts CS
     pushr =
@@ -758,7 +758,7 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
           // Compatibility option
           // eCos Reference Manual states that CS should drop prior to sending
           // ticks, but other SPI drivers do not touch the CS.
-          tick_only ? dspi_p->pushr & 0x87FF0000 : 
+          tick_only ? dspi_p->pushr & 0x87FF0000 :
 #endif
           dspi_chip_select_set(
 #ifdef CYGOPT_DEVS_SPI_FREESCALE_DSPI_TICK_ONLY_DROPS_CS
@@ -770,23 +770,14 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
     pushr |= FREESCALE_DSPI_PUSHR_CONT_M;
 
     dspi_fifo_clear(dspi_p);
-    dspi_fifo_drain(dspi_p);
 
     pushque_n = dspi_bus->pushque_n;
     if(bus_16bit)
         txfifo_n *= 2;
-    
-    if(count <= txfifo_n){
-        // If byte count fits in the FIFO don't bother with DMA.
-        if((dma_set_p = dspi_bus->setup_p->dma_set_p)) {
-            edma_p = dma_set_p->edma_p;
-            hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, RX));
-        }
-        dma_set_p = NULL;
-    } else {
-        dma_set_p = dspi_bus->setup_p->dma_set_p;
-    }
-    if(dma_set_p) {
+
+    dma_set_p = dspi_bus->setup_p->dma_set_p;
+    if((count > txfifo_n) && dma_set_p) {
+        rx_data0 = rx_data;
         edma_p = dma_set_p->edma_p;
         // Set up the DMA channels.
         dma_chan_rx_i = SPI_DMA_CHAN_I(dma_set_p, RX);
@@ -794,6 +785,24 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
         rx_dma_channel_setup(dma_set_p, (cyg_uint8*) rx_data,
                              bus_16bit, &edma_p->tcd[dma_chan_rx_i]);
         hal_freescale_edma_erq_enable(edma_p, dma_chan_rx_i);
+        dspi_irq_enable(dspi_p,
+                        FREESCALE_DSPI_RSER_TFFF_RE_M   |
+                        FREESCALE_DSPI_RSER_RFDF_RE_M   |
+                        FREESCALE_DSPI_RSER_TFFF_DIRS_M |
+                        FREESCALE_DSPI_RSER_RFDF_DIRS_M);
+    } else {
+        rx_data0 = NULL;
+        // If byte count fits in the FIFO don't bother with DMA.
+        if(dma_set_p) {
+            edma_p = dma_set_p->edma_p;
+            hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, RX));
+        }
+        dma_set_p = NULL;
+        dspi_irq_disable(dspi_p,
+                         FREESCALE_DSPI_RSER_TFFF_RE_M   |
+                         FREESCALE_DSPI_RSER_RFDF_RE_M   |
+                         FREESCALE_DSPI_RSER_TFFF_DIRS_M |
+                         FREESCALE_DSPI_RSER_RFDF_DIRS_M);
     }
 
     if(!polled)
@@ -836,8 +845,10 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
             // Busy-wait for DSPI/DMA (polling for completion).
             while(!(dspi_p->sr & FREESCALE_DSPI_SR_EOQF_M));
 
-            if(dma_set_p) // Disable the Tx DMA channel on completion.
+            if(dma_set_p) {
+                // Disable the Tx DMA channel on completion.
                 hal_freescale_edma_erq_disable(edma_p, dma_chan_tx_i);
+            }
         } else {
             // Wait for DSPI/DMA completion. (interrupt driven).
             cyg_drv_mutex_lock(&dspi_bus->transfer_mutex);
@@ -855,8 +866,12 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
 
         if(dma_set_p) {
             // Make sure that Rx has been drained by DMA.
-            if(rx_data)
-                while((dspi_p->sr & FREESCALE_DSPI_SR_RFDF_M));
+            while((dspi_p->sr & FREESCALE_DSPI_SR_RFDF_M));
+            DEBUG2_PRINTF("Fifo Drained by DMA 0x%08x\n", dspi_p->sr);
+            if(count_down <= txfifo_n && count_down > 0) {
+                hal_freescale_edma_erq_disable(edma_p, dma_chan_rx_i);
+                dma_set_p = NULL;
+            }
         } else {
             // No DMA - "manually" drain Rx FIFO
             DEBUG2_PRINTF("DSPI FIFO: 'Manually' drain Rx fifo rx_data=%p bus_16bit=%d\n",
@@ -868,19 +883,18 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
                 if(bus_16bit) {
                     cyg_uint16* rx_data16 = (cyg_uint16*) rx_data;
                     while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M) {
-                        DEBUG2_PRINTF("  Fifo Pull16\n");
+                        DEBUG2_PRINTF("  Fifo Pull16 at %p\n", rx_data16);
                         *rx_data16++ = dspi_p->popr;
                     }
                     rx_data = (cyg_uint8*) rx_data16;
                 } else {
                     while(dspi_p->sr & FREESCALE_DSPI_SR_RXCTR_M) {
-                        DEBUG2_PRINTF("  Fifo Pull\n");
+                        DEBUG2_PRINTF("  Fifo Pull at %p\n", rx_data);
                         *rx_data++ = dspi_p->popr;
                     }
                 }
-            } else {
-                dspi_fifo_drain(dspi_p);
             }
+            dspi_fifo_drain(dspi_p);
         }
         dspi_fifo_clear(dspi_p);
         // Prepare for next iteration
@@ -890,16 +904,18 @@ static void spi_transaction_do (cyg_spi_device* device, cyg_bool tick_only,
                 tx_data += pushque_n;
         }
     }
-    if(dma_set_p && rx_data) {
+    if(rx_data0) {
         // Rx buffer may be out of sync with cache.
-        DEBUG2_PRINTF("DSPI DMA: Invalidate cache\n");
-        HAL_DCACHE_INVALIDATE(rx_data, count);
-        DEBUG2_PRINTF("DSPI DMA: Cache invalidated\n");
+        DEBUG2_PRINTF("DSPI DMA: Flush cache %p len=%d\n", rx_data0, count);
+        HAL_DCACHE_INVALIDATE(rx_data0, count);
+        DEBUG2_PRINTF("DSPI DMA: Cache flushed\n");
     }
+
     if(!polled)
         cyg_drv_interrupt_mask(dspi_bus->setup_p->intr_num);
 
     dspi_device->chip_sel = !drop_cs;
+    DEBUG2_PRINTF("cyg_transaction_do() chip_sel = %d drop_cs = %d\n", dspi_device->chip_sel, drop_cs);
 }
 
 //-----------------------------------------------------------------------------
@@ -957,7 +973,7 @@ static void dspi_transaction_transfer(cyg_spi_device* device, cyg_bool polled,
     cyg_spi_freescale_dspi_device_t* dspi_device =
           (cyg_spi_freescale_dspi_device_t*) device;
 
-    DEBUG3_PRINTF("Transaction tx_data = %p count=%d\n", tx_data, count);
+    DEBUG2_PRINTF("Transaction rx_data = %p tx_data = %p count=%d\n", rx_data, tx_data, count);
 
     // Check for unsupported transactions.
     CYG_ASSERT (count > 0, "DSPI: Null transfer requested.");
@@ -993,6 +1009,7 @@ static void dspi_transaction_tick(cyg_spi_device* device, cyg_bool polled,
     }
 
     // Perform null transfer
+    DEBUG2_PRINTF("cyg_transaction_tick()\n");
     spi_transaction_do (device, true, polled, count, NULL, NULL, false);
 }
 
@@ -1010,6 +1027,7 @@ static void dspi_transaction_end(cyg_spi_device* device)
     cyghwr_hal_freescale_edma_t *edma_p;
     cyghwr_devs_freescale_dspi_t* dspi_p = dspi_bus->setup_p->dspi_p;
 
+    DEBUG2_PRINTF("cyg_transaction_end() chip_sel = %d\n", dspi_device->chip_sel);
     if(dma_set_p) {
         edma_p = dma_set_p->edma_p;
         hal_freescale_edma_erq_disable(edma_p, SPI_DMA_CHAN_I(dma_set_p, TX));
@@ -1018,10 +1036,11 @@ static void dspi_transaction_end(cyg_spi_device* device)
 
     if(dspi_device->chip_sel){
         // Clear peripheral CS by executing a dummy 4 bit transfer.
-        DSPI_EOQ_CLEAR(dspi_p);
         dspi_p->pushr = PUSHR_NULL | FREESCALE_DSPI_PUSHR_EOQ_M |
                         FREESCALE_DSPI_PUSHR_CTAS(1);
+        DSPI_EOQ_CLEAR(dspi_p);
         while(!(dspi_p->sr & FREESCALE_DSPI_SR_EOQF_M));
+        dspi_fifo_drain(dspi_p);
         dspi_device->chip_sel = 0;
     }
 }

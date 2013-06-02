@@ -1,3 +1,9 @@
+2013-05-08  Ilija Kocho <ilijak@siva.com.mk>
+
+	* src/spi_freescale_dspi.cdl: Add CYGINT_DEVS_SPI_DMA_USE
+	* src/spi_freescale_dspi.c: Fix: Disable DMA requests for transfers
+	that don't use DMA. [ Bugzilla 1001815 ]
+
 2013-04-01  Ilija Kocho <ilijak@siva.com.mk>
 
 	* include/spi_freescale_dspi.h, include/spi_freescale_busses.inl
