@@ -79,7 +79,7 @@ cdl_package CYGPKG_DEVS_RAM_MICRON_CELLULARRAM {
         cdl_option CYGHWR_RAM0_MICRON_CELLULAR_SIZE {
             display "RAM size \[Bytes\]"
             flavor data
-            default_value 0x01000000
+            default_value 16 * 1024 * 1024
         }
         cdl_component CYGHWR_RAM0_MICRON_BCR_SETTO {
             display "Bus Configuration Register"
