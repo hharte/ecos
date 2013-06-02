@@ -1,3 +1,22 @@
+2013-04-28  Ilija Kocho <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis_twr_k60n512_fxm.cdl:
+	* include/pkgconf/mlt_kinetis_flash_sram2s_extram_ram.h: (New)
+	* include/pkgconf/mlt_kinetis_flash_sram2s_extram_ram.ldi: (New)
+	* include/pkgconf/mlt_kinetis_flash_sram2s_extram_rom.h:
+	* include/pkgconf/mlt_kinetis_flash_sram2s_extram_rom.ldi:
+	* include/pkgconf/mlt_kinetis_flash_sram2s_ram.h: (Remove)
+	* include/pkgconf/mlt_kinetis_flash_sram2s_ram.ldi: (Remove)
+	* include/pkgconf/mlt_kinetis_flash_unisram_extram_ram.h:
+	* include/pkgconf/mlt_kinetis_flash_unisram_extram_ram.ldi:
+	* include/pkgconf/mlt_kinetis_flash_unisram_extram_rom.h:
+	* include/pkgconf/mlt_kinetis_flash_unisram_extram_rom.ldi:
+	* include/plf_io.h:
+	* misc/redboot_K60_FXM_SST25XX_ROM.ecm: (New)
+	* src/twr_k60n512_fxm_misc.c:
+	Rich memory layout for FlexBus RAM with support for caching.
+	Remove redundant MLT files. [ Bugzilla 1001837 ]
+
 2013-04-09  Ilija Kocho <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis_twr_k60n512_fxm.cdl:

@@ -101,11 +101,13 @@
           CYGHWR_HAL_FB_CSCR(PS, __cs)       + CYGHWR_HAL_FB_CSCR_IS(BEM, __cs)   + \
           CYGHWR_HAL_FB_CSCR_IS(BSTR, __cs)  + CYGHWR_HAL_FB_CSCR_IS(BSTW, __cs))
 
+// Functions for final and initial FlexBus setting
+// Description is with the code below.
+static inline void hal_flexbus_init_initial(void);
+static inline void hal_flexbus_init_final(void);
 #endif //  CYGPKG_HAL_CORTEXM_KINETIS_FLEXBUS
 
 static inline void hal_misc_init(void);
-static inline void hal_flexbus_init_initial(void);
-static inline void hal_flexbus_init_final(void);
 
 // DATA and BSS locations
 __externC cyg_uint32 __ram_data_start;
@@ -347,26 +349,34 @@ static struct {
     CYG_ADDRESS         end;            // End address (last byte)
 } hal_data_access[] =
 {
-    { CYGMEM_REGION_ram,        CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE-1      },      // Main RAM
-#ifdef CYGMEM_REGION_sram
-    { CYGMEM_REGION_sram,       CYGMEM_REGION_sram+CYGMEM_REGION_sram_SIZE-1    },      // On-chip SRAM
+    { CYGMEM_REGION_ram,        CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE-1        }, // System bus RAM partition
+#if 1 //def CYGMEM_REGION_sram
+    { CYGMEM_REGION_sram,       CYGMEM_REGION_sram+CYGMEM_REGION_sram_SIZE-1      }, // On-chip SRAM
+#elif defined CYGMEM_REGION_sram_l
+    { CYGMEM_REGION_sram_l,     CYGMEM_REGION_sram_l+CYGMEM_REGION_sram_l_SIZE-1  }, // On-chip SRAM lower bank
+#endif
+#ifdef CYGMEM_REGION_ramcod
+    { CYGMEM_REGION_ramcod,      CYGMEM_REGION_ramcod+CYGMEM_REGION_ramcod_SIZE-1 }, // Code bus RAM partition
+#endif
+#ifdef CYGMEM_REGION_ramnc
+    { CYGMEM_REGION_ramnc,      CYGMEM_REGION_ramnc+CYGMEM_REGION_ramnc_SIZE-1    }, // Non cachable RAM partition
 #endif
 #ifdef CYGMEM_REGION_flash
-    { CYGMEM_REGION_flash,      CYGMEM_REGION_flash+CYGMEM_REGION_flash_SIZE-1  },      // On-chip flash
+    { CYGMEM_REGION_flash,      CYGMEM_REGION_flash+CYGMEM_REGION_flash_SIZE-1    }, // On-chip flash
 #endif
 #ifdef CYGMEM_REGION_rom
-    { CYGMEM_REGION_rom,        CYGMEM_REGION_rom+CYGMEM_REGION_rom_SIZE-1      },      // External flash
+    { CYGMEM_REGION_rom,        CYGMEM_REGION_rom+CYGMEM_REGION_rom_SIZE-1        }, // External flash [currently none]
 #endif
-    { 0xE0000000,               0x00000000-1                                    },      // Cortex-M peripherals
-    { 0x40000000,               0x60000000-1                                    },      // Chip specific peripherals
+    { 0xE0000000,               0x00000000-1                                      }, // Cortex-M peripherals
+    { 0x40000000,               0x60000000-1                                      }  // Chip specific peripherals
 };
 
-__externC int cyg_hal_stub_permit_data_access( CYG_ADDRESS addr, cyg_uint32 count )
+__externC int cyg_hal_stub_permit_data_access( void* addr, cyg_uint32 count )
 {
     int i;
     for( i = 0; i < sizeof(hal_data_access)/sizeof(hal_data_access[0]); i++ ) {
-        if( (addr >= hal_data_access[i].start) &&
-            (addr+count) <= hal_data_access[i].end)
+        if( ((CYG_ADDRESS)addr >= hal_data_access[i].start) &&
+            ((CYG_ADDRESS)addr+count) <= hal_data_access[i].end)
             return true;
     }
     return false;
@@ -383,7 +393,7 @@ __externC int cyg_hal_stub_permit_data_access( CYG_ADDRESS addr, cyg_uint32 coun
 //--------------------------------------------------------------------------
 // Memory layout
 //
-// We report the on-chip SRAM and external SRAM.
+// We report the on-chip SRAM and external RAM.
 
 void
 cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end)
@@ -397,6 +407,31 @@ cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end)
     case 1:
         *start = (unsigned char *)CYGMEM_REGION_sram;
         *end = (unsigned char *)(CYGMEM_REGION_sram + CYGMEM_REGION_sram_SIZE);
+        break;
+#endif
+#ifdef CYGMEM_REGION_sram_l
+# define CASE_CODE 3
+# define CASE_RAMNC 4
+    case 2:
+        *start = (unsigned char *)CYGMEM_REGION_sram_l;
+        *end = (unsigned char *)(CYGMEM_REGION_sram_l + CYGMEM_REGION_sram_l_SIZE);
+        break;
+#else
+# define CASE_CODE 2
+# define CASE_RAMNC 3
+#endif
+
+#ifdef CYGMEM_REGION_ramcod
+    case CASE_CODE:
+        *start = (unsigned char *)CYGMEM_REGION_ramcod;
+        *end = (unsigned char *)(CYGMEM_REGION_ramcod + CYGMEM_REGION_ramcod_SIZE);
+        break;
+#endif
+
+#ifdef CYGMEM_REGION_ramnc
+    case CASE_RAMNC:
+        *start = (unsigned char *)CYGMEM_REGION_ramnc;
+        *end = (unsigned char *)(CYGMEM_REGION_ramnc + CYGMEM_REGION_ramnc_SIZE);
         break;
 #endif
     default:

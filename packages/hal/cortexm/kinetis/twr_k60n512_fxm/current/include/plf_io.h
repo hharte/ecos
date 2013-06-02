@@ -182,7 +182,7 @@
 // the CPU to hang. These macros allow the GDB stubs to avoid making
 // accidental accesses to these areas.
 
-__externC int cyg_hal_stub_permit_data_access( CYG_ADDRESS addr, cyg_uint32 count );
+__externC int cyg_hal_stub_permit_data_access( void* addr, cyg_uint32 count );
 
 #define CYG_HAL_STUB_PERMIT_DATA_READ(_addr_, _count_) cyg_hal_stub_permit_data_access( _addr_, _count_ )
 
