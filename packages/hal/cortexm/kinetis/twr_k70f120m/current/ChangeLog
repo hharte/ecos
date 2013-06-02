@@ -1,6 +1,13 @@
 2013-04-09  Ilija Kocho <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis_twr_k70f120m.cdl:
+
+	Add requirement for WRITETHRU data cache startup mode when eDMA is in use.
+	Sync with change in eDMA driver [ Bugzilla 1001838 ]
+
+2013-04-09  Ilija Kocho <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis_twr_k70f120m.cdl:
 	* include/plf_io.h:
 	Implemented support for I2C  [Bugzilla 1001397]
 

@@ -320,6 +320,9 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS_TWR_K70F120M {
         requires CYGHWR_DEVS_SPI_FREESCALE_DSPI1 == 1
         implements CYGINT_DEVS_SPI_FREESCALE_DSPI1
         implements CYGINT_FREESCALE_DSPI1_HAS_MASS
+        requires  { (is_active(CYGSEM_HAL_DCACHE_STARTUP_MODE)
+                    && CYGINT_DEVS_SPI_DSPI_DMA_USE)
+                    implies CYGSEM_HAL_DCACHE_STARTUP_MODE == "WRITETHRU" }
 
         cdl_option CYGHWR_DEVS_DISK_MMC_FREESCALE_DSPI_CS {
             display "Device number (CS)"
