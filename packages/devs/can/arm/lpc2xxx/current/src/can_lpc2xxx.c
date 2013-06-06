@@ -1166,7 +1166,7 @@ static Cyg_ErrNo lpc2xxx_can_config_msgbuf(can_channel *chan, const void* buf, c
                  //
                  if (!lpc2xxx_can_add_rx_filter(info, filter))
                  {
-                     return -EPERM;
+                     return -ENOSPC;
                  }
              }
              break; //CYGNUM_CAN_MSGBUF_RX_FILTER_ADD
@@ -1336,7 +1336,7 @@ static Cyg_ErrNo lpc2xxx_can_config_accfilt_group(can_channel *chan, const void*
 #ifdef CYGDBG_DEVS_CAN_LPC2XXX_DEBUG
     lpc2xxx_can_accfilt_dbg_dump();
 #endif        
-    return res ? ENOERR : -EPERM;
+    return res ? ENOERR : -ENOSPC;
 }
 #endif // CYGOPT_DEVS_CAN_RANGE_FILTERING_CFG_KEYS
 

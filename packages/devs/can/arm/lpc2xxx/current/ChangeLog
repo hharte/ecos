@@ -1,3 +1,9 @@
+2013-05-06  Uwe Kindler <uwe_kindler@web.de>
+
+	* src/can_lpc2xxx.c: Changed return code for message filter
+	configuration to -ENOSPC if no filters are available to match
+	documentation change.
+
 2012-01-25  Bernard Fouché <bernard.fouche@kuantic.com>
 
 	* Changes made to support CAN IO package update:
