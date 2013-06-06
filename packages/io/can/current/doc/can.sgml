@@ -1622,6 +1622,12 @@ Upper identifier value of the defined range.
           </para></listitem>
    </varlistentry>
 </variablelist>
+
+<PARA>
+If no free buffers or filters are available, <varname>-ENOSPC</varname> is
+returned.
+</PARA>
+
 </SECTION> <!-- can-id-range-filter -->
 
 <SECTION id="can-id-mask-filter">
@@ -1698,6 +1704,11 @@ check this bit: it passes too. However the message ID has its bit 2
 unset, while bit 2 of the mask tells the controller to check bit
 2. Bit 2 of the identifier isn't set in the <varname>id</varname>
 field, hence this example message does not pass the filter.
+</PARA>
+
+<PARA>
+If no free buffers or filters are available, <varname>-ENOSPC</varname> is
+returned.
 </PARA>
 
 </SECTION> <!-- can-id-mask-filter -->

@@ -1,3 +1,9 @@
+2013-05-06  Uwe Kindler <uwe_kindler@web.de>
+
+	* doc/can.sgml: Documented return code -ENOSPC for cyg_io_set_config()
+	for config keys CYG_IO_SET_CONFIG_CAN_RANGE_FILTER and
+	CYG_IO_SET_CONFIG_CAN_MASK_FILTER
+
 2012-01-22  Bernard Fouché <bernard.fouche@kuantic.com>
 
 	* cdl/io_can.cdl: support for add/remove compiler flags
