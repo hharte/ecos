@@ -1,3 +1,7 @@
+2013-06-12  John Dallaway  <john@dallaway.org.uk>
+
+	* sgml/doclist: Add STM32F4-Discovery documentation.
+
 2013-05-09  John Dallaway  <john@dallaway.org.uk>
 
 	* sgml/makemakefile: Update copyright dates.

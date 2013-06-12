@@ -1,3 +1,8 @@
+2013-06-12  John Dallaway  <john@dallaway.org.uk>
+
+	* ecos.db: Add STM32F4-Discovery platform HAL package and target
+	records.
+
 2013-05-2013  Uwe Kindler  <uwe_kindler@web.de>
 
 	* ecos.db: Add CAN driver entry for olcpe2294 target (Olimex

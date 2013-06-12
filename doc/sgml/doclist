@@ -55,6 +55,7 @@ hal/cortexm/kinetis/twr_k40x256/current/doc/twr_k40x256.sgml
 hal/cortexm/kinetis/var/current/doc/kinetis_end.sgml
 hal/cortexm/a2fxxx/a2f200_eval/current/doc/a2f200e.sgml
 hal/cortexm/lm3s/ek_lm3s811/current/doc/ek_lm3s811.sgml
+hal/cortexm/stm32/stm32f4discovery/current/doc/stm32f4discovery.sgml
 hal/sh/sh4_202_md/current/doc/sh4_202_md.sgml
 devs/usb/sa11x0/current/doc/usbs_sa11x0.sgml
 devs/usb/nec_upd985xx/current/doc/usbs_upd985xx.sgml
