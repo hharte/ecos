@@ -901,18 +901,21 @@ typedef volatile struct cyghwr_hal_kinetis_port_s {
 } cyghwr_hal_kinetis_port_t;
 
 // PORT - Peripheral instance base addresses
-#define CYGHWR_HAL_KINETIS_PORTA_P  (cyghwr_hal_kinetis_port_t *)0x40049000
-#define CYGHWR_HAL_KINETIS_PORTB_P  (cyghwr_hal_kinetis_port_t *)0x4004A000
-#define CYGHWR_HAL_KINETIS_PORTC_P  (cyghwr_hal_kinetis_port_t *)0x4004B000
-#define CYGHWR_HAL_KINETIS_PORTD_P  (cyghwr_hal_kinetis_port_t *)0x4004C000
-#define CYGHWR_HAL_KINETIS_PORTE_P  (cyghwr_hal_kinetis_port_t *)0x4004D000
-#define CYGHWR_HAL_KINETIS_PORTF_P  (cyghwr_hal_kinetis_port_t *)0x4004E000
+#define CYGHWR_HAL_KINETIS_PORTA_P  ((cyghwr_hal_kinetis_port_t *)0x40049000)
+#define CYGHWR_HAL_KINETIS_PORTB_P  ((cyghwr_hal_kinetis_port_t *)0x4004A000)
+#define CYGHWR_HAL_KINETIS_PORTC_P  ((cyghwr_hal_kinetis_port_t *)0x4004B000)
+#define CYGHWR_HAL_KINETIS_PORTD_P  ((cyghwr_hal_kinetis_port_t *)0x4004C000)
+#define CYGHWR_HAL_KINETIS_PORTE_P  ((cyghwr_hal_kinetis_port_t *)0x4004D000)
+#define CYGHWR_HAL_KINETIS_PORTF_P  ((cyghwr_hal_kinetis_port_t *)0x4004E000)
 
 enum {
     CYGHWR_HAL_KINETIS_PORTA, CYGHWR_HAL_KINETIS_PORTB,
     CYGHWR_HAL_KINETIS_PORTC, CYGHWR_HAL_KINETIS_PORTD,
     CYGHWR_HAL_KINETIS_PORTE, CYGHWR_HAL_KINETIS_PORTF
 };
+
+#define CYGHWR_HAL_KINETIS_PORT(__port, __reg) \
+        (CYGHWR_HAL_KINETIS_PORT##__port##_P)->__reg
 
 // PCR Bit Fields
 #define CYGHWR_HAL_KINETIS_PORT_PCR_PS_M          0x1
@@ -944,9 +947,19 @@ enum {
 #define CYGHWR_HAL_KINETIS_PORT_PCR_MUX_DIS       0
 #define CYGHWR_HAL_KINETIS_PORT_PCR_MUX_GPIO      1
 
+#define CYGHWR_HAL_KINETIS_PORT_PCR_ISFR_CLEAR(__port, __pin) \
+        CYGHWR_HAL_KINETIS_PORT(__port, pcr[__pin]) |= BIT_(24)
+
+#define CYGHWR_HAL_KINETIS_PORT_ISFR_CLEAR(__port, __pin)     \
+        CYGHWR_HAL_KINETIS_PORT(__port, isfr) |= BIT_(__pin)
+
+#define CYGHWR_HAL_KINETIS_PIN_CFG(__port, __bit, __mux, __irqc, __cnf) \
+        ((CYGHWR_HAL_KINETIS_PORT##__port << 20) | ((__bit) << 27)      \
+         | CYGHWR_HAL_KINETIS_PORT_PCR_IRQC(__irqc)                     \
+         | CYGHWR_HAL_KINETIS_PORT_PCR_MUX(__mux) | (__cnf))
+
 #define CYGHWR_HAL_KINETIS_PIN(__port, __bit, __mux, __cnf) \
-    ((CYGHWR_HAL_KINETIS_PORT##__port << 20) | ((__bit) << 27) \
-     | CYGHWR_HAL_KINETIS_PORT_PCR_MUX(__mux) | (__cnf))
+        CYGHWR_HAL_KINETIS_PIN_CFG(__port, __bit, __mux, 0, __cnf)
 
 #define CYGHWR_HAL_KINETIS_PIN_PORT(__pin) (((__pin) >> 20) & 0x7)
 #define CYGHWR_HAL_KINETIS_PIN_BIT(__pin)  (((__pin) >> 27 ) & 0x1f)

@@ -1,3 +1,8 @@
+2013-06-12 Mike Jones <mike@proclivis.com>
+
+	* include/var_io_gpio.h
+	Clean up macros to support interrupts and set/get features.
+	
 2013-04-28  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_kinetis.cdl: 
