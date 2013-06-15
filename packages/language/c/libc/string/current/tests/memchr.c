@@ -75,7 +75,8 @@ void cyg_user_start(void)
 #endif
 {
     char x[] = "Your feeble skills are no match for the power of "
-               "the dark side!";
+          "the dark side!";
+    char x0[] = "";
     void *ret;
 
     CYG_TEST_INIT();
@@ -104,7 +105,7 @@ void cyg_user_start(void)
     CYG_TEST_PASS_FAIL( ret == NULL, "Boundary test 2" );
 
     // Check 6 (boundary condition)
-    ret = memchr( (void *)"", (int)'\0', 0 );
+    ret = memchr(x0, (int)'\0', 0 );
     CYG_TEST_PASS_FAIL( ret == NULL, "Boundary test 3" );
 
 //    CYG_TEST_NA("Testing is not applicable to this configuration");

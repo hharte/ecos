@@ -1,3 +1,8 @@
+2013-06-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/memchr.c: Fix compiler warnings for discrediting const pointer.
+	[ Bugzilla 1001865 ]
+
 2010-05-10  Ross Younger  <wry@ecoscentric.com>
 
 	* include/string.h: Declare strnlen.
