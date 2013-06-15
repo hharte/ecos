@@ -96,7 +96,7 @@ volatile char m[(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE)*MAX_STRIDE];
 static void time0(register cyg_uint32 stride)
 {
     register cyg_uint32 j,k;
-    register char c;
+    register char c CYGBLD_ATTRIB_UNUSED;
 
     diag_printf("stride=%d\n", stride);
 
