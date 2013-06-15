@@ -1,3 +1,7 @@
+2013-06-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/kintr0.c, tests/kcache1.c: Fix compiler warnings.
+
 2013-04-26  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* tests/fpint_thread_switch.c: Fix missing semicolon.

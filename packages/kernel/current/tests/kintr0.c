@@ -142,9 +142,11 @@ static bool flash( void )
 
 static cyg_VSR_t vsr0;
 
-static void vsr0()
+static void vsr0(void)
 {
 }
+
+static void (*vsr0_p)(void) = vsr0;
 
 void kintr0_main( void )
 {
@@ -221,7 +223,7 @@ void kintr0_main( void )
     cyg_interrupt_get_vsr( v, &new_vsr );
     CHECK( old_vsr == new_vsr );
         
-    CHECK( NULL != vsr0 );
+    CHECK( NULL != *vsr0_p );
 
     cyg_interrupt_mask(v1);
     cyg_interrupt_unmask(v1);

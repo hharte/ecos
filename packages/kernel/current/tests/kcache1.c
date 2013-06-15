@@ -109,7 +109,7 @@ static void time0(register cyg_uint32 stride)
     register cyg_uint32 j,k;
     cyg_tick_count_t count0, count1;
     cyg_ucount32 t;
-    register char c;
+    register char c CYGBLD_ATTRIB_UNUSED;
 
     count0 = cyg_current_time();
 
@@ -147,7 +147,7 @@ static void time0II(register cyg_uint32 stride)
     register cyg_uint32 j,k;
     cyg_tick_count_t count0, count1;
     cyg_ucount32 t;
-    register char c;
+    register char c CYGBLD_ATTRIB_UNUSED;
 
     count0 = cyg_current_time();
 
@@ -189,7 +189,7 @@ static void time0DI(register cyg_uint32 stride)
     volatile cyg_tick_count_t count0;
     cyg_tick_count_t count1;
     cyg_ucount32 t;
-    register char c;
+    register char c CYGBLD_ATTRIB_UNUSED;
     register CYG_INTERRUPT_STATE oldints;
 
     count0 = cyg_current_time();
