@@ -1,3 +1,9 @@
+2013-02-18  Ilija Stanislevik  <ilijas@siva.mk>
+
+	* src/mmc_spi.c: Add support for high capacity SD cards.
+	* include/mmc_protocol.h: Add definitions of V2 specific commands,
+	responses and card structure. [ Bugzilla 1001764 ]
+
 2013-02-21  Mike Jones  <mike@proclivis.com>
 
 	* src/mmc_spi.c (mmc_spi_check_for_disk): Modify DEBUG1 to to show

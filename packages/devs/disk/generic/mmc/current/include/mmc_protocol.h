@@ -102,8 +102,16 @@
 #define MMC_REQUEST_READ_OCR                0x3A
 #define MMC_REQUEST_CRC_ON_OFF              0x3B
 
+// SD V2.x specific commands
+#define SD_REQUEST_SEND_IF_COND             8
+#define SD_REQUEST_SD_SEND_OP_COND          41
+#define SD_REQUEST_APP_CMD                  55
+
 // Response formats are different for MMC vs. SPI mode, so are defined
 // in the appropriate source files.
+
+// SD V2.x specific responses
+#define SD_ARGUMENT_HCS                    ( 1 << 30 )
 
 // The CID register is generally treated as an opaque data structure
 // used only for unique identification of cards.
@@ -122,7 +130,7 @@ typedef struct mmc_cid_register {
                                                          ((_data_)->cid_data[13]))
 #define MMC_CID_REGISTER_MDT(_data_)                    ((_data_)->cid_data[14])
 #define MMC_CID_REGISTER_CRC(_data_)                    ((_data_)->cid_data[15] >> 1)
-                                                         
+
 
 // The CSD register is just lots of small bitfields. For now keep it
 // as an array of 16 bytes and provide macros to read the fields.
@@ -170,6 +178,19 @@ typedef struct mmc_csd_register {
 #define MMC_CSD_REGISTER_ECC(_data_)                    ((_data_)->csd_data[14] & 0x0003)
 #define MMC_CSD_REGISTER_CRC(_data_)                    (((_data_)->csd_data[15] & 0xFE) >> 1)
 
+// CSD V2.x structure
+#define SD_CSD_V2_REGISTER_C_SIZE(_data_)              ((((_data_)->csd_data[7] & 0x007f) << 16) |     \
+                                                          ((_data_)->csd_data[8] << 8)            |     \
+                                                          ((_data_)->csd_data[9] ))
+
+// OCR
+typedef struct sd_ocr_register {
+    cyg_uint8   ocr_data[4];
+} sd_ocr_register_t;
+
+#define SD_OCR_REGISTER_POWER_UP(_data_)               (((_data_)->ocr_data[0] & 0x80) >> 7)
+// CCS bit denotes Standard (0) or High/Extended (1) capacity
+#define SD_OCR_REGISTER_CCS(_data_)                    (((_data_)->ocr_data[0] & 0x40) >> 6)
 
 #endif //  ifdef CYGONCE_DEVS_DISK_MMC_PROTOCOL_H
 

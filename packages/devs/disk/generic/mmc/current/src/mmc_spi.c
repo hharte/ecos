@@ -113,6 +113,11 @@ cyg_bool    cyg_mmc_spi_polled = false;
 // ----------------------------------------------------------------------------
 // SPI-specific parts of the MMC protocol.
 //
+// Host supply voltage information
+#define MMC_SPI_VHS                         0x01  // 2.7 - 3.6V
+// Check pattern
+#define MMC_CMD8_CHECK_PATTERN              0xaa
+//
 // The main response byte. 0 indicates success, other bits
 // indicate various error conditions.
 #define MMC_REPLY_SUCCESS                   0x00
@@ -163,14 +168,20 @@ static cyg_uint8        mmc_spi_ff_data[512];
     memset(mmc_spi_ff_data, 0x00FF, 512);   \
     CYG_MACRO_END
 
+typedef enum sd_capacity_e {
+  STANDARD_CAPACITY,
+  HIGH_CAPACITY,
+  EXTENDED_CAPACITY
+} sd_capacity_t;
+
 // Details of a specific MMC card
 typedef struct cyg_mmc_spi_disk_info_t {
     cyg_spi_device*     mmc_spi_dev;
     cyg_uint32          mmc_saved_baudrate;
     cyg_uint32          mmc_block_count;
-#ifdef MMC_SPI_BACKGROUND_WRITES    
+#ifdef MMC_SPI_BACKGROUND_WRITES
     cyg_bool            mmc_writing;
-#endif    
+#endif
     cyg_bool            mmc_read_only;
     cyg_bool            mmc_connected;
     cyg_uint32          mmc_heads_per_cylinder;
@@ -178,6 +189,10 @@ typedef struct cyg_mmc_spi_disk_info_t {
     cyg_uint32          mmc_read_block_length;
     cyg_uint32          mmc_write_block_length;
     mmc_cid_register    mmc_id;
+    sd_ocr_register_t   sd_ocr;
+    cyg_uint32          sd_version;
+    sd_capacity_t       sd_capacity;
+    cyg_uint32          sd_csd_version;
 } cyg_mmc_spi_disk_info_t;
 
 // There is no need for a hardware-specific disk controller structure.
@@ -201,7 +216,7 @@ mmc_spi_send_init(cyg_mmc_spi_disk_info_t* disk)
     cyg_spi_bus     *bus = dev->spi_bus;
 #endif
 
-    DEBUG2("mmc_spi_send_init(): dev pointer 0x%p, %d\n", disk->mmc_spi_dev, cyg_mmc_spi_polled );
+    DEBUG2("%s(): dev pointer 0x%p, %d\n", __FUNCTION__, disk->mmc_spi_dev, cyg_mmc_spi_polled );
     DEBUG2("                   : begin pointer %p\n", bus->spi_transaction_begin );
     cyg_spi_tick(disk->mmc_spi_dev, cyg_mmc_spi_polled, 10);
 }
@@ -218,7 +233,7 @@ mmc_spi_send_command_start(cyg_mmc_spi_disk_info_t* disk, cyg_uint32 command, cy
     cyg_uint8       reply;
     int             i;
 
-#ifdef MMC_SPI_BACKGROUND_WRITES    
+#ifdef MMC_SPI_BACKGROUND_WRITES
     // If the last operation was a block write, those can take a while
     // to complete. Rather than wait at the end of the write(), do so
     // at the beginning of the next operation i.e. here. This also
@@ -233,25 +248,29 @@ mmc_spi_send_command_start(cyg_mmc_spi_disk_info_t* disk, cyg_uint32 command, cy
     // the end, Either way, when the card sends a byte 0xff it should
     // be ready for the next command.
     if (disk->mmc_writing) {
-        DEBUG2("mmc_spi_send_command_start(): polling for completion of previous write\n");
+        DEBUG2("%s(): polling for completion of previous write\n", __FUNCTION__);
         disk->mmc_writing   = 0;
         response[0]    = 0x00;
         for (i = 0; (i < MMC_SPI_WRITE_BUSY_RETRIES) && (0x00FF != response[0]); i++) {
             cyg_spi_transfer(dev, cyg_mmc_spi_polled, 1, mmc_spi_ff_data, response);
         }
     }
-#endif    
-    
+#endif
+
     request[0]  = command | 0x0040;
     request[1]  = (arg >> 24) & 0x00FF;
     request[2]  = (arg >> 16) & 0x00FF;
     request[3]  = (arg >>  8) & 0x00FF;
     request[4]  = arg         & 0x00FF;
     // A CRC is needed for the go-idle-state command, because that
-    // command switches the device from MMC to SPI mode. That CRC is
-    // well-known. Once in SPI mode the card will not use CRCs by
-    // default.
-    request[5]  = (command == 0x00) ? 0x0095 : 0x00ff;
+    // command switches the device from MMC to SPI mode.  Also, a CRC
+    // is needed in case of CMD8. Here we take for granted that the
+    // host has 2.7-3.6V range and that the check pattern is 0xaa.
+    // These CRCs are well-known. Once in SPI mode the card will not
+    // use CRCs by default.
+    request[5]  = (command == 0x00) ? 0x0095 :
+                  (command == SD_REQUEST_SEND_IF_COND) ? 0x87 : 0xff;
+
     // There will need to be at least one extra byte transfer to get
     // the card's response, so send that straightaway. Extra
     // outgoing data like this should be 0xff so that the card
@@ -261,13 +280,13 @@ mmc_spi_send_command_start(cyg_mmc_spi_disk_info_t* disk, cyg_uint32 command, cy
     // Lock the SPI bus. It remains locked until a subsequent call to
     // mmc_spi_end_command().
     cyg_spi_transaction_begin(dev);
-    
+
     // Transfer the whole command, and try to read the response back
     // immediately.
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 7, request, response, 0);
     DEBUG2("Sent command %02x %d: reply bytes %02x %02x %02x %02x %02x %02x %02x\n", command, arg, \
                 response[0], response[1], response[2], response[3], response[4], response[5], response[6]);
-    
+
     // The response will be a single byte with the top bit clear.
     // The remaining bits are error/status flags. If the command
     // involves an additional response then that will be handled
@@ -339,9 +358,9 @@ mmc_spi_read_data(cyg_mmc_spi_disk_info_t* disk, cyg_uint8* buf, cyg_uint32 coun
     for (i = 0; (i < retries) && (0x00FF == response[0]); i++) {
         cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 1, mmc_spi_ff_data, response, 0);
     }
-    
+
     if (MMC_DATA_TOKEN_SUCCESS != response[0]) {
-        DEBUG1("mmc_spi_read_data(): got error response %02x after %d iterations\n", response[0], i);
+        DEBUG1("%s(): got error response %02x after %d iterations\n", __FUNCTION__, response[0], i);
         return response[0];
     }
 
@@ -350,9 +369,80 @@ mmc_spi_read_data(cyg_mmc_spi_disk_info_t* disk, cyg_uint8* buf, cyg_uint32 coun
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, count, mmc_spi_ff_data, buf, 0);
     // And the CRC, which can be ignored
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 2, mmc_spi_ff_data, response, 0);
-    DEBUG2("mmc_spi_read_data(): got data and CRC %02x %02x\n", response[0], response[1]);
-    
+    DEBUG2("%s(): got data and CRC %02x %02x\n", __FUNCTION__, response[0], response[1]);
+
     return MMC_DATA_TOKEN_SUCCESS;
+}
+
+// Determine if card complies with SD Physical Spec. Version 1.x or 2.x
+// If it is V1, also set information on capacity. MMC cards are recognized as SD V1.
+static Cyg_ErrNo
+mmc_spi_check_version(cyg_mmc_spi_disk_info_t* disk)
+{
+#define R7_RESPONSE_LENGTH 5
+  cyg_uint32  reply;
+  cyg_uint8   response[R7_RESPONSE_LENGTH];
+  cyg_spi_device* dev = disk->mmc_spi_dev;
+
+  disk->sd_version = 0;
+  reply = mmc_spi_send_command_start(disk, SD_REQUEST_SEND_IF_COND,
+          ( MMC_SPI_VHS << 8 ) + MMC_CMD8_CHECK_PATTERN);
+  DEBUG2("SEND_IF_COND (CMD8) reply: %02x\n", reply);
+
+  if (MMC_REPLY_ILLEGAL_COMMAND & reply) { // V1 cards do not understand CMD8
+    disk->sd_version = 1;
+    disk->sd_capacity = STANDARD_CAPACITY;
+    mmc_spi_end_command(disk);
+    return ENOERR;
+  }
+  disk->sd_version = 2;
+  if (~MMC_REPLY_IN_IDLE_STATE & reply) { // Anything other than idle state?
+    DEBUG1("SEND_IF_COND (CMD8) replies error %02x\n", reply);
+    mmc_spi_end_command(disk);
+    return -EIO;
+  }
+
+  // Card gives no error, so the response is R7. Take the rest of it.
+  cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled,
+      R7_RESPONSE_LENGTH, mmc_spi_ff_data, response, 0);
+  DEBUG2("%s(): R7: %02x %02x %02x %02x %02x.\n", __FUNCTION__,
+      response[0], response[1], response[2], response[3], response[4]);
+  if (0 == (MMC_SPI_VHS & response[2])) {
+    DEBUG1("%s(): card doesn't accept voltage %02x\n", __FUNCTION__, MMC_SPI_VHS);
+    mmc_spi_end_command(disk);
+    return -ENOTSUP;
+  }
+
+  mmc_spi_end_command(disk);
+  return ENOERR;
+}
+
+static Cyg_ErrNo
+mmc_spi_sd_check_v2_capacity_class(cyg_mmc_spi_disk_info_t* disk)
+{
+#define R3_RESPONSE_LENGTH 4
+  cyg_uint32  reply;
+  cyg_spi_device* dev = disk->mmc_spi_dev;
+
+  reply = mmc_spi_send_command_start(disk, MMC_REQUEST_READ_OCR, 0);
+  if (MMC_REPLY_SUCCESS != reply) {
+    DEBUG1("READ_OCR (CMD58) replies error %02x\n", reply);
+    mmc_spi_end_command(disk);
+    return -EIO;
+  }
+
+  // Card gives no error. Take the rest of response.
+  cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled,
+      R3_RESPONSE_LENGTH, mmc_spi_ff_data, disk->sd_ocr.ocr_data, 0);
+  DEBUG2("%s(): R3: %02x %02x %02x %02x.\n", __FUNCTION__,
+      disk->sd_ocr.ocr_data[0], disk->sd_ocr.ocr_data[1], disk->sd_ocr.ocr_data[2],
+      disk->sd_ocr.ocr_data[3]);
+  mmc_spi_end_command(disk);
+
+  disk->sd_capacity = (SD_OCR_REGISTER_CCS(&(disk->sd_ocr))) ?
+      HIGH_CAPACITY : STANDARD_CAPACITY ;
+
+  return ENOERR;
 }
 
 // Read one of the card registers, e.g. CSD or CID
@@ -360,17 +450,19 @@ static Cyg_ErrNo
 mmc_spi_read_register(cyg_mmc_spi_disk_info_t* disk, cyg_uint32 command, cyg_uint8* buf, cyg_uint32 count)
 {
     cyg_uint32      reply;
-    
+
     reply = mmc_spi_send_command_start(disk, command, 0);
     if (MMC_REPLY_SUCCESS != reply) {
-        DEBUG1("mmc_spi_read_register(): unexpected response to command %02x, reply code %02x\n", command, reply);
+        DEBUG1("%s(): unexpected response to command %02x, reply code %02x\n",
+            __FUNCTION__, command, reply);
         mmc_spi_end_command(disk);
         return (0x00FF == reply) ? -ENODEV : -EIO;
     }
     reply = mmc_spi_read_data(disk, buf, count, false);
     mmc_spi_end_command(disk);
     if (MMC_DATA_TOKEN_SUCCESS != reply) {
-        DEBUG1("mmc_spi_read_register(): unexpected response to command %02x, expected 0x00FE data token, got %02x\n", command, reply);
+        DEBUG1("%s(): unexpected response to command %02x, expected 0x00FE data token, got %02x\n",
+            __FUNCTION__, command, reply);
         return -EIO;
     }
     return ENOERR;
@@ -384,12 +476,18 @@ static Cyg_ErrNo
 mmc_spi_read_disk_block(cyg_mmc_spi_disk_info_t* disk, cyg_uint8* buf, cyg_uint32 block, cyg_bool extra_delay)
 {
     cyg_uint32 reply;
-    
+
     // First the command itself.
-    DEBUG2("mmc_spi_read_disk_block(%d): sending command\n", block);
-    reply = mmc_spi_send_command_start(disk, MMC_REQUEST_READ_SINGLE_BLOCK, block * MMC_SPI_BLOCK_SIZE);
+    DEBUG2("%s(%d): sending command\n", __FUNCTION__, block);
+    if (STANDARD_CAPACITY == disk->sd_capacity) {
+      reply = mmc_spi_send_command_start(disk, MMC_REQUEST_READ_SINGLE_BLOCK, block * MMC_SPI_BLOCK_SIZE);
+    }
+    else {
+      reply = mmc_spi_send_command_start(disk, MMC_REQUEST_READ_SINGLE_BLOCK, block);
+    }
     if (MMC_REPLY_SUCCESS != reply) {
-        DEBUG1("mmc_spi_read_disk_block(%d): unexpected response to READ_SINGLE_BLOCK command, code %02x\n", block, reply);
+        DEBUG1("%s(%d): unexpected response to READ_SINGLE_BLOCK command, code %02x\n",
+            __FUNCTION__, block, reply);
         mmc_spi_end_command(disk);
         // A byte 0xFF indicates the card has been removed.
         if (0x00FF == reply) {
@@ -406,15 +504,16 @@ mmc_spi_read_disk_block(cyg_mmc_spi_disk_info_t* disk, cyg_uint8* buf, cyg_uint3
         // else is an I/O error.
         return -EIO;
     }
-    
+
     // Now read back the data block. That code can be shared with other read
     // operations, e.g. for retrieving registers.
-    DEBUG2("mmc_spi_read_disk_block(%d): reading data token/data/crc\n", block);
+    DEBUG2("%s(%d): reading data token/data/crc\n", __FUNCTION__, block);
     reply = mmc_spi_read_data(disk, buf, MMC_SPI_BLOCK_SIZE, extra_delay);
     mmc_spi_end_command(disk);
     if (MMC_DATA_TOKEN_SUCCESS != reply) {
-        DEBUG1("mmc_spi_read_disk_block(%d): failed to retrieve data, error token %02x\n", block, reply);
-        
+        DEBUG1("%s(%d): failed to retrieve data, error token %02x\n",
+            __FUNCTION__, block, reply);
+
         // Possibilities are password-locked, range error, ECC failure
         // if the raw data is corrupt, CC error for an internal card
         // error, or some other error. A byte 0xFF indicates the card
@@ -444,12 +543,18 @@ mmc_spi_write_disk_block(cyg_mmc_spi_disk_info_t* disk, const cyg_uint8* buf, cy
     cyg_uint32      reply;
     cyg_uint8       extra[4];
     int             i;
-   
+
     // First, send the command itself and get the initial response
-    DEBUG2("mmc_spi_write_disk_block(), sending command\n");
-    reply = mmc_spi_send_command_start(disk, MMC_REQUEST_WRITE_BLOCK, block * MMC_SPI_BLOCK_SIZE);
+    DEBUG2("%s(): sending command\n", __FUNCTION__);
+    if (STANDARD_CAPACITY == disk->sd_capacity) {
+      reply = mmc_spi_send_command_start(disk, MMC_REQUEST_WRITE_BLOCK, block * MMC_SPI_BLOCK_SIZE);
+    }
+    else {
+      reply = mmc_spi_send_command_start(disk, MMC_REQUEST_WRITE_BLOCK, block );
+    }
     if (MMC_REPLY_SUCCESS != reply) {
-        DEBUG1("mmc_spi_write_disk_block(): unexpected response to WRITE_BLOCK command, code %02x\n", reply);
+        DEBUG1("%s(): unexpected response to WRITE_BLOCK command, code %02x\n",
+            __FUNCTION__, reply);
         mmc_spi_end_command(disk);
         if (0x00FF == reply) {
             return -ENODEV;
@@ -469,7 +574,7 @@ mmc_spi_write_disk_block(cyg_mmc_spi_disk_info_t* disk, const cyg_uint8* buf, cy
     // The card is now expecting a data block. This consists of a single byte
     // 0x00FE, then the data itself, and a dummy CRC. The reply from the card
     // does not contain any useful information.
-    DEBUG2("mmc_spi_write_disk_block(): sending data token/data/crc\n");
+    DEBUG2("%s(): sending data token/data/crc\n", __FUNCTION__);
     extra[0]    = 0x00FE;
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 1, extra, (cyg_uint8*)0, 0);
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, MMC_SPI_BLOCK_SIZE, buf, (cyg_uint8*)0, 0);
@@ -477,13 +582,13 @@ mmc_spi_write_disk_block(cyg_mmc_spi_disk_info_t* disk, const cyg_uint8* buf, cy
 
     // The card should respond immediately with a data response token.
     cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 1, mmc_spi_ff_data, extra, 0);
-    DEBUG2("mmc_spi_write_disk_block(): got data response token %02x\n", extra[0]);
+    DEBUG2("%s(): got data response token %02x\n", __FUNCTION__, extra[0]);
 
     // The bottom five bits contain the response. 00101 indicates success,
     // anything else is a CRC error. Everything else will have been checked
     // before the data got transferred.
     if (0x05 != (extra[0] & 0x1F)) {
-        DEBUG1("mmc_spi_write_disk_block(): invalid data response token %02x\n", extra[0]);
+        DEBUG1("%s(): invalid data response token %02x\n", __FUNCTION__, extra[0]);
         mmc_spi_end_command(disk);
         if (0x00FF == extra[0]) {
             return -ENODEV;
@@ -491,7 +596,7 @@ mmc_spi_write_disk_block(cyg_mmc_spi_disk_info_t* disk, const cyg_uint8* buf, cy
         return -EIO;
     }
 
-#ifdef MMC_SPI_BACKGROUND_WRITES    
+#ifdef MMC_SPI_BACKGROUND_WRITES
     // Mark the card as writing. The next operation will poll for completion.
     disk->mmc_writing   = true;
 #else
@@ -506,10 +611,10 @@ mmc_spi_write_disk_block(cyg_mmc_spi_disk_info_t* disk, const cyg_uint8* buf, cy
     extra[0]    = 0x00;
     for (i = 0; (i < MMC_SPI_WRITE_BUSY_RETRIES) && (0x00 == extra[0]); i++) {
         cyg_spi_transaction_transfer(dev, cyg_mmc_spi_polled, 1, mmc_spi_ff_data, extra, 0);
-        DEBUG2("mmc_spi_write_disk_block(), polling for ! busy, got response %02x\n", extra[0]);
+        DEBUG2("%s(): polling for ! busy, got response %02x\n", __FUNCTION__, extra[0]);
     }
 #endif
-    
+
     // Assume that the loop did in fact terminate.
     mmc_spi_end_command(disk);
     return ENOERR;
@@ -544,13 +649,13 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
     Cyg_ErrNo           code;
     mmc_csd_register    csd;
 
-#ifdef MMC_SPI_BACKGROUND_WRITES    
+#ifdef MMC_SPI_BACKGROUND_WRITES
     // If we have unmounted a disk and are remounting it, assume that
     // any writes have completed.
     disk->mmc_writing   = false;
-#endif    
+#endif
     reply               = 0x00ff;
-    
+
     for (i = 0; (i < MMC_SPI_GO_IDLE_RETRIES) && (0x01 != reply); i++) {
         // Allow platform HALs to provide additional initialization,
         // if the hardware needs it.
@@ -564,7 +669,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         // been plugged in so there is no guarantee that any previous
         // init() calls or other traffic will have affected this card.
         mmc_spi_send_init(disk);
-    
+
         // Now set the card to idle state. This involves the GO_IDLE_STATE
         // command which will be accepted irrespective of whether the card is
         // currently in MMC or SPI mode, and will leave the card in SPI mode.
@@ -577,39 +682,74 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         // inconvenient moment. Some dummy traffic is generated in the
         // hope that this gets things back in sync.
         if (0x01 != reply) {
-            DEBUG1("mmc_spi_check_for_disk(): loop %d, card did not enter idle state, code %02x\n", i, reply);
+            DEBUG1("%s(): loop %d, card did not enter idle state, code %02x\n",
+                __FUNCTION__, i, reply);
             if (0x0ff != reply) {
                 cyg_spi_transfer(dev, cyg_mmc_spi_polled, 128, mmc_spi_ff_data, (cyg_uint8*) 0);
             }
         }
     }
     if (0x0ff == reply) {
-        DEBUG1("mmc_spi_check_for_disk(): unable to get a response from the MMC card: code %02x\n", reply);
+        DEBUG1("%s(): unable to get a response from the MMC card: code %02x\n",
+            __FUNCTION__, reply);
         // A working card should be returning some data
         return -ENODEV;
     }
     if (0x01 != reply) {
-        DEBUG1("mmc_spi_check_for_disk(): card did not enter idle state, code %02x\n", reply);
+        DEBUG1("%s(): card did not enter idle state, code %02x\n", __FUNCTION__, reply);
         return -EIO;
     }
-    
+
+    // Determine if card complies with SD Physical Spec Version 1 or 2 or later.
+    reply = mmc_spi_check_version(disk);
+    if (ENOERR != reply) {
+      DEBUG1("%s(): can't determine card's version, code %02x\n", __FUNCTION__, reply);
+      return reply;
+    }
+    DEBUG2("%s(): card version %u\n", __FUNCTION__, disk->sd_version);
+
     // Next, wait for the card to initialize. This involves repeatedly
     // trying the SEND_OP_COND command until we get a reply that is
-    // not idle
+    // not idle.
     reply = 0x00ff;
     for (i = 0; (i < MMC_SPI_OP_COND_RETRIES) && ((0x00ff == reply) || (0 != (MMC_REPLY_IN_IDLE_STATE & reply))); i++) {
 #ifdef CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT
         CYGACC_CALL_IF_DELAY_US(CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT);
 #endif
-        reply = mmc_spi_send_command(disk, MMC_REQUEST_SEND_OP_COND, 0);
+        if (1 == disk->sd_version) {
+          reply = mmc_spi_send_command(disk, MMC_REQUEST_SEND_OP_COND, 0);
+        }
+        else {
+          reply = mmc_spi_send_command(disk, SD_REQUEST_APP_CMD, 0);
+          reply &= ~MMC_REPLY_IN_IDLE_STATE;
+          if (MMC_REPLY_SUCCESS != reply) {
+            DEBUG1("%s(): card doesn't accept APP_CMD: reply code %02x\n",
+                __FUNCTION__, reply);
+            return -EIO;
+          }
+          reply = mmc_spi_send_command(disk, SD_REQUEST_SD_SEND_OP_COND, SD_ARGUMENT_HCS);
+        }
     }
     if (MMC_REPLY_SUCCESS != reply) {
-        DEBUG1("mmc_spi_check_for_disk(): card has not entered operational state: reply code %02x\n", reply);
+        DEBUG1("%s(): card has not entered operational state: reply code %02x\n",
+            __FUNCTION__, reply);
         return (0x00FF == reply) ? -ENODEV : -EIO;
     }
 
     // The card has now generated sufficient responses that we don't need to
     // worry about a missing card anymore.
+    // In case of V2 card, determine its capacity class
+    if (2 == disk->sd_version) {
+      reply = mmc_spi_sd_check_v2_capacity_class(disk);
+      if (MMC_REPLY_SUCCESS != reply) {
+          DEBUG1("%s(): can't establish card's capacity class: reply code %02x\n",
+              __FUNCTION__, reply);
+          return -EIO;
+      }
+    }
+    DEBUG2("%s capacity card.\n", (STANDARD_CAPACITY == disk->sd_capacity) ?
+        "Standard" : (HIGH_CAPACITY == disk->sd_capacity) ? "High" : "Extended" );
+
     // Get hold of the card's unique ID and store it, to allow disk changes
     // to be detected.
     code = mmc_spi_read_register(disk, MMC_REQUEST_SEND_CID, (cyg_uint8*) &(disk->mmc_id), 16);
@@ -650,7 +790,9 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
            csd.csd_data[ 4], csd.csd_data[ 5], csd.csd_data[ 6], csd.csd_data[7],                           \
            csd.csd_data[ 8], csd.csd_data[ 9], csd.csd_data[10], csd.csd_data[11],                          \
            csd.csd_data[12], csd.csd_data[13], csd.csd_data[14], csd.csd_data[15]);
-    
+
+    disk->sd_csd_version = MMC_CSD_REGISTER_CSD_STRUCTURE(&csd) + 1 ;
+
     // Optionally dump the whole CSD register. This takes a lot of
     // code but gives a lot of info about the card. If the info looks
     // correct then we really are interacting properly with an MMC card.
@@ -668,6 +810,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
     } else {
         DEBUG1("        : Others/Unknown disk, FILE_FORMAT_GROUP 0, FILE_FORMAT 3\n");
     }
+
     {
         static const cyg_uint32 mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
         static const cyg_uint32 exponent_speeds_div10[8]  = { 10000, 100000, 1000000, 10000000, 0, 0, 0, 0 };
@@ -676,11 +819,15 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         speed /= 1000;
         DEBUG1("        : TRAN_SPEED %d %d -> %d kbit/s\n", \
                MMC_CSD_REGISTER_TRAN_SPEED_MANTISSA(&csd), MMC_CSD_REGISTER_TRAN_SPEED_EXPONENT(&csd), speed);
-    }        
+    }
+
     DEBUG1("        : READ_BL_LEN block length 2^%d (%d)\n", MMC_CSD_REGISTER_READ_BL_LEN(&csd), \
                 0x01 << MMC_CSD_REGISTER_READ_BL_LEN(&csd));
-    DEBUG1("        : C_SIZE %d, C_SIZE_MULT %d\n", MMC_CSD_REGISTER_C_SIZE(&csd), MMC_CSD_REGISTER_C_SIZE_MULT(&csd));
-    {
+
+    if (1 == disk->sd_csd_version) {
+      DEBUG1("        : C_SIZE %d, C_SIZE_MULT %d\n", \
+          MMC_CSD_REGISTER_C_SIZE(&csd), MMC_CSD_REGISTER_C_SIZE_MULT(&csd));
+      {
         cyg_uint32 block_len = 0x01 << MMC_CSD_REGISTER_READ_BL_LEN(&csd);
         cyg_uint32 mult      = 0x01 << (MMC_CSD_REGISTER_C_SIZE_MULT(&csd) + 2);
         cyg_uint32 size      = block_len * mult * (MMC_CSD_REGISTER_C_SIZE(&csd) + 1);
@@ -688,10 +835,22 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         cyg_uint32 sizeM     =  sizeK / 1024;
         sizeK  -= (sizeM * 1024);
         DEBUG1("        : total card size %dM%dK\n", sizeM, sizeK);
+      }
     }
+    else {
+      DEBUG1("        : C_SIZE %d\n", SD_CSD_V2_REGISTER_C_SIZE(&csd));
+      {
+        cyg_uint32 sizeK     = 512 * (SD_CSD_V2_REGISTER_C_SIZE(&csd) + 1 ) ;
+        cyg_uint32 sizeM     =  sizeK / 1024;
+        sizeK  -= (sizeM * 1024);
+        DEBUG1("        : total card size %uM%uK\n", sizeM, sizeK);
+      }
+    }
+
     DEBUG1("        : WR_BL_LEN block length 2^%d (%d)\n", \
            MMC_CSD_REGISTER_WRITE_BL_LEN(&csd), 0x01 << MMC_CSD_REGISTER_WRITE_BL_LEN(&csd));
-    {
+
+    if ( 1 == disk->sd_csd_version) {
         static cyg_uint32 taac_mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
         static cyg_uint32 taac_exponent_speeds_div10[8]  = { 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
         cyg_uint32 taac_speed = taac_mantissa_speeds_x10[MMC_CSD_REGISTER_TAAC_MANTISSA(&csd)] *
@@ -700,15 +859,18 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         DEBUG1("        : asynchronous read access time TAAC %d %d -> %d ns\n", \
                MMC_CSD_REGISTER_TAAC_MANTISSA(&csd), MMC_CSD_REGISTER_TAAC_EXPONENT(&csd), taac_speed);
     }
-    DEBUG1("        : synchronous read access time NSAC %d * 100 cycles\n", \
-           MMC_CSD_REGISTER_NSAC(&csd));
+    if ( 1 == disk->sd_csd_version) {
+      DEBUG1("        : synchronous read access time NSAC %d * 100 cycles\n", \
+             MMC_CSD_REGISTER_NSAC(&csd));
+    }
     DEBUG1("        : typical write program time %d * read time\n", MMC_CSD_REGISTER_R2W_FACTOR(&csd));
     DEBUG1("        : CCC command classes 0x%04x\n", MMC_CSD_REGISTER_CCC(&csd));
     DEBUG1("        : READ_BL_PARTIAL %d, WRITE_BLK_MISALIGN %d, READ_BLK_MISALIGN %d, DSR_IMP %d\n",   \
            MMC_CSD_REGISTER_READ_BL_PARTIAL(&csd), MMC_CSD_REGISTER_WRITE_BLK_MISALIGN(&csd),           \
            MMC_CSD_REGISTER_READ_BLK_MISALIGN(&csd), MMC_CSD_REGISTER_DSR_IMP(&csd));
     DEBUG1("        : WR_BL_PARTIAL %d\n", MMC_CSD_REGISTER_WR_BL_PARTIAL(&csd));
-    {
+
+    if ( 1 == disk->sd_csd_version) {
         static cyg_uint8    min_currents[8] = { 1, 1, 5, 10, 25, 35, 60, 100 };
         static cyg_uint8    max_currents[8] = { 1, 5, 10, 25, 35, 45, 80, 200 };
         DEBUG1("        : read current min %dmA, max %dmA\n",               \
@@ -718,26 +880,32 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
                     min_currents[MMC_CSD_REGISTER_VDD_W_CURR_MIN(&csd)],    \
                     max_currents[MMC_CSD_REGISTER_VDD_W_CURR_MAX(&csd)]);
     }
-    DEBUG1("        : erase sector size %d, erase group size %d\n", \
-           MMC_CSD_REGISTER_SECTOR_SIZE(&csd) + 1, MMC_CSD_REGISTER_ERASE_GRP_SIZE(&csd) + 1);
-    DEBUG1("        : write group enable %d, write group size %d\n", \
-           MMC_CSD_REGISTER_WR_GRP_ENABLE(&csd), MMC_CSD_REGISTER_WR_GRP_SIZE(&csd) + 1);
+    if ( 1 == disk->sd_csd_version) {
+      DEBUG1("        : erase sector size %d, erase group size %d\n", \
+             MMC_CSD_REGISTER_SECTOR_SIZE(&csd) + 1, MMC_CSD_REGISTER_ERASE_GRP_SIZE(&csd) + 1);
+      DEBUG1("        : write group enable %d, write group size %d\n", \
+             MMC_CSD_REGISTER_WR_GRP_ENABLE(&csd), MMC_CSD_REGISTER_WR_GRP_SIZE(&csd) + 1);
+    }
     DEBUG1("        : copy bit %d\n", MMC_CSD_REGISTER_COPY(&csd));
     DEBUG1("        : permanent write protect %d, temporary write protect %d\n", \
            MMC_CSD_REGISTER_PERM_WRITE_PROTECT(&csd), MMC_CSD_REGISTER_TMP_WRITE_PROTECT(&csd));
-    DEBUG1("        : ecc %d, default ecc %d\n", MMC_CSD_REGISTER_ECC(&csd), MMC_CSD_REGISTER_DEFAULT_ECC(&csd));
-    DEBUG1("        : crc 0x%08x\n", MMC_CSD_REGISTER_CRC(&csd));
-#endif                
-
-    // There is information available about the file format, e.g.
-    // partitioned vs. simple FAT. With the current version of the
-    // generic disk code this needs to be known statically, via
-    // the mbr field of the disk channel structure. If the card
-    // is inappropriately formatted, reject the mount request.
-    if ((0 != MMC_CSD_REGISTER_FILE_FORMAT_GROUP(&csd)) ||
-        (0 != MMC_CSD_REGISTER_FILE_FORMAT(&csd))) {
-        return -ENOTDIR;
+    if ( 1 == disk->sd_csd_version) {
+      DEBUG1("        : ecc %d, default ecc %d\n", MMC_CSD_REGISTER_ECC(&csd), MMC_CSD_REGISTER_DEFAULT_ECC(&csd));
     }
+    DEBUG1("        : crc 0x%08x\n", MMC_CSD_REGISTER_CRC(&csd));
+#endif
+
+    if ( 1 == disk->sd_csd_version) {
+      // There is information available about the file format, e.g.
+      // partitioned vs. simple FAT. With the current version of the
+      // generic disk code this needs to be known statically, via
+      // the mbr field of the disk channel structure. If the card
+      // is inappropriately formatted, reject the mount request.
+      if ((0 != MMC_CSD_REGISTER_FILE_FORMAT_GROUP(&csd)) ||
+          (0 != MMC_CSD_REGISTER_FILE_FORMAT(&csd))) {
+          return -ENOTDIR;
+      }
+    } // According to Spec V3.01, host should not use these two fields in CSD V2 cards
 
     // Look for a write-protect bit (permanent or temporary), and set
     // the disk as read-only or read-write as appropriate. The
@@ -750,15 +918,20 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         disk->mmc_read_only   = false;
     }
     DEBUG1("Disk read-only flag %d\n", disk->mmc_read_only);
-    
+
     // Calculate the disk size, primarily for assertion purposes.
-    // By design MMC cards are limited to 4GB, which still doesn't
-    // quite fit into 32 bits.
-    disk->mmc_block_count = (((cyg_uint64)(0x01 << MMC_CSD_REGISTER_READ_BL_LEN(&csd))) *
-                             ((cyg_uint64)(0x01 << (MMC_CSD_REGISTER_C_SIZE_MULT(&csd) + 2))) *
-                             ((cyg_uint64)(MMC_CSD_REGISTER_C_SIZE(&csd) + 1))) / (cyg_uint64)MMC_SPI_BLOCK_SIZE;
-    DEBUG1("Disk blockcount %d (0x%08x)\n", disk->mmc_block_count, disk->mmc_block_count);
-    
+    if ( 1 == disk->sd_csd_version) {
+      // By design MMC cards are limited to 4GB, which still doesn't
+      // quite fit into 32 bits.
+      disk->mmc_block_count = (((cyg_uint64)(0x01 << MMC_CSD_REGISTER_READ_BL_LEN(&csd))) *
+             ((cyg_uint64)(0x01 << (MMC_CSD_REGISTER_C_SIZE_MULT(&csd) + 2))) *
+             ((cyg_uint64)(MMC_CSD_REGISTER_C_SIZE(&csd) + 1))) / (cyg_uint64)MMC_SPI_BLOCK_SIZE;
+    }
+    else {
+      disk->mmc_block_count = 1024 * ( SD_CSD_V2_REGISTER_C_SIZE(&csd) + 1 ) ;
+    }
+    DEBUG1("Disk blockcount %u (0x%08x)\n", disk->mmc_block_count, disk->mmc_block_count);
+
     // Assume for now that the block length is 512 bytes. This is
     // probably a safe assumption since we have just got the card
     // initialized out of idle state. If it ever proves to be a problem
@@ -775,7 +948,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         static const cyg_uint32 mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
         static const cyg_uint32 exponent_speeds_div10[8]  = { 10000, 100000, 1000000, 10000000, 0, 0, 0, 0 };
         cyg_uint32 speed, len;
-        
+
         len = sizeof(cyg_uint32);
         if (cyg_spi_get_config(dev, CYG_IO_GET_CONFIG_SPI_CLOCKRATE, (void*) &disk->mmc_saved_baudrate, &len)) {
             DEBUG1("Failed to retrieve current SPI device clockrate\n");
@@ -801,7 +974,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         cyg_uint8   data[MMC_SPI_BLOCK_SIZE];
         cyg_uint8*  partition;
         cyg_uint32  lba_first, lba_size, lba_end, head, cylinder, sector;
-        
+
         code = mmc_spi_read_disk_block(disk, data, 0, true);
         if (code) {
             mmc_spi_restore_baud(disk);
@@ -839,7 +1012,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
                    partition[11], partition[10], partition[9], partition[8], \
                    partition[15], partition[14], partition[13], partition[12]);
         }
-#endif        
+#endif
         if ((0x0055 != data[0x1fe]) || (0x00aa != data[0x1ff])) {
             mmc_spi_restore_baud(disk);
             return -ENOTDIR;
@@ -869,7 +1042,7 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
         sector      = partition[6] & 0x3F;
         disk->mmc_heads_per_cylinder = ((((lba_end + 1) - sector) / disk->mmc_sectors_per_head) - head) / cylinder;
     }
-    
+
     return ENOERR;
 }
 
@@ -946,9 +1119,9 @@ mmc_spi_disk_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry *sub_
     cyg_mmc_spi_disk_info_t*    disk    = (cyg_mmc_spi_disk_info_t*) chan->dev_priv;
     Cyg_ErrNo                   result;
 
-    DEBUG2("mmc_spi_disk_lookup(): target name=%s\n", name );
+    DEBUG2("%s(): target name=%s\n", __FUNCTION__, name );
     DEBUG2("                     : device name=%s dep_name=%s\n", tab[0]->name, tab[0]->dep_name );
-    DEBUG2("                     : sub    name=%s dep_name=%s\n", sub_tab->name, sub_tab->dep_name );
+//    DEBUG2("                     : sub    name=%s dep_name=%s\n", sub_tab->name, sub_tab->dep_name );
 
     if (disk->mmc_connected) {
         // There was a card plugged in last time we looked. Is it still there?
@@ -976,7 +1149,7 @@ mmc_spi_disk_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry *sub_
         cyg_uint32          id_data;
         char*               where;
         int                 i;
-        
+
         // The world is consistent and the higher-level code does not
         // know anything about the current card, if any. Is there a
         // card?
@@ -1016,7 +1189,7 @@ mmc_spi_disk_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry *sub_
             ident.firmware_rev[1] = id_data - 10 + 'A';
         }
         ident.firmware_rev[2]   = '\0';
-        
+
         // Model number. There is a six-byte product name in the CID.
         for (i = 0; i < 6; i++) {
             if ((disk->mmc_id.cid_data[i + 3] >= 0x20) && (disk->mmc_id.cid_data[i+3] <= 0x7E)) {
@@ -1058,9 +1231,10 @@ mmc_spi_disk_read(disk_channel* chan, void* buf_arg, cyg_uint32 blocks, cyg_uint
     cyg_uint32                  i;
     cyg_uint8*                  buf = (cyg_uint8*) buf_arg;
     Cyg_ErrNo                   code = ENOERR;
-    
-    DEBUG1("mmc_spi_disk_read(): first block %d, buf %p, len %lu blocks (%lu bytes)\n",
-           first_block, buf, (unsigned long)blocks, (unsigned long)blocks*512);
+
+    DEBUG1("%s(): first block %d, buf %p, len %lu blocks (%lu bytes)\n",
+        __FUNCTION__, first_block, buf, (unsigned long)blocks,
+        (unsigned long)blocks*512);
 
     if (! disk->mmc_connected) {
         return -ENODEV;
@@ -1084,8 +1258,9 @@ mmc_spi_disk_write(disk_channel* chan, const void* buf_arg, cyg_uint32 blocks, c
     const cyg_uint8*            buf = (cyg_uint8*) buf_arg;
     Cyg_ErrNo                   code = ENOERR;
 
-    DEBUG1("mmc_spi_disk_write(): first block %d, buf %p, len %lu blocks (%lu bytes)\n",
-           first_block, buf, (unsigned long)blocks, (unsigned long)blocks*512);
+    DEBUG1("%s(): first block %d, buf %p, len %lu blocks (%lu bytes)\n",
+        __FUNCTION__, first_block, buf, (unsigned long)blocks,
+        (unsigned long)blocks*512);
 
     if (! disk->mmc_connected) {
         return -ENODEV;
@@ -1113,7 +1288,7 @@ mmc_spi_disk_get_config(disk_channel* chan, cyg_uint32 key, const void* buf, cyg
     CYG_UNUSED_PARAM(cyg_uint32, key);
     CYG_UNUSED_PARAM(const void*, buf);
     CYG_UNUSED_PARAM(cyg_uint32*, len);
-    
+
     return -EINVAL;
 }
 
@@ -1168,9 +1343,9 @@ DISK_FUNS(cyg_mmc_spi_disk_funs,
 
 static cyg_mmc_spi_disk_info_t cyg_mmc_spi_disk0_hwinfo = {
     .mmc_spi_dev        = &cyg_spi_mmc_dev0,
-#ifdef MMC_SPI_BACKGROUND_WRITES    
+#ifdef MMC_SPI_BACKGROUND_WRITES
     .mmc_writing        = 0,
-#endif    
+#endif
     .mmc_connected      = 0
 };
 
@@ -1185,7 +1360,7 @@ DISK_CHANNEL(cyg_mmc_spi_disk0_channel,
              true,                            /* MBR support */
              1                                /* Number of partitions supported */
              );
-             
+
 BLOCK_DEVTAB_ENTRY(cyg_mmc_spi_disk0_devtab_entry,
                    CYGDAT_DEVS_DISK_MMC_SPI_DISK0_NAME,
                    0,
