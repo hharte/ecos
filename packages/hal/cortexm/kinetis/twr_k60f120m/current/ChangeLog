@@ -1,3 +1,7 @@
+2013-07-02  John Dallaway  <john@dallaway.org.uk>
+
+	* doc/twr_k60f120m.sgml: Fix missing </para>.
+
 2013-06-02  Mike Jones <mjones@proclivis.com.>
 
 	* cdl/hal_cortexm_kinetis_twr_k60f120m.cdl: New

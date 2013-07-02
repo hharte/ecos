@@ -104,6 +104,7 @@
       <refsect3 id="twr-k60f120m-memory"><title>Memory</title>
       <para>
       The K60 has two 64 KiB SRAM banks giving a total of 128KiB on chip SRAM.
+      </para>
       </refsect3>
     </refsect2>
   </refsect1>
