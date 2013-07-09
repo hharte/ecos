@@ -1038,8 +1038,8 @@ static void dspi_transaction_end(cyg_spi_device* device)
         // Clear peripheral CS by executing a dummy 4 bit transfer.
         dspi_p->pushr = PUSHR_NULL | FREESCALE_DSPI_PUSHR_EOQ_M |
                         FREESCALE_DSPI_PUSHR_CTAS(1);
-        DSPI_EOQ_CLEAR(dspi_p);
         while(!(dspi_p->sr & FREESCALE_DSPI_SR_EOQF_M));
+        DSPI_EOQ_CLEAR(dspi_p);
         dspi_fifo_drain(dspi_p);
         dspi_device->chip_sel = 0;
     }

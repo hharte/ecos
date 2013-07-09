@@ -1,3 +1,8 @@
+2013-07-09  Mike Jones <mjones@proclivis.com>
+
+	* src/spi_freescale_dspi.c: Fix: Kinetis DSPI infinite polling
+	[ Bugzilla 10011879 ]
+
 2013-05-08  Ilija Kocho <ilijak@siva.com.mk>
 
 	* src/spi_freescale_dspi.cdl: Add CYGINT_DEVS_SPI_DMA_USE
