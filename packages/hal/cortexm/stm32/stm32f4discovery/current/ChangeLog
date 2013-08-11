@@ -1,3 +1,9 @@
+2013-08-09  John Dallaway  <john@dallaway.org.uk>
+
+	* cdl/hal_cortexm_stm32_stm32f4discovery.cdl: Merge CDL goal
+	expressions to avoid confusing the eCos Configuration Tool during
+	initial inference of STM32 variant HAL options.
+
 2013-06-09  John Dallaway  <john@dallaway.org.uk>
 
 	* cdl/hal_cortexm_stm32_stm32f4discovery.cdl,
