@@ -85,11 +85,11 @@
                 flavor data
                 legal_values  { "ALL" "LAZY" "NONE" }
                 default_value { "LAZY" }
-                
-                requires { is_active (CYGPKG_KERNEL) implies 
+
+                requires { is_active (CYGPKG_KERNEL) implies
                     CYGTST_KERNEL_SKIP_MULTI_THREAD_FP_TEST ==
                     (CYGHWR_HAL_CORTEXM_FPU_SWITCH == "NONE") }
-                
+
                 description   "
                     This option selects the FPU context switching scheme.
                     Straight-forward behaviour is to save and
@@ -121,6 +121,11 @@
             display     "FPv4-SP-D16"
             no_define
             compile     fpv4_sp_d16.c
+
+            define_proc {
+                puts $::cdl_system_header "#define CYGBLD_HAL_LIBM_H <cyg/hal/fpv4_sp_d16_libm.h>"
+            }
+
             description "
                 FPv4-SP-D16 is ARMv7 architecture single precision floating
                 point unit with 16 double precision / 32 single precision

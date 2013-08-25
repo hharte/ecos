@@ -1,3 +1,8 @@
+2013-08-25  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_fpu.cdl, include/fpv4_sp_d16_libm.h: Define Cortex-M4F
+	architecture specific builtin mathematical functions.  [ Bugzilla 1001539 ]
+
 2013-04-29  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/cortexm_stub.h: Remove unwanted diag_printf().
