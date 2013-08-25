@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2010, 2012, 2013 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      bartv
 # Original data:  jlarmour
-# Contributors:
+# Contributors:   visar, ilijak
 # Date:           1999-06-13
 #
 #####DESCRIPTIONEND####
@@ -56,38 +56,85 @@ cdl_package CYGPKG_LIBM {
         containing many useful functions for mathematical
         calculations."
 
-    compile       misc/matherr.c misc/standard.c misc/compatmode.cxx          \
-                  misc/infconst.c                                             \
-                                                                              \
-                  double/ieee754-core/e_acos.c double/ieee754-core/e_asin.c   \
-                  double/ieee754-core/e_atan2.c double/ieee754-core/e_cosh.c  \
-                  double/ieee754-core/e_exp.c double/ieee754-core/e_fmod.c    \
-                  double/ieee754-core/e_log.c double/ieee754-core/e_log10.c   \
-                  double/ieee754-core/e_pow.c                                 \
-                  double/ieee754-core/e_rem_pio2.c                            \
-                  double/ieee754-core/e_scalb.c double/ieee754-core/e_sinh.c  \
-                  double/ieee754-core/e_sqrt.c                                \
-                                                                              \
-                  double/ieee754-api/w_acos.c double/ieee754-api/w_asin.c     \
-                  double/ieee754-api/w_atan2.c double/ieee754-api/w_cosh.c    \
-                  double/ieee754-api/w_exp.c double/ieee754-api/w_fmod.c      \
-                  double/ieee754-api/w_log.c double/ieee754-api/w_log10.c     \
-                  double/ieee754-api/w_pow.c double/ieee754-api/w_scalb.c     \
-                  double/ieee754-api/w_sinh.c double/ieee754-api/w_sqrt.c     \
-                                                                              \
-                  double/internal/k_cos.c double/internal/k_rem_pio2.c        \
-                  double/internal/k_sin.c double/internal/k_tan.c             \
-                                                                              \
-                  double/portable-api/s_atan.c double/portable-api/s_ceil.c   \
-                  double/portable-api/s_copysign.c                            \
-                  double/portable-api/s_cos.c double/portable-api/s_expm1.c   \
-                  double/portable-api/s_fabs.c double/portable-api/s_finite.c \
-                  double/portable-api/s_floor.c double/portable-api/s_frexp.c \
-                  double/portable-api/s_isnan.c double/portable-api/s_ldexp.c \
-                  double/portable-api/s_rint.c double/portable-api/s_scalbn.c \
-                  double/portable-api/s_sin.c double/portable-api/s_tan.c     \
-                  double/portable-api/s_modf.c double/portable-api/s_tanh.c
-
+        compile   misc/matherr.c misc/standard.c misc/standard_float.c                  \
+                  misc/compatmode.cxx misc/infconst.c                                   \
+                                                                                        \
+                  double/ieee754-core/e_acos.c double/ieee754-core/e_asin.c             \
+                  double/ieee754-core/e_atan2.c double/ieee754-core/e_cosh.c            \
+                  double/ieee754-core/e_exp.c double/ieee754-core/e_fmod.c              \
+                  double/ieee754-core/e_log.c double/ieee754-core/e_log10.c             \
+                  double/ieee754-core/e_pow.c                                           \
+                  double/ieee754-core/e_rem_pio2.c                                      \
+                  double/ieee754-core/e_scalb.c double/ieee754-core/e_sinh.c            \
+                  double/ieee754-core/e_sqrt.c double/ieee754-core/e_hypot.c            \
+                                                                                        \
+                  double/ieee754-api/w_acos.c double/ieee754-api/w_asin.c               \
+                  double/ieee754-api/w_atan2.c double/ieee754-api/w_cosh.c              \
+                  double/ieee754-api/w_exp.c double/ieee754-api/w_fmod.c                \
+                  double/ieee754-api/w_log.c double/ieee754-api/w_log10.c               \
+                  double/ieee754-api/w_pow.c double/ieee754-api/w_scalb.c               \
+                  double/ieee754-api/w_sinh.c double/ieee754-api/w_sqrt.c               \
+                  double/ieee754-api/w_hypot.c                                          \
+                  double/ieee754-core/e_gamma.c double/ieee754-api/w_gamma.c            \
+                  double/ieee754-core/e_gamma_r.c double/ieee754-api/w_gamma_r.c        \
+                  double/ieee754-core/e_lgamma.c double/ieee754-api/w_lgamma.c          \
+                  double/ieee754-core/e_lgamma_r.c double/ieee754-api/w_lgamma_r.c      \
+                                                                                        \
+                  double/internal/k_cos.c double/internal/k_rem_pio2.c                  \
+                  double/internal/k_sin.c double/internal/k_tan.c                       \
+                                                                                        \
+                  float/internal/kf_cos.c float/internal/kf_sin.c                       \
+                  float/internal/kf_rem_pio2.c float/internal/kf_tan.c                  \
+                                                                                        \
+                  double/portable-api/s_atan.c double/portable-api/s_ceil.c             \
+                  double/portable-api/s_copysign.c                                      \
+                  double/portable-api/s_cos.c double/portable-api/s_expm1.c             \
+                  double/portable-api/s_fabs.c double/portable-api/s_finite.c           \
+                  double/portable-api/s_floor.c double/portable-api/s_frexp.c           \
+                  double/portable-api/s_isnan.c double/portable-api/s_ldexp.c           \
+                  double/portable-api/s_rint.c double/portable-api/s_scalbn.c           \
+                  double/portable-api/s_sin.c double/portable-api/s_tan.c               \
+                  double/portable-api/s_modf.c double/portable-api/s_tanh.c             \
+                                                                                        \
+                  float/ieee754-core/ef_rem_pio2.c                                      \
+                  float/ieee754-core/ef_sqrt.c   float/ieee754-api/wf_sqrt.c            \
+                  float/ieee754-core/ef_pow.c    float/ieee754-api/wf_pow.c             \
+                  float/ieee754-core/ef_exp.c    float/ieee754-api/wf_exp.c             \
+                  float/ieee754-core/ef_asin.c   float/ieee754-api/wf_asin.c            \
+                  float/ieee754-core/ef_log.c   float/ieee754-api/wf_log.c              \
+                  float/ieee754-core/ef_log10.c   float/ieee754-api/wf_log10.c          \
+                  float/ieee754-core/ef_hypot.c float/ieee754-api/wf_hypot.c            \
+                  float/ieee754-core/ef_fmod.c   float/ieee754-api/wf_fmod.c            \
+                  float/ieee754-core/ef_remainder.c   float/ieee754-api/wf_remainder.c  \
+                  float/ieee754-core/ef_scalb.c   float/ieee754-api/wf_scalb.c          \
+                  float/ieee754-core/ef_acos.c   float/ieee754-api/wf_acos.c            \
+                  float/ieee754-core/ef_atan2.c  float/ieee754-api/wf_atan2.c           \
+                  float/ieee754-core/ef_acosh.c   float/ieee754-api/wf_acosh.c          \
+                  float/ieee754-core/ef_atanh.c   float/ieee754-api/wf_atanh.c          \
+                  float/ieee754-core/ef_cosh.c   float/ieee754-api/wf_cosh.c            \
+                  float/ieee754-core/ef_j0.c   float/ieee754-api/wf_j0.c                \
+                  float/ieee754-core/ef_j1.c   float/ieee754-api/wf_j1.c                \
+                  float/ieee754-core/ef_jn.c   float/ieee754-api/wf_jn.c                \
+                  float/ieee754-core/ef_sinh.c   float/ieee754-api/wf_sinh.c            \
+                  float/portable-api/sf_asinh.c float/portable-api/sf_ilogb.c           \
+                  float/portable-api/sf_copysign.c                                      \
+                  float/portable-api/sf_sin.c                                           \
+                  float/portable-api/sf_finite.c float/portable-api/sf_erf.c            \
+                  float/portable-api/sf_isnan.c float/portable-api/sf_floor.c           \
+                  float/portable-api/sf_modf.c                                          \
+                  float/portable-api/sf_atan.c                                          \
+                  float/portable-api/sf_ldexp.c                                         \
+                  float/portable-api/sf_nextafter.c                                     \
+                  float/portable-api/sf_tan.c float/portable-api/sf_cbrt.c              \
+                  float/portable-api/sf_expm1.c                                         \
+                  float/portable-api/sf_frexp.c                                         \
+                  float/portable-api/sf_log1p.c  float/portable-api/sf_rint.c           \
+                  float/portable-api/sf_tanh.c float/portable-api/sf_ceil.c             \
+                  float/portable-api/sf_fabs.c                                          \
+                  float/portable-api/sf_logb.c                                          \
+                  float/portable-api/sf_scalbn.c                                        \
+                  float/portable-api/sf_cos.c                                           \
+                  float/portable-api/sf_significand.c
 
     # COMPATIBILITY-MODE RELATED CONFIGURATION OPTIONS
     cdl_component CYGPKG_LIBM_COMPATIBILITY {
@@ -216,6 +263,43 @@ cdl_package CYGPKG_LIBM {
         puts $::cdl_header "/****** proc output end ******/"
     }
 
+    cdl_component CYGPKG_COMPLEX {
+        display       "Complex"
+        flavor        bool
+        default_value 1
+
+        description "
+            Complex library provides support for some basic operations
+            on complex numbers as well as mathematical functions in
+            complex domain."
+
+            compile   complex/cabs.c complex/cabsf.c     \
+            complex/carg.c complex/cargf.c               \
+                                                         \
+            complex/creal.c complex/crealf.c             \
+            complex/cimag.c complex/cimagf.c             \
+            complex/conj.c complex/conjf.c               \
+                                                         \
+            complex/cacos.c complex/cacosf.c             \
+            complex/cacosh.c complex/cacoshf.c           \
+            complex/casin.c complex/casinf.c             \
+            complex/casinh.c complex/casinhf.c           \
+            complex/catan.c complex/catanf.c             \
+            complex/catanh.c complex/catanhf.c           \
+            complex/ccos.c complex/ccosf.c               \
+            complex/ccosh.c complex/ccoshf.c             \
+            complex/cephes_subr.c complex/cephes_subrf.c \
+            complex/cexp.c complex/cexpf.c               \
+            complex/clog.c complex/clogf.c               \
+            complex/cpow.c complex/cpowf.c               \
+            complex/cproj.c complex/cprojf.c             \
+            complex/csin.c complex/csinf.c               \
+            complex/csinh.c complex/csinhf.c             \
+            complex/csqrt.c complex/csqrtf.c             \
+            complex/ctan.c complex/ctanf.c               \
+            complex/ctanh.c complex/ctanhf.c
+    }
+
     cdl_component CYGPKG_LIBM_OPTIONS {
         display "Math library build options"
         flavor  none
@@ -252,9 +336,30 @@ cdl_package CYGPKG_LIBM {
             display "Math library tests"
             flavor  data
             no_define
-            calculated { "tests/vectors/acos tests/vectors/asin tests/vectors/atan tests/vectors/atan2 tests/vectors/ceil tests/vectors/cos tests/vectors/cosh tests/vectors/exp tests/vectors/fabs tests/vectors/floor tests/vectors/fmod tests/vectors/frexp tests/vectors/ldexp tests/vectors/log tests/vectors/log10 tests/vectors/modf tests/vectors/pow tests/vectors/sin tests/vectors/sinh tests/vectors/sqrt tests/vectors/tan tests/vectors/tanh" }
+            calculated { "tests/vectors/acos tests/vectors/asin             \
+                tests/vectors/cos tests/vectors/cosh                        \
+                tests/vectors/sin tests/vectors/sinh                        \
+                tests/vectors/atan tests/vectors/atan2                      \
+                tests/vectors/tan tests/vectors/tanh                        \
+                tests/vectors/sqrt tests/vectors/pow                        \
+                tests/vectors/ceil tests/vectors/floor                      \
+                tests/vectors/fabs tests/vectors/fmod                       \
+                tests/vectors/frexp tests/vectors/ldexp                     \
+                tests/vectors/exp tests/vectors/log tests/vectors/log10     \
+                                                                            \
+                tests/vectors/acosf tests/vectors/asinf                     \
+                tests/vectors/cosf tests/vectors/coshf                      \
+                tests/vectors/sinf tests/vectors/sinhf                      \
+                tests/vectors/atanf tests/vectors/atan2f                    \
+                tests/vectors/tanf tests/vectors/tanhf                      \
+                tests/vectors/hypotf tests/vectors/sqrtf tests/vectors/powf \
+                tests/vectors/floorf tests/vectors/ceilf                    \
+                tests/vectors/fabsf tests/vectors/fmodf                     \
+                tests/vectors/frexpf tests/vectors/ldexpf                   \
+                tests/vectors/expf tests/vectors/logf tests/vectors/log10f "
+            }
             description   "
-                This option specifies the set of tests for the math library."
+               this option specifies the set of tests for the math library."
         }
     }
 }

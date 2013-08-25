@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2013 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      jskov
 # Original data:  jlarmour
-# Contributors:
+# Contributors:   ilijak
 # Date:           1999-07-07
 #
 #####DESCRIPTIONEND####
@@ -52,7 +52,7 @@ cdl_interface CYGINT_LIBM_COMPAT {
     requires 1 == CYGINT_LIBM_COMPAT
 }
 
-cdl_option CYGSEM_LIBM_COMPAT_IEEE_ONLY {
+cdl_component CYGSEM_LIBM_COMPAT_IEEE_ONLY {
     display       "IEEE-only"
     default_value 0
     implements    CYGINT_LIBM_COMPAT
@@ -66,6 +66,19 @@ cdl_option CYGSEM_LIBM_COMPAT_IEEE_ONLY {
         modes. If not defined, the math library can be
         set at run-time to any of the supported
         compatibility modes."
+
+    cdl_option CYGSEM_LIBM_IEEE_API_INLINE {
+        display    "Inline IEEE754 API wrappers"
+        default_value 0
+
+        description "
+            IEEE754 API functions are just wrappers for
+            core functions. This introduces indirection which can can be
+            avoided by inlining. This will also prevent GCC from rendering
+            these functions as builtin. The HAL can override for a set of functions
+            by providing a list of builtin functions."
+    }
+
 }
 
 cdl_component CYGNUM_LIBM_COMPATIBILITY {
@@ -83,7 +96,7 @@ cdl_component CYGNUM_LIBM_COMPATIBILITY {
         you choose which mode should be the default."
 
     cdl_option CYGNUM_LIBM_COMPAT_DEFAULT {
-      	display       "Numeric representation"
+	display       "Numeric representation"
 	flavor        data
 	calculated   { \
             CYGNUM_LIBM_COMPATIBILITY == "POSIX" ? "CYGNUM_LIBM_COMPAT_POSIX" :\
@@ -96,6 +109,16 @@ cdl_component CYGNUM_LIBM_COMPATIBILITY {
 	    This option automatically defines the default compatibility
 	    mode for numeric representation in terms of the values used
 	    to set that mode at run-time."
+    }
+
+    cdl_option CYGOPT_LIBM_COMPAT_POSIX_IEEE {
+        display       "POSIX return NaN for out-of-domain argument."
+        active_if   { CYGNUM_LIBM_COMPATIBILITY == "POSIX" }
+        default_value 0
+        description   "Later POSIX specification states that functions
+            may return either NaN (like IEEE), or implementation defined
+            value when argument is out of domain. For backward compatibility
+            default value is set to 0."
     }
 }
 

@@ -74,12 +74,27 @@ matherr( struct exception *x )
 {
     CYG_REPORT_FUNCNAMETYPE( "matherr", "returning %d" );
 
-    CYG_UNUSED_PARAM( struct exception *, x );
+//    CYG_UNUSED_PARAM( struct exception *, x );
     CYG_EMPTY_STATEMENT;
 
     CYG_REPORT_RETVAL( 0 );
     return 0;
 } // matherr()
+
+int
+matherrf( struct exceptionf *x ) __attribute__ ((weak));
+
+int
+matherrf( struct exceptionf *x )
+{
+    CYG_REPORT_FUNCNAMETYPE( "matherrf", "returning %d" );
+
+//    CYG_UNUSED_PARAM( struct exceptionf *, x );
+    CYG_EMPTY_STATEMENT;
+
+    CYG_REPORT_RETVAL( 0 );
+    return 0;
+} // matherrf()
 
 
 #endif // if defined(CYGPKG_LIBM)

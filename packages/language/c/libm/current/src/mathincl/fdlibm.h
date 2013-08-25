@@ -84,6 +84,111 @@
 typedef cyg_int32   __int32_t;
 typedef cyg_uint32  __uint32_t;
 typedef Cyg_libm_ieee_double_shape_type ieee_double_shape_type;
+typedef Cyg_libm_ieee_float_shape_type ieee_float_shape_type;
+
+/* Most routines need to check whether a float is finite, infinite, or not a
+   number, and many need to know whether the result of an operation will
+   overflow.  These conditions depend on whether the largest exponent is
+   used for NaNs & infinities, or whether it's used for finite numbers.  The
+   macros below wrap up that kind of information:
+
+   FLT_UWORD_IS_FINITE(X)
+	True if a positive float with bitmask X is finite.
+
+   FLT_UWORD_IS_NAN(X)
+	True if a positive float with bitmask X is not a number.
+
+   FLT_UWORD_IS_INFINITE(X)
+	True if a positive float with bitmask X is +infinity.
+
+   FLT_UWORD_MAX
+	The bitmask of FLT_MAX.
+
+   FLT_UWORD_HALF_MAX
+	The bitmask of FLT_MAX/2.
+
+   FLT_UWORD_EXP_MAX
+	The bitmask of the largest finite exponent (129 if the largest
+	exponent is used for finite numbers, 128 otherwise).
+
+   FLT_UWORD_LOG_MAX
+	The bitmask of log(FLT_MAX), rounded down.  This value is the largest
+	input that can be passed to exp() without producing overflow.
+
+   FLT_UWORD_LOG_2MAX
+	The bitmask of log(2*FLT_MAX), rounded down.  This value is the
+	largest input than can be passed to cosh() without producing
+	overflow.
+
+   FLT_LARGEST_EXP
+	The largest biased exponent that can be used for finite numbers
+	(255 if the largest exponent is used for finite numbers, 254
+	otherwise) */
+
+#ifdef _FLT_LARGEST_EXPONENT_IS_NORMAL
+#define FLT_UWORD_IS_FINITE(x) 1
+#define FLT_UWORD_IS_NAN(x) 0
+#define FLT_UWORD_IS_INFINITE(x) 0
+#define FLT_UWORD_MAX 0x7fffffff
+#define FLT_UWORD_EXP_MAX 0x43010000
+#define FLT_UWORD_LOG_MAX 0x42b2d4fc
+#define FLT_UWORD_LOG_2MAX 0x42b437e0
+//#define HUGE ((float)0X1.FFFFFEP128)
+#else
+#define FLT_UWORD_IS_FINITE(x) ((x)<0x7f800000L)
+#define FLT_UWORD_IS_NAN(x) ((x)>0x7f800000L)
+#define FLT_UWORD_IS_INFINITE(x) ((x)==0x7f800000L)
+#define FLT_UWORD_MAX 0x7f7fffffL
+#define FLT_UWORD_EXP_MAX 0x43000000
+#define FLT_UWORD_LOG_MAX 0x42b17217
+#define FLT_UWORD_LOG_2MAX 0x42b2d4fc
+//#define HUGE ((float)3.40282346638528860e+38)
+#endif
+#define FLT_UWORD_HALF_MAX (FLT_UWORD_MAX-(1L<<23))
+#define FLT_LARGEST_EXP (FLT_UWORD_MAX>>23)
+
+/* Many routines check for zero and subnormal numbers.  Such things depend
+   on whether the target supports denormals or not:
+
+   FLT_UWORD_IS_ZERO(X)
+	True if a positive float with bitmask X is +0.	Without denormals,
+	any float with a zero exponent is a +0 representation.	With
+	denormals, the only +0 representation is a 0 bitmask.
+
+   FLT_UWORD_IS_SUBNORMAL(X)
+	True if a non-zero positive float with bitmask X is subnormal.
+	(Routines should check for zeros first.)
+
+   FLT_UWORD_MIN
+	The bitmask of the smallest float above +0.  Call this number
+	REAL_FLT_MIN...
+
+   FLT_UWORD_EXP_MIN
+	The bitmask of the float representation of REAL_FLT_MIN's exponent.
+
+   FLT_UWORD_LOG_MIN
+	The bitmask of |log(REAL_FLT_MIN)|, rounding down.
+
+   FLT_SMALLEST_EXP
+	REAL_FLT_MIN's exponent - EXP_BIAS (1 if denormals are not supported,
+	-22 if they are).
+*/
+
+#ifdef _FLT_NO_DENORMALS
+#define FLT_UWORD_IS_ZERO(x) ((x)<0x00800000L)
+#define FLT_UWORD_IS_SUBNORMAL(x) 0
+#define FLT_UWORD_MIN 0x00800000
+#define FLT_UWORD_EXP_MIN 0x42fc0000
+#define FLT_UWORD_LOG_MIN 0x42aeac50
+#define FLT_SMALLEST_EXP 1
+#else
+#define FLT_UWORD_IS_ZERO(x) ((x)==0)
+#define FLT_UWORD_IS_SUBNORMAL(x) ((x)<0x00800000L)
+#define FLT_UWORD_MIN 0x00000001
+#define FLT_UWORD_EXP_MIN 0x43160000
+#define FLT_UWORD_LOG_MIN 0x42cff1b5
+#define FLT_SMALLEST_EXP -22
+#endif
 
 // MACRO DEFINITIONS
 
@@ -95,7 +200,25 @@ typedef Cyg_libm_ieee_double_shape_type ieee_double_shape_type;
 #define CYG_LIBM_HIp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.msw)
 #define CYG_LIBM_LOp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.lsw)
 
+#define CYG_LIBM_WORD(__x)  (((Cyg_libm_ieee_float_shape_type *)&__x)->asi32)
 
+/* Get a 32 bit int from a float.  */
+
+#define GET_FLOAT_WORD(i,f)					\
+do {								\
+  Cyg_libm_ieee_float_shape_type gf_u;					\
+  gf_u.value = (f);						\
+  (i) = gf_u.asi32;						\
+} while (0)
+
+/* Set a float from a 32 bit int.  */
+
+#define SET_FLOAT_WORD(f,i)					\
+do {								\
+  Cyg_libm_ieee_float_shape_type sf_u;					\
+  sf_u.asi32 = (i);						\
+  (f) = sf_u.value;						\
+} while (0)
 
 /* Get two 32 bit ints from a double.  */
 
@@ -179,8 +302,18 @@ struct exception {
 externC int
 matherr( struct exception * );    // User-overridable error handling - see
                                   // <pkgconf/libm.h> for a discussion
-#endif // ifdef CYGSYM_LIBM_NO_XOPEN_SVID_NAMESPACE_POLLUTION
+struct exceptionf {
+    int type;       // One of DOMAIN, SING, OVERFLOW, UNDERFLOW, TLOSS, PLOSS
+    char *name;     // Name of the function generating the exception
+    float arg1;     // First argument to the function
+    float arg2;     // Second argument to the function
+    float retval;   // Value to be returned - can be altered by matherr()
+};
 
+externC int
+matherrf( struct exceptionf * );
+
+#endif // ifdef CYGSYM_LIBM_NO_XOPEN_SVID_NAMESPACE_POLLUTION
 
 // FUNCTION PROTOTYPES
 
@@ -288,6 +421,85 @@ __kernel_tan( double, double, int );
 
 externC int
 __kernel_rem_pio2( double *, double *, int, int, int, const int * );
+
+/* ieee style elementary float functions */
+externC float __ieee754_sqrtf (float);
+externC float __ieee754_acosf (float);
+externC float __ieee754_acoshf (float);
+externC float __ieee754_logf (float);
+externC float __ieee754_atanhf (float);
+externC float __ieee754_asinf (float);
+externC float __ieee754_atan2f (float,float);
+externC float __ieee754_expf (float);
+externC float __ieee754_coshf (float);
+externC float __ieee754_fmodf (float,float);
+externC float __ieee754_powf (float,float);
+externC float
+__ieee754_lgammaf_r( float, int * );
+
+externC float
+__ieee754_gammaf_r( float, int * );
+
+externC float
+__ieee754_lgammaf( float );
+
+externC float
+__ieee754_gammaf( float );
+externC float __ieee754_log10f (float);
+externC float __ieee754_sinhf (float);
+externC float __ieee754_hypotf (float,float);
+externC float __ieee754_j0f (float);
+externC float __ieee754_j1f (float);
+externC float __ieee754_y0f (float);
+externC float __ieee754_y1f (float);
+externC float __ieee754_jnf (int,float);
+externC float __ieee754_ynf (int,float);
+externC float __ieee754_remainderf (float,float);
+externC cyg_int32 __ieee754_rem_pio2f (float,float*);
+#ifdef _SCALB_INT
+externC float __ieee754_scalbf ((float,int));
+#else
+externC float __ieee754_scalbf (float,float);
+#endif
+
+/* float versions of fdlibm kernel functions */
+externC float __kernel_standard_float( float, float, int );
+externC float __kernel_sinf (float,float,int);
+externC float __kernel_cosf (float,float);
+externC float __kernel_tanf (float,float,int);
+externC int   __kernel_rem_pio2f (float*,float*,int,int,int,const cyg_int32*);
+
+#ifdef  _COMPLEX_H
+
+/*
+ * Quoting from ISO/IEC 9899:TC2:
+ *
+ * 6.2.5.13 Types
+ * Each complex type has the same representation and alignment requirements as
+ * an array type containing exactly two elements of the corresponding real type;
+ * the first element is equal to the real part, and the second element to the
+ * imaginary part, of the complex number.
+ */
+typedef union {
+        float complex z;
+        float parts[2];
+} float_complex;
+
+typedef union {
+        double complex z;
+        double parts[2];
+} double_complex;
+
+typedef union {
+        long double complex z;
+        long double parts[2];
+} long_double_complex;
+
+#define REAL_PART(z)    ((z).parts[0])
+#define IMAG_PART(z)    ((z).parts[1])
+
+#endif  /* _COMPLEX_H */
+
 
 #endif // ifdef CYGPKG_LIBM     
 

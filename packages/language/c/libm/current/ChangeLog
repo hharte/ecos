@@ -1,3 +1,118 @@
+2013-08-25  Ilija Kocho <ilijak@siva.com.mk>
+
+	* src/complex/cabs.c, src/complex/casinf.c, src/complex/ccosh.c, src/complex/cimagf.c,
+	* src/complex/cprojf.c, src/complex/ctan.c, src/complex/cabsf.c, src/complex/casinh.c,
+	* src/complex/ccoshf.c, src/complex/clog.c, src/complex/creal.c, src/complex/ctanf.c,
+	* src/complex/cacos.c, src/complex/casinhf.c, src/complex/cephes_subr.c,
+	* src/complex/clogf.c, src/complex/crealf.c, src/complex/ctanh.c, src/complex/cacosf.c,
+	* src/complex/catan.c, src/complex/cephes_subrf.c, src/complex/src/complex.tex,
+	* src/complex/csin.c, src/complex/ctanhf.c, src/complex/cacosh.c, src/complex/catanf.c,
+	* src/complex/cephes_subrf.h src/complex/conj.c, src/complex/csinf.c,
+	* src/complex/cacoshf.c, src/complex/catanh.c, src/complex/cephes_subr.h
+	* src/complex/conjf.c, src/complex/csinh.c, src/complex/carg.c, src/complex/catanhf.c,
+	* src/complex/cexp.c, src/complex/cpow.c, src/complex/csinhf.c, src/complex/cargf.c,
+	* src/complex/ccos.c, src/complex/cexpf.c, src/complex/cpowf.c, src/complex/csqrt.c,
+	* src/complex/casin.c, src/complex/ccosf.c, src/complex/cimag.c, src/complex/cproj.c,
+	* src/complex/csqrtf.c,
+	* include/src/complex.h:
+
+	Add: Complex number header and library (single and double precision floating point),
+	port from Newlib. [ Bugzilla 1001539 ]
+
+2013-08-25  Visar Zejnullahu <visar.siva.mk>
+            Ilija Kocho <ilijak@siva.com.mk>
+
+	* cdl/compat.cdl, cdl/libm.cdl, include/complex.h, include/math.h,
+	* src/float/ieee754-api/wf_acos.c, src/float/ieee754-api/wf_acosh.c,
+	* src/float/ieee754-api/wf_asin.c, src/float/ieee754-api/wf_atan2.c,
+	* src/float/ieee754-api/wf_atanh.c, src/float/ieee754-api/wf_cosh.c,
+	* src/float/ieee754-api/wf_exp.c, src/float/ieee754-api/wf_fmod.c,
+	* src/float/ieee754-api/wf_gamma.c, src/float/ieee754-api/wf_gamma_r.c,
+	* src/float/ieee754-api/wf_hypot.c, src/float/ieee754-api/wf_j0.c,
+	* src/float/ieee754-api/wf_j1.c, src/float/ieee754-api/wf_jn.c,
+	* src/float/ieee754-api/wf_lgamma.c, src/float/ieee754-api/wf_lgamma_r.c,
+	* src/float/ieee754-api/wf_log10.c, src/float/ieee754-api/wf_log.c,
+	* src/float/ieee754-api/wf_pow.c, src/float/ieee754-api/wf_remainder.c,
+	* src/float/ieee754-api/wf_scalb.c, src/float/ieee754-api/wf_sinh.c,
+	* src/float/ieee754-api/wf_sqrt.c, 
+	* src/float/ieee754-core/ef_acos.c, src/float/ieee754-core/ef_acosh.c,
+	* src/float/ieee754-core/ef_asin.c, src/float/ieee754-core/ef_atan2.c,
+	* src/float/ieee754-core/ef_atanh.c, src/float/ieee754-core/ef_cosh.c,
+	* src/float/ieee754-core/ef_exp.c, src/float/ieee754-core/ef_fmod.c,
+	* src/float/ieee754-core/ef_gamma.c, src/float/ieee754-core/ef_gamma_r.c,
+	* src/float/ieee754-core/ef_hypot.c, src/float/ieee754-core/ef_j0.c,
+	* src/float/ieee754-core/ef_j1.c, src/float/ieee754-core/ef_jn.c,
+	* src/float/ieee754-core/ef_lgamma.c, src/float/ieee754-core/ef_lgamma_r.c,
+	* src/float/ieee754-core/ef_log10.c, src/float/ieee754-core/ef_log.c,
+	* src/float/ieee754-core/ef_pow.c, src/float/ieee754-core/ef_remainder.c,
+	* src/float/ieee754-core/ef_rem_pio2.c, src/float/ieee754-core/ef_scalb.c,
+	* src/float/ieee754-core/ef_sinh.c, src/float/ieee754-core/ef_sqrt.c,
+	* src/float/internal/kf_cos.c, src/float/internal/kf_rem_pio2.c,
+	* src/float/internal/kf_sin.c, src/float/internal/kf_tan.c,
+	* src/float/portable-api/sf_asinh.c, src/float/portable-api/sf_atan.c,
+	* src/float/portable-api/sf_cbrt.c, src/float/portable-api/sf_ceil.c,
+	* src/float/portable-api/sf_copysign.c, src/float/portable-api/sf_cos.c,
+	* src/float/portable-api/sf_erf.c, src/float/portable-api/sf_expm1.c,
+	* src/float/portable-api/sf_fabs.c, src/float/portable-api/sf_finite.c,
+	* src/float/portable-api/sf_floor.c, src/float/portable-api/sf_frexp.c,
+	* src/float/portable-api/sf_ilogb.c, src/float/portable-api/sf_isnan.c,
+	* src/float/portable-api/sf_ldexp.c, src/float/portable-api/sf_log1p.c,
+	* src/float/portable-api/sf_logb.c, src/float/portable-api/sf_modf.c,
+	* src/float/portable-api/sf_nextafter.c, src/float/portable-api/sf_rint.c,
+	* src/float/portable-api/sf_scalbn.c, src/float/portable-api/sf_significand.c,
+	* src/float/portable-api/sf_sin.c, src/float/portable-api/sf_tan.c,
+	* src/float/portable-api/sf_tanh.c,
+	* src/mathincl/fdlibm.h,
+	* tests/vector_support.h,
+	* tests/vectors/acosf.c, tests/vectors/atan2.h,
+	* tests/vectors/copysignf.h, tests/vectors/expf.h,
+	* tests/vectors/fmodf.c, tests/vectors/ilogbf.h,
+	* tests/vectors/log10f.c, tests/vectors/modff.h, tests/vectors/scalbf.h,
+	* tests/vectors/sqrtf.h, tests/vectors/acosf.h, tests/vectors/atanf.c,
+	* tests/vectors/cosf.c, tests/vectors/exp.h, tests/vectors/fmodf.h,
+	* tests/vectors/isnanf.c, tests/vectors/log10f.h, tests/vectors/modf.h,
+	* tests/vectors/scalbnf.c, tests/vectors/sqrt.h, tests/vectors/acos.h,
+	* tests/vectors/atanf.h, tests/vectors/cosf.h, tests/vectors/expm1f.c,
+	* tests/vectors/fmod.h, tests/vectors/isnanf.h, tests/vectors/log10.h,
+	* tests/vectors/nextafterf.c, tests/vectors/scalbnf.h, tests/vectors/tanf.c,
+	* tests/vectors/acoshf.c, tests/vectors/atan.h, tests/vectors/cos.h,
+	* tests/vectors/expm1f.h, tests/vectors/frexpf.c, tests/vectors/j0f.c,
+	* tests/vectors/log1pf.c, tests/vectors/nextafterf.h,
+	* tests/vectors/significandf.c, tests/vectors/tanf.h,
+	* tests/vectors/acoshf.h, tests/vectors/atanhf.c, tests/vectors/coshf.c,
+	* tests/vectors/fabsf.c, tests/vectors/frexpf.h, tests/vectors/j0f.h,
+	* tests/vectors/log1pf.h, tests/vectors/powf.c, tests/vectors/significandf.h,
+	* tests/vectors/tan.h, tests/vectors/asinf.c, tests/vectors/atanhf.h,
+	* tests/vectors/coshf.h, tests/vectors/fabsf.h,
+	* tests/vectors/frexpf_visar.h, tests/vectors/j1f.c,
+	* tests/vectors/logbf.c, tests/vectors/powf.h,
+	* tests/vectors/sinf.c, tests/vectors/tanhf.c,
+	* tests/vectors/asinf.h, tests/vectors/cbrtf.c, tests/vectors/cosh.h,
+	* tests/vectors/fabs.h, tests/vectors/frexp.h, tests/vectors/j1f.h,
+	* tests/vectors/logbf.h, tests/vectors/pow.h, tests/vectors/sinf.h,
+	* tests/vectors/tanhf.h, tests/vectors/asin.h, tests/vectors/cbrtf.h,
+	* tests/vectors/erfcf.c, tests/vectors/finitef.c,
+	* tests/vectors/gammaf.c, tests/vectors/jnf.c, tests/vectors/logf.c,
+	* tests/vectors/remainderf.c, tests/vectors/sin.h,
+	* tests/vectors/tanh.h, tests/vectors/asinhf.c, tests/vectors/ceilf.c,
+	* tests/vectors/erfcf.h, tests/vectors/finitef.h,
+	* tests/vectors/gammaf.h, tests/vectors/jnf.h,
+	* tests/vectors/logf.h, tests/vectors/remainderf.h,
+	* tests/vectors/sinhf.c, tests/vectors/vector_support_float.h,
+	* tests/vectors/asinhf.h, tests/vectors/ceilf.h, tests/vectors/erff.c,
+	* tests/vectors/floorf.c, tests/vectors/hypotf.c, tests/vectors/ldexpf.c,
+	* tests/vectors/log.h, tests/vectors/rintf.c, tests/vectors/sinhf.h,
+	* tests/vectors/vector_support.h, tests/vectors/atan2f.c,
+	* tests/vectors/ceil.h, tests/vectors/erff.h, tests/vectors/floorf.h,
+	* tests/vectors/hypotf.h, tests/vectors/ldexpf.h,
+	* tests/vectors/modf.c, tests/vectors/rintf.h, tests/vectors/sinh.h,
+	* tests/vectors/atan2f.h, tests/vectors/copysignf.c, tests/vectors/expf.c,
+	* tests/vectors/floor.h, tests/vectors/ilogbf.c, tests/vectors/ldexp.h,
+	* tests/vectors/modff.c, tests/vectors/scalbf.c, tests/vectors/sqrtf.c:
+
+	Add: Single precision floating point library, port from Newlib.
+	[ Bugzilla 1001539 ]
+
 2010-11-11  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* cdl/libm.cdl (CYGPKG_LIBM_CFLAGS_ADD): Add a set of parentheses
@@ -824,7 +939,7 @@ Fri Jun  5 07:07:03 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2010, 2013 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
