@@ -1,3 +1,8 @@
+2013-08-26  Ilija Kocho <ilijak@siva.com.mk>
+
+	* include/freescale_edma.h: Fix FREESCALE_EDMA_NBYTES_MLOFFYES_NBYTES_M bug
+	[ Bugzilla 1001896 ]
+
 2013-05-04  Ilija Kocho <ilijak@siva.com.mk>
 
 	* cdl/hal_freescale_edma.cdl: Remove requirement for WRITETHRU cache mode
