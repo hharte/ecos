@@ -140,6 +140,7 @@
 #define CYG_IO_GET_CONFIG_CAN_TIMEOUT               0x0804
 #define CYG_IO_GET_CONFIG_CAN_HDI                   0x0805
 #define CYG_IO_GET_CONFIG_CAN_STATE                 0x0806
+#define CYG_IO_GET_CONFIG_CAN_ERR_COUNTERS          0x0807
 
 #define CYG_IO_SET_CONFIG_CAN_INFO                  0x0881
 #define CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN          0x0882
