@@ -1,3 +1,10 @@
+2013-06-24  Uwe Kindler <uwe_kindler@web.de>
+
+	* include/canio.h: Added structure cyg_can_err_count_info for reading
+	CAN hardware error counter values from CAN hardware.
+	* doc/can.sgml: Documented new CAN config key
+	CYG_IO_GET_CONFIG_ERR_COUNTERS.
+
 2013-05-06  Uwe Kindler <uwe_kindler@web.de>
 
 	* doc/can.sgml: Documented return code -ENOSPC for cyg_io_set_config()

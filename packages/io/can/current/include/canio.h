@@ -283,6 +283,16 @@ typedef struct cyg_can_timeout_info_st
 
 
 //
+// For reading error counter values from CAN controller
+//
+typedef struct cyg_can_err_count_info_st
+{
+    cyg_uint8 rx_err_count;
+    cyg_uint8 tx_err_count;
+} cyg_can_err_count_info;
+
+
+//
 // this data type defines a handle to a message buffer or message box
 // of the CAN hardware device
 //

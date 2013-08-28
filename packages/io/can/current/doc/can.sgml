@@ -664,6 +664,7 @@ CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO
 CYG_IO_GET_CONFIG_CAN_TIMEOUT
 CYG_IO_GET_CONFIG_CAN_HDI
 CYG_IO_GET_CONFIG_CAN_STATE
+CYG_IO_GET_CONFIG_CAN_ERR_COUNTERS
 </PROGRAMLISTING>
 </SECTION><!-- can-cyg-io-get-config -->
   
@@ -1008,6 +1009,26 @@ present state of the CAN controller. Possible values are defined in the
 <type>cyg_can_state</type> enumeration.
 </PARA>   
 </SECTION> <!-- can-read-hw-state -->
+
+<SECTION>
+<TITLE>Reading CAN hardware error counters</TITLE>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_err_count_info_st
+{
+    cyg_uint8 rx_err_count;
+    cyg_uint8 tx_err_count;
+} cyg_can_err_count_info;
+</PROGRAMLISTING>
+
+<PARA>
+Each CAN node maintains two error counters: the Transmit Error Counter (TEC)
+and the Receive Error Counter (REC). There are several rules governing how
+these counters are incremented and/or decremented.
+<varname>CYG_IO_GET_CONFIG_CAN_ERR_COUNTERS</varname> retrieves the present
+value of both error counters (TEC and REC).
+</PARA>
+</SECTION> <!-- can-read-err-counters -->
 
 
 <SECTION>
