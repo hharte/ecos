@@ -1,3 +1,8 @@
+2013-06-24  Uwe Kindler <uwe_kindler@web.de>
+
+	* src/can_lpc2xxx.c: Add support for new config key
+	  CYG_IO_GET_CONFIG_CAN_ERR_COUNTERS.
+
 2013-05-06  Uwe Kindler <uwe_kindler@web.de>
 
 	* src/can_lpc2xxx.c: Changed return code for message filter

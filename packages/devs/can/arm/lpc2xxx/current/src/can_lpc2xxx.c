@@ -1484,7 +1484,7 @@ static Cyg_ErrNo lpc2xxx_can_get_config(can_channel *chan, cyg_uint32 key, const
 
         
         //
-        // Query hardware description of FlexCAN device driver
+        // Query hardware description of LPC2xxx CAN device driver
         //     
         case CYG_IO_GET_CONFIG_CAN_HDI :
              {
@@ -1495,6 +1495,20 @@ static Cyg_ErrNo lpc2xxx_can_get_config(can_channel *chan, cyg_uint32 key, const
                 //             
                 hdi->support_flags = CYGNUM_CAN_HDI_FRAMETYPE_EXT_ACTIVE
                                    | CYGNUM_CAN_HDI_FULLCAN;
+             }
+             break;
+
+        //
+        // Read error counters from device hardware
+        //
+        case CYG_IO_GET_CONFIG_CAN_ERR_COUNTERS :
+             {
+                 lsc_buf_t data;
+                 cyg_can_err_count_info* err_info = (cyg_can_err_count_info*)buf;
+                 HAL_READ_UINT32(CAN_CTRL_GSR(info), data.dword);
+                 err_info->rx_err_count = data.bytes[2];
+                 err_info->tx_err_count = data.bytes[3];
+                 *len = sizeof(cyg_can_err_count_info);
              }
              break;
              
