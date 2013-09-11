@@ -1,3 +1,8 @@
+2013-09-11  Uwe Kindler  <uwe_kindler@web.de>
+
+	* ecos.db: Add CAN driver entry for olcpl2294 target (Olimex
+	LPC-L2294-1M development board).
+
 2013-07-01  Mike Jones <mjones@proclivis.com.>
 
 	* ecos.db: Add TWR-K60F120M platform HAL package and target
