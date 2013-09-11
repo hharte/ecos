@@ -1,3 +1,15 @@
+2013-09-11  Uwe Kindler <uwe_kindler@web.de>
+
+	* src/can_accfilt_lpc2xxx.c, src/can_lpc2xxx.c: Fix a compile issue of
+	the lpc2xxx driver that only occurs if support for extended 29-bit CAN
+	identifiers is enabled and support for message filtering is disabled.
+	[ Bugzilla 1001901 ]
+
+2013-08-29  Uwe Kindler <uwe_kindler@web.de>
+
+	* includes/can_lpc2xxx_baudrates.h: Added baudrate table for CAN clock
+	of 14.745600 MHz. [ Bugzilla 1001900 ]
+
 2013-06-24  Uwe Kindler <uwe_kindler@web.de>
 
 	* src/can_lpc2xxx.c: Add support for new config key

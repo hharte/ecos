@@ -185,6 +185,32 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 12000000
 
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 14745600
+#warning "You can't get exactly the desired CAN bus speeds with the specified CAN clock of 14.7456 MHz"
+//
+// Table with register values for baudrates at peripheral clock of 14.7456 MHz
+// The clock of 14.7456 MHz is not suited for a good CAN bitrate timing because
+// you can't get exactly the desired CAN bus speed with the specified CAN
+// clock frequency. Be sure to check the error values behind the table entries.
+// Settings leading to speed deviations of more than 1.5% should be discarded.
+//
+static const cyg_uint32 lpc2xxx_br_tbl[] =
+{
+    //----------brp  tseg1 tseg2 sjw sam ------------
+    CAN_BR_TBL_ENTRY(58, 20, 2, 0, 1), // 10  kbaud - Timing Error  0.030%
+    CAN_BR_TBL_ENTRY(66,  8, 0, 0, 1), // 20  kbaud - Timing Error -0.038%
+    CAN_BR_TBL_ENTRY(13, 17, 1, 0, 1), // 50  kbaud - Timing Error -0.310%
+    CAN_BR_TBL_ENTRY( 6, 17, 1, 0, 1), // 100 kbaud - Timing Error -0.310%
+    CAN_BR_TBL_ENTRY(12,  6, 0, 0, 1), // 125 kbaud - Timing Error -0.825%
+    CAN_BR_TBL_ENTRY( 5,  7, 0, 0, 1), // 250 kbaud - Timing Error 1.696%
+    CAN_BR_TBL_ENTRY( 2,  7, 0, 0, 0), // 500 kbaud - Timing Error 1.696%
+    CAN_BR_TBL_ENTRY( 1,  6, 0, 0, 0), // 800 kbaud  - Timing Error -2.4%
+    CAN_BR_TBL_ENTRY( 0, 11, 1, 0, 0), // 1000 kbaud - Timing Error 1.696%
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
+};
+#define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 14745600
+
 
 //==========================================================================
 //                          BIT TIMING MACRO

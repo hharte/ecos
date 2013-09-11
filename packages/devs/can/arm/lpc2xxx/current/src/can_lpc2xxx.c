@@ -538,8 +538,10 @@ typedef struct lpc2xxx_global_can_info_st
 
 #if CYGINT_IO_CAN_CHANNELS > 1
 #define LPC2XXX_GET_CAN_CHANNEL(_can_info_, _chan_no_) ((can_channel*)(_can_info_).active_channels[_chan_no_])
+#define LPC2XXX_INIT_CNT lpc2xxx_global_can_info.init_cnt
 #else
 #define LPC2XXX_GET_CAN_CHANNEL(_can_info_, _chan_no_) ((can_channel*)(_can_info_).active_channels[0])
+#define LPC2XXX_INIT_CNT 1
 #endif
 
 //
