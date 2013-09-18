@@ -1,3 +1,18 @@
+2013-09-17  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/can_lpc2xxx.cdl: Add CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND
+	to enable conditional Bus-Off reset mode workaround. [Bug 1001897]
+	* src/can_lpc2xxx.c: Add function lpc2xxx_reset_error_counters to
+	reset TX and RX error counters to certain values. Function
+	lpc2xxx_start_module now clears both error counters. Add some
+	LPC2XXX_DBG_PRINT statements to lpc2xxx_can_getevent function. Add
+	function lpc2xxx_print_status to ease printing status register
+	content. If a bus error condition occures (ICR_BUS_ERR) the function
+	lpc2xxx_can_getevent now clears the error counters to prevent error
+	ISR from blocking application and to support recovery from bus off
+	condition if option CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND is
+	enabled.
+
 2013-09-11  Uwe Kindler <uwe_kindler@web.de>
 
 	* src/can_accfilt_lpc2xxx.c, src/can_lpc2xxx.c: Fix a compile issue of

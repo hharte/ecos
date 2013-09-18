@@ -1265,14 +1265,45 @@ static Cyg_ErrNo lpc2xxx_enter_lowpower_mode(can_channel *chan)
 }
 
 
+#ifdef CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND
+//===========================================================================
+// Reset error counters to the given values
+//===========================================================================
+static void lpc2xxx_reset_error_counters(lpc2xxx_can_info_t *info,
+    cyg_uint8 rx_errcnt, cyg_uint8 tx_errcnt)
+{
+    lsc_buf_t data;
+    cyg_uint32 regval;
+    HAL_READ_UINT32(CAN_CTRL_MOD(info), regval);
+
+    HAL_WRITE_UINT32(CAN_CTRL_MOD(info), CANMOD_RESET);
+    HAL_READ_UINT32(CAN_CTRL_GSR(info), data.dword);
+    data.bytes[2] = rx_errcnt; // reset RX error counter
+    data.bytes[3] = tx_errcnt; // reset TX error counter to 0
+    HAL_WRITE_UINT32(CAN_CTRL_GSR(info), data.dword);
+
+    HAL_WRITE_UINT32(CAN_CTRL_MOD(info), regval);
+}
+#endif // #ifdef CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND
+
+
 //===========================================================================
 // Start CAN module - set CANMOD operational and enable all interrupts
 //===========================================================================
 static void lpc2xxx_start_module(can_channel *chan)
 {
+    lsc_buf_t data;
     cyg_uint32          regval;
     lpc2xxx_can_info_t *info = (lpc2xxx_can_info_t *)chan->dev_priv;
     
+    // before we start CAN module, we clear both error counters to start
+    // with a clean error counter state
+    HAL_WRITE_UINT32(CAN_CTRL_MOD(info), CANMOD_RESET);
+    HAL_READ_UINT32(CAN_CTRL_GSR(info), data.dword);
+    data.bytes[2] = 0; // reset RX error counter to 0
+    data.bytes[3] = 0; // reset TX error counter to 0
+    HAL_WRITE_UINT32(CAN_CTRL_GSR(info), data.dword);
+
     HAL_WRITE_UINT32(CAN_CTRL_MOD(info), CANMOD_OPERATIONAL);  
     //
     // The interrupt enable register is also modified by ISR and DSR so
@@ -1600,6 +1631,27 @@ static bool lpc2xxx_can_putmsg(can_channel *chan, CYG_CAN_MSG_T *pmsg, void *pda
 }
 
 
+#ifdef CYGDBG_DEVS_CAN_LPC2XXX_DEBUG
+//===========================================================================
+// Print status registers
+// This function is only here for debugging purposes to ease printing
+// of status register content
+//===========================================================================
+static void lpc2xxx_print_status(lpc2xxx_can_info_t *info)
+{
+    cyg_uint32 regval;
+    lsc_buf_t data;
+
+    HAL_READ_UINT32(CAN_CTRL_MOD(info), regval);
+    LPC2XXX_DBG_PRINT("CANREG_MOD: 0x%08x\n", regval);
+
+    HAL_READ_UINT32(CAN_CTRL_GSR(info), data.dword);
+    LPC2XXX_DBG_PRINT("RXERR: %d\n", data.bytes[2]);
+    LPC2XXX_DBG_PRINT("TXERR: %d\n", data.bytes[3]);
+}
+#endif
+
+
 //===========================================================================
 // Read event from device driver
 //===========================================================================
@@ -1700,15 +1752,18 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
             {
                 pevent->flags |= CYGNUM_CAN_EVENT_WARNING_RX;  
                 info->state = CYGNUM_CAN_STATE_BUS_WARN;
+                LPC2XXX_DBG_PRINT("CYGNUM_CAN_EVENT_WARNING_RX counter (%d) (%p)\n", data.bytes[2], (void*) chan);
             }
             else if (data.bytes[3] >= 96)
             {
                 pevent->flags |= CYGNUM_CAN_EVENT_WARNING_TX;
                 info->state = CYGNUM_CAN_STATE_BUS_WARN;
+                LPC2XXX_DBG_PRINT("CYGNUM_CAN_EVENT_WARNING_TX counter (%d) (%p)\n", data.bytes[3], (void*) chan);
             }
             else
             {
                 info->state = CYGNUM_CAN_STATE_ACTIVE;
+                LPC2XXX_DBG_PRINT("CYGNUM_CAN_STATE_ACTIVE (%p)\n", (void*) chan);
             }
             LPC2XXX_DBG_PRINT("ICR_ERR_WARN (%p)\n", (void*) chan);
         }
@@ -1737,10 +1792,13 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
             {
                 pevent->flags |= CYGNUM_CAN_EVENT_ERR_PASSIVE;    
                 info->state = CYGNUM_CAN_STATE_ERR_PASSIVE;
+                LPC2XXX_DBG_PRINT("CYGNUM_CAN_EVENT_ERR_PASSIVE (%p)\n", (void*) chan);
             }
             else
             {
+                pevent->flags |= CYGNUM_CAN_EVENT_ERR_ACTIVE;
                 info->state = CYGNUM_CAN_STATE_ACTIVE;    
+                LPC2XXX_DBG_PRINT("CYGNUM_CAN_EVENT_ERR_ACTIVE (%p)\n", (void*) chan);
             }
             LPC2XXX_DBG_PRINT("ICR_ERR_PASSIVE (%p)\n", (void*) chan);
         }
@@ -1758,13 +1816,30 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
 #endif // CYGOPT_DEVS_CAN_LPC2XXX_ALIE
         
         //
-        // 1: Bus Error Interrupt -- this bit is set if the BEIE bit in CANIE is 1, and the CAN
-        // controller detects an error on the bus.
+        // 1: Bus Error Interrupt -- this bit is set if the BEIE bit in CANIE
+        // is 1, and the CAN controller detects an error on the bus.
         //
         if (event & ICR_BUS_ERR)
         {
             pevent->flags |= CYGNUM_CAN_EVENT_BUS_OFF; 
             LPC2XXX_DBG_PRINT("ICR_BUS_ERR (%p)\n", (void*) chan);
+
+#ifdef CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND
+            //
+            // we do exactly here, what is written in the user manual
+            // 1. we go into reset mode
+            // 2. we clear the RX error counter and set the TX error counter
+            //    to 127
+            // 3. we clear the reset mode
+            // This ensures, that this ISR does not fire again and again and
+            // blocks the application while the bus off condition is active.
+            // Setting the TX error counter to 127 ensures that the controller
+            // is in TX error passive mode and that it does not flood the CAN
+            // bus with error messages. This makes it possible for the
+            // controller to properly recover from a bus off condition
+            //
+            lpc2xxx_reset_error_counters(info, 0, 127);
+#endif
         }
         
 #ifdef CYGOPT_DEVS_CAN_LPC2XXX_LUT_ERR_SUPP
@@ -1851,7 +1926,7 @@ static void lpc2xxx_can_tx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addr
 {
     can_channel              *chan = (can_channel *)data;
     cyg_uint32                regval;
-    lpc2xxx_can_info_t       *info = (lpc2xxx_can_info_t *)chan->dev_priv;
+    CAN_DECLARE_INFO(chan);
     
     //
     // First read the ICR register to acknowledge all interrupts and
@@ -2025,8 +2100,8 @@ static void lpc2xxx_can_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrwor
     // Loop through all channels - we need to do this only if we have more
     // than one channel so we can optimize here for single channel
     //
+    cyg_uint8 i = 0;
 #if CYGINT_IO_CAN_CHANNELS > 1 
-    cyg_uint8 i = 0;     
     while (lpc2xxx_global_can_info.active_channels[i])
 #endif
     {

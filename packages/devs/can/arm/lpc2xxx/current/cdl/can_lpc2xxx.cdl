@@ -329,6 +329,27 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             to the lowest priority 15, allowing a single write to 
             elevate the priority of an individual interrupt."
     }
+
+    # Enable this by default for "LPX22xx" parts only.
+    cdl_option CYGHWR_DEVS_CAN_LPC2XXX_BUSOFF_WORKAROUND {
+        display       "Bus-Off Reset Mode workaround"
+        flavor        bool
+        default_value { CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION == 2 }
+        description   "
+            If the Transmit Error counter contains 255 and another
+            error occurs, the CAN Controller is forced into a state
+            called Bus-Off.  In this state, the following register bits
+            and register values are set: BS (Bus Off Set) in CANxSR, BEI
+            (Bus Error Interrupt) and EI (Error Warning Interrupt) in
+            CANxICR, RM (Reset Mode) in CANxMOD, Transmit Error Counter
+            is set to 127, Receive Error Counter is cleared.
+            On some chips RM (Reset Mode) is not set and RX / TX error
+            counters are not cleared. This may lead to a permanent
+            re-calling of the Bus-Off error ISR which in turn may block
+            the application code from running.  If this workaround is
+            active, the Bus-Off error ISR sets RM (Reset Mode), clears
+            RX / TX error counters."
+    }
     
     cdl_option CYGPKG_DEVS_CAN_LPC2XXX_TESTS {
         display "CAN LPC2xxx device driver tests"
