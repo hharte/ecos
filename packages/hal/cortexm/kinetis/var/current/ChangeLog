@@ -1,3 +1,10 @@
+2013-04-28  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* include/var_intr.h : Redefine CYGNUM_HAL_INTERRUPT_RTC_RTC because of
+	conflict with same named macro defined in hal_intr.h (Cortex-M architecture).
+	Define some interrrupt numbers, previously reservrd.
+	* include/var_io.h : Upgrade RTC registers. [ Bugzilla 1001904 ]
+
 2013-06-12 Mike Jones <mike@proclivis.com>
 
 	* include/var_io_gpio.h

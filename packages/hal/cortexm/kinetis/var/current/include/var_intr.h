@@ -127,8 +127,8 @@ typedef enum {
     CYGNUM_HAL_INTERRUPT_FTM1,            // FTM1 fault, overflow and channels int
     CYGNUM_HAL_INTERRUPT_FTM2,            // FTM2 fault, overflow and channels int
     CYGNUM_HAL_INTERRUPT_CMT,             // CMT int
-    CYGNUM_HAL_INTERRUPT_RTC,             // RTC int
-    CYGNUM_HAL_INTERRUPT_Reserved83,      // Reserved int 83
+    CYGNUM_HAL_INTERRUPT_RTC_RTC,         // RTC int
+    CYGNUM_HAL_INTERRUPT_RTC_SECONDS,     // RTC seconds interrupt
     CYGNUM_HAL_INTERRUPT_PIT0,            // PIT timer channel 0 int
     CYGNUM_HAL_INTERRUPT_PIT1,            // PIT timer channel 1 int
     CYGNUM_HAL_INTERRUPT_PIT2,            // PIT timer channel 2 int
@@ -153,24 +153,26 @@ typedef enum {
     CYGNUM_HAL_INTERRUPT_PORTC,           // Port C int
     CYGNUM_HAL_INTERRUPT_PORTD,           // Port D int
     CYGNUM_HAL_INTERRUPT_PORTE,           // Port E int
-    CYGNUM_HAL_INTERRUPT_Reserved108,     // Reserved int 108
-    CYGNUM_HAL_INTERRUPT_Reserved109,     // Reserved int 109
-    CYGNUM_HAL_INTERRUPT_Reserved110,     // Reserved int 110
-    CYGNUM_HAL_INTERRUPT_Reserved111,     // Reserved int 111
-    CYGNUM_HAL_INTERRUPT_Reserved112,     // Reserved int 112
-    CYGNUM_HAL_INTERRUPT_Reserved113,     // Reserved int 113
-    CYGNUM_HAL_INTERRUPT_Reserved114,     // Reserved int 114
-    CYGNUM_HAL_INTERRUPT_Reserved115,     // Reserved int 115
-    CYGNUM_HAL_INTERRUPT_Reserved116,     // Reserved int 116
-    CYGNUM_HAL_INTERRUPT_Reserved117,     // Reserved int 117
-    CYGNUM_HAL_INTERRUPT_Reserved118,     // Reserved int 118
-    CYGNUM_HAL_INTERRUPT_Reserved119      // Reserved int 119
+    CYGNUM_HAL_INTERRUPT_PORTF,           // Port F interrupt
+    CYGNUM_HAL_INTERRUPT_DDR,             // DDR interrupt
+    CYGNUM_HAL_INTERRUPT_SWI,             // Software interrupt
+    CYGNUM_HAL_INTERRUPT_NFC,             // NAND flash controller interrupt
+    CYGNUM_HAL_INTERRUPT_USBHS,           // USB high speed OTG interrupt
+    CYGNUM_HAL_INTERRUPT_GLCD,            // Graphical LCD interrupt
+    CYGNUM_HAL_INTERRUPT_CMP3,            // CMP3 interrupt
+    CYGNUM_HAL_INTERRUPT_TAMPER,          // Tamper detect interrupt
+    CYGNUM_HAL_INTERRUPT_Reserved116,     // Reserved interrupt 116
+    CYGNUM_HAL_INTERRUPT_FTM3,            // FTM3 fault, overflow and channels interrupt
+    CYGNUM_HAL_INTERRUPT_ADC2,            // ADC2 interrupt
+    CYGNUM_HAL_INTERRUPT_ADC3,            // ADC3 interrupt
+    CYGNUM_HAL_INTERRUPT_I2S1_TX,         // I2S1 transmit interrupt
+    CYGNUM_HAL_INTERRUPT_I2S1_RX          // I2S1 receive interrupt
 } KinetisExtInterrupt_e;
 
-#define CYGNUM_HAL_INTERRUPT_NVIC_MAX (CYGNUM_HAL_INTERRUPT_Reserved119)
+#define CYGNUM_HAL_INTERRUPT_NVIC_MAX (CYGNUM_HAL_INTERRUPT_I2S1_RX)
 
 #define CYGNUM_HAL_ISR_MIN            0
-#define CYGNUM_HAL_ISR_MAX            CYGNUM_HAL_INTERRUPT_Reserved119
+#define CYGNUM_HAL_ISR_MAX            CYGNUM_HAL_INTERRUPT_I2S1_RX
 #define CYGNUM_HAL_ISR_COUNT          (CYGNUM_HAL_ISR_MAX + 1)
 
 #define CYGNUM_HAL_VSR_MIN            0

@@ -409,7 +409,15 @@ typedef volatile struct cyghwr_hal_kinetis_rtc_s {
     cyg_uint32 sr;                     // Status Register
     cyg_uint32 lr;                     // Lock Register
     cyg_uint32 ier;                    // Enterrupt Enable Register
-    cyg_uint8  reserved[2016];
+    cyg_uint32 ttsr;                   // Tamper Times Seconds Register
+    cyg_uint32 mer;                    // Monotonic Enable Register
+    cyg_uint32 mclr;                   // Monotonic Counter Low Register
+    cyg_uint32 mchr;                   // Monotonic Counter High Register
+    cyg_uint32 ter;                    // Tamper Enable Register
+    cyg_uint32 tdr;                    // Tamper Detect Register
+    cyg_uint32 ttr;                    // Tamper Trim Register
+    cyg_uint32 tir;                    // Tamper Interrupt Register
+    cyg_uint8 reserved[1984];
     cyg_uint32 war;                    // Write Access Register
     cyg_uint32 rar;                    // Read Access Register
 } cyghwr_hal_kinetis_rtc_t;
