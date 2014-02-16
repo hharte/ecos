@@ -70,3 +70,6 @@ devs/framebuf/synth/current/doc/synth_framebuf.sgml
 devs/flash/amd/am29xxxxxv2/current/doc/am29xxxxx.sgml
 devs/flash/intel/stratav2/current/doc/strata.sgml
 devs/i2c/m68k/mcf52xx/current/doc/mcf52xx_i2c.sgml
+hal/misc/freescale/edma/current/doc/freescale_begin.sgml
+hal/misc/freescale/edma/current/doc/edma.sgml
+hal/misc/freescale/edma/current/doc/freescale_end.sgml

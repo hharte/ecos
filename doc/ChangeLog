@@ -1,3 +1,7 @@
+2014-02-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* sgml/doclist: Add Freescale eDMA entry.
+
 2013-07-01  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* sgml/doclist: Add K60F120M entry (document body provided by Mike Jones)
