@@ -1,3 +1,10 @@
+2014-02-13  Ilija Kocho <ilijak@siva.com.mk>
+
+	* misc/freescale/edma/current/doc/edma.sgml
+	* misc/freescale/edma/current/doc/freescale_begin.sgml
+	* misc/freescale/edma/current/doc/freescale_end.sgml
+	New: Add Freescale eDMA to eCos reference manual.
+
 2013-08-26  Ilija Kocho <ilijak@siva.com.mk>
 
 	* include/freescale_edma.h: Fix FREESCALE_EDMA_NBYTES_MLOFFYES_NBYTES_M bug
