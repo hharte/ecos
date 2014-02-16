@@ -69,6 +69,7 @@ typedef volatile struct cyghwr_hal_kinetis_gpio_s {
 #define CYGHWR_HAL_KINETIS_GPIO_PORTC_P ((cyghwr_hal_kinetis_gpio_t*)0x400FF080u)
 #define CYGHWR_HAL_KINETIS_GPIO_PORTD_P ((cyghwr_hal_kinetis_gpio_t*)0x400FF0C0u)
 #define CYGHWR_HAL_KINETIS_GPIO_PORTE_P ((cyghwr_hal_kinetis_gpio_t*)0x400FF100u)
+#define CYGHWR_HAL_KINETIS_GPIO_PORTF_P ((cyghwr_hal_kinetis_gpio_t*)0x400FF140u)
 
 // GPIO register on a given port (register name is lower case)
 #define CYGHWR_HAL_KINETIS_GPIO(__port, __reg)           \

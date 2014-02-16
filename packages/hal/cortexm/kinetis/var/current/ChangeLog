@@ -1,3 +1,14 @@
+2014-02-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cortexm/kinetis/var/current/include/var_intr.h:
+	Add interrupt numbers for second eDMA controller.
+
+	* cortexm/kinetis/var/current/include/var_io_clkgat.h:
+	Add clock gating for ADC2
+
+	* cortexm/kinetis/var/current/include/var_io_gpio.h:
+	Add GPIO port F.
+
 2013-04-28  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* include/var_intr.h : Redefine CYGNUM_HAL_INTERRUPT_RTC_RTC because of
