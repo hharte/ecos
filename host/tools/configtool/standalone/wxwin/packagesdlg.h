@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -144,6 +144,9 @@ private:
     bool            m_updateLists; // If true, the keyword changed and we need to update the lists
     long            m_updateInterval; // Interval before display is updated
     ecPackagesTimer m_timer;
+#if wxCHECK_VERSION(2, 8, 0)
+    wxStopWatch     m_StopWatch;
+#endif
 };
 
 #define ecID_PACKAGES_DIALOG_AVAILABLE_LIST     10066

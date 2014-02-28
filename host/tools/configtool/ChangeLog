@@ -1,3 +1,15 @@
+2014-02-28  Andy Jackson  <andy@xylanta.com>
+
+	* standalone/wxwin/standalone/wxwin/finddlg.cpp,
+	  standalone/wxwin/msgdlgex.cpp,
+	  standalone/wxwin/packagesdlg.cpp,
+	  standalone/wxwin/packagesdlg.h,
+	  standalone/wxwin/settingsdlg.cpp,
+	  standalone/wxwin/templatesdlg.cpp: Eliminate deprecated wxWidgets
+	calls. [ Bugzilla 1001947 ]
+	* standalone/wxwin/mainwin.cpp, standalone/wxwin/configtool.cpp:
+	Update copyright strings.
+
 2013-03-15  John Dallaway  <john@dallaway.org.uk>
 
 	* standalone/wxwin/admindlg.cpp: Pass POSIX-style paths to

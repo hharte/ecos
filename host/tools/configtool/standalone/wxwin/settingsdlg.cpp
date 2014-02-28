@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2005, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2005, 2008, 2009, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -443,7 +443,11 @@ void ecDisplayOptionsDialog::OnChangeFont(wxCommandEvent& event)
         wxFontData data;
         data.SetInitialFont(wxGetApp().GetSettings().GetWindowSettings().GetFont(str));
 
+#if wxCHECK_VERSION(2, 8, 0)
+        wxFontDialog dlg(this, data);
+#else
         wxFontDialog dlg(this, & data);
+#endif
         if (dlg.ShowModal() == wxID_OK)
         {
             wxGetApp().GetSettings().GetWindowSettings().SetFont(str, dlg.GetFontData().GetChosenFont()) ;

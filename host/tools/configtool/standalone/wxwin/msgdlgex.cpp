@@ -47,6 +47,9 @@
 #include "wx/stattext.h"
 #include "wx/statbmp.h"
 #include "wx/bmpbuttn.h"
+#if wxCHECK_VERSION(2, 8, 0)
+#include "wx/artprov.h"
+#endif
 
 //----------------------------------------------------------------------------
 // wxMessageDialogEx
@@ -73,8 +76,13 @@ wxMessageDialogEx::wxMessageDialogEx( wxWindow *parent, const wxString& message,
     // 1) icon
     if (style & wxICON_MASK)
     {
+#if wxCHECK_VERSION(2, 8, 0)
+         wxStaticBitmap *icon = new wxStaticBitmap(this, wxID_ANY,
+                            wxArtProvider::GetIcon(wxART_INFORMATION));
+#else
          wxStaticBitmap *icon = new wxStaticBitmap(
             this, -1, wxTheApp->GetStdIcon((int)(style & wxICON_MASK)));
+#endif
          icon_text->Add( icon, 0, wxCENTER );
     }
 

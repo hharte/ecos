@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2009, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -97,7 +97,11 @@ m_timer(this)
     m_keywords = wxEmptyString;
     m_updateLists = FALSE;
     m_updateInterval = 600; // Milliseconds
+#if wxCHECK_VERSION(2, 8, 0)
+    m_StopWatch.Start();
+#else
     wxStartTimer();
+#endif
     
     SetExtraStyle(wxDIALOG_EX_CONTEXTHELP);
     
@@ -362,10 +366,18 @@ void ecPackagesDialog::Fill()
     // wxGTK doesn't deselect items properly when clearing, I think
     int i;
     for (i = 0; i < availableList->GetCount(); i++)
+#if wxCHECK_VERSION(2, 8, 0)
+        if (availableList->IsSelected(i))
+#else
         if (availableList->Selected(i))
+#endif
             availableList->Deselect(i);
     for (i = 0; i < useList->GetCount(); i++)
+#if wxCHECK_VERSION(2, 8, 0)
+        if (useList->IsSelected(i))
+#else
         if (useList->Selected(i))
+#endif
             useList->Deselect(i);
     
     availableList->Clear();
@@ -698,7 +710,11 @@ void ecPackagesDialog::OnClearKeywords(wxCommandEvent& event)
     TransferDataFromWindow();
     Fill();
     m_updateLists = FALSE;
+#if wxCHECK_VERSION(2, 8, 0)
+    m_StopWatch.Start();
+#else
     wxStartTimer();
+#endif
     FindWindow( ecID_PACKAGES_DIALOG_KEYWORDS )->SetFocus();
 }
 
@@ -713,7 +729,11 @@ void ecPackagesDialog::OnUpdateKeywordText(wxCommandEvent& event)
     
     TransferDataFromWindow();
     m_updateLists = TRUE;
+#if wxCHECK_VERSION(2, 8, 0)
+    m_StopWatch.Start();
+#else
     wxStartTimer();
+#endif
 }
 
 void ecPackagesDialog::OnClickOmitHardwarePackages(wxCommandEvent& event)
@@ -730,12 +750,20 @@ void ecPackagesDialog::OnClickExactMatch(wxCommandEvent& event)
 
 void ecPackagesDialog::OnIdle(wxIdleEvent& event)
 {
+#if wxCHECK_VERSION(2, 8, 0)
+    long elapsed = m_StopWatch.Time();
+#else
     long elapsed = wxGetElapsedTime(FALSE);
+#endif
     if (m_updateLists && (elapsed > m_updateInterval))
     {
         m_updateLists = FALSE;
         Fill();
+#if wxCHECK_VERSION(2, 8, 0)
+        m_StopWatch.Start();
+#else
         wxStartTimer();
+#endif
     }
 }
 

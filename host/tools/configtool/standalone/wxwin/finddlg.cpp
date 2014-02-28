@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -237,7 +237,11 @@ void ecFindDialog::OnFindNext(wxCommandEvent& event)
 
             rect2 = GetRect(); // screen coords
 
+#if wxCHECK_VERSION(2, 8, 0)
+            if (rect2.Contains(topLeft) || rect2.Contains(bottomRight))
+#else
             if (rect2.Inside(topLeft) || rect2.Inside(bottomRight))
+#endif
             {
                 Move(wxPoint(topLeft.x + rect1.width, rect2.y));
             }

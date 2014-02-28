@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -350,8 +350,13 @@ void ecTemplatesDialog::ShowDetails(bool show)
     }
     else
     {
+#if wxCHECK_VERSION(2, 8, 0)
+        GetSizer()->Detach(win1);
+        GetSizer()->Detach(win2);
+#else
         GetSizer()->Remove(win1);
         GetSizer()->Remove(win2);
+#endif
         button->SetLabel("&Details >>");
     }
     win1->Show(show);
