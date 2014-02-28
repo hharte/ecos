@@ -7,6 +7,9 @@
 	  standalone/wxwin/settingsdlg.cpp,
 	  standalone/wxwin/templatesdlg.cpp: Eliminate deprecated wxWidgets
 	calls. [ Bugzilla 1001947 ]
+	* standalone/wxwin/appsettings.cpp,
+	  standalone/wxwin/conflictsdlg.cpp: Silence initialization order
+	compiler warnings with recent GCC. [ Bugzilla 1001948 ]
 	* standalone/wxwin/mainwin.cpp, standalone/wxwin/configtool.cpp:
 	Update copyright strings.
 

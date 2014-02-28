@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -85,11 +85,10 @@ END_EVENT_TABLE()
 
 // Frame constructor
 ecResolveConflictsDialog::ecResolveConflictsDialog(wxWindow* parent, std::list<CdlConflict> conflicts, CdlTransaction transaction, wxList *parConflictsOfInterest):
+    m_Map(wxKEY_INTEGER),
     m_conflicts(conflicts),
     m_Transaction(transaction),
-    m_parConflictsOfInterest(parConflictsOfInterest),
-    m_Map(wxKEY_INTEGER)
-
+    m_parConflictsOfInterest(parConflictsOfInterest)
 {
     // Stop values from being changed by other mechanisms during the
     // duration of this dialog.

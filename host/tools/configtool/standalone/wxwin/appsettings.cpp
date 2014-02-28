@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -909,13 +909,13 @@ ecRunTestsSettings::ecRunTestsSettings():
     m_nDownloadTimeoutType(TIMEOUT_SPECIFIED),
     m_bRemote(FALSE),
     m_bSerial(TRUE),
-    m_strPort(wxT("/dev/ttyS0")),
     m_nBaud(38400),
     m_nLocalTCPIPPort(9000),
     m_nReset(RESET_MANUAL),
     m_nResourcePort(1),
     m_nRemotePort(1),
     m_bFarmed(TRUE),
+    m_strPort(wxT("/dev/ttyS0")),
     m_strRemoteHost(wxT("")),
     m_strResourceHost(wxT("")),
     m_strLocalTCPIPHost(wxT("")),
