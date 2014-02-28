@@ -351,7 +351,7 @@ bool ecSettings::LoadConfig()
 #ifdef __WXMSW__
         SYSTEM_INFO SystemInfo;
         GetSystemInfo(&SystemInfo);
-        m_strMakeOptions.Printf(_T("-j%d"),SystemInfo.dwNumberOfProcessors);
+        m_strMakeOptions.Printf(_T("-j%ld"),SystemInfo.dwNumberOfProcessors);
 #else
         long lProcessors;
         lProcessors = sysconf(_SC_NPROCESSORS_ONLN);

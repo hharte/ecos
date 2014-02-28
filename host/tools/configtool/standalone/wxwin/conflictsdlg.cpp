@@ -313,6 +313,8 @@ void ecResolveConflictsDialog::OnContinue(wxCommandEvent& event)
                         str.Printf(_("set %s to %s\n"), (const wxChar*) strName, (const wxChar*) strValue);
                         valuable->set_value (m_Transaction, ecUtils::UnicodeToStdStr (strValue), CdlValueSource_User);
                         break;
+                    default :
+                        break;
                     }
                 }
                 catch(...)
@@ -454,6 +456,8 @@ void ecResolveConflictsDialog::AddConflictSolutions(CdlConflict conflict)
             break;
         case CdlValueFlavor_Data :
             strValue = value.get_value().c_str();
+            break;
+        default :
             break;
         }
         

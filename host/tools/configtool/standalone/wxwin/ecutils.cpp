@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -202,7 +202,7 @@ bool ecUtils::StrToItemIntegerType(const wxString & str, long &d)
 const wxString ecUtils::IntToStr(long d,bool bHex)
 {
   wxString s;
-  s.Printf(bHex?wxT("0x%08x"):wxT("%d"),d);
+  s.Printf(bHex?wxT("0x%08lx"):wxT("%ld"),d);
   return s;
 }
 

@@ -790,6 +790,7 @@ bool ecPackagesDialog::IsAdded(const wxString& str)
     //	return (((wxListBox*) FindWindow( ecID_PACKAGES_DIALOG_USE_LIST ))->FindString(str) > -1) ;
 }
 
+#if 0
 static int ecPositionInStringList(const wxStringList& list, const wxString& item)
 {
     int i;
@@ -800,6 +801,7 @@ static int ecPositionInStringList(const wxStringList& list, const wxString& item
             i ++;
         return -1;
 }
+#endif
 
 void ecPackagesDialog::DisplayDescription(const wxString& item)
 {

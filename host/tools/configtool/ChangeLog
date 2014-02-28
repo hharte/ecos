@@ -10,6 +10,12 @@
 	* standalone/wxwin/appsettings.cpp,
 	  standalone/wxwin/conflictsdlg.cpp: Silence initialization order
 	compiler warnings with recent GCC. [ Bugzilla 1001948 ]
+	* standalone/wxwin/appsettings.cpp,
+	  standalone/wxwin/conflictsdlg.cpp,
+	  standalonw/wxwin/docsystem.cpp,
+	  standalone/wxwin/ecutils.cpp,
+	  standalone/wxwin/packagesdlg.cpp: Silence miscellaneous compiler
+	warnings with recent GCC. [ Bugzilla 1001951 ]
 	* standalone/wxwin/mainwin.cpp, standalone/wxwin/configtool.cpp:
 	Update copyright strings.
 

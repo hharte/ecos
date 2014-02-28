@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -494,9 +494,10 @@ index.html\n\
 \n\
 [INFOTYPES]\n" ;
 
+/*
     // When we have the ability to generate a hhk, replace above line with:
     // mainwin=\"eCos Documentation\",\"eCos.hhc\",\"eCos.hhk\",,\"index.html\",\"http://sources.redhat.com/ecos/\",\"Net Release\",\"http://www.redhat.com/products/ecos/\",\"eCos Product\",0x40060420,,0xc287e,[0,0,762,400],,,,,,,0\n\
-
+*/
     return TRUE;
 
 }
