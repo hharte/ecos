@@ -1,3 +1,9 @@
+2014-02-28  John Dallaway  <john@dallaway.org.uk>
+
+	* src/mcount.S: Add mcount functions for call-graph profiling.
+	* cdl/hal_cortexm.cdl: Add option to build mcount functions.
+	[ Bugzilla 1001954 ]
+
 2013-08-25  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cdl/hal_cortexm_fpu.cdl, include/fpv4_sp_d16_libm.h: Define Cortex-M4F
@@ -187,7 +193,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2011, 2014 Free Software Foundation, Inc.                        
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

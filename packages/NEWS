@@ -1,4 +1,13 @@
+* Cortex-M call-graph profiling support by John Dallaway.
+* Complex number math library port from newlib by Ilija Kocho.
+* Single-precision floating point math library port from newlib by
+  Ilija Kocho and Visar Zejnullahu.
+* Freescale Kinetis TWR-K60F120M platform HAL by Mike Jones.
 * STMicroelectronics STM32F4-Discovery platform HAL by John Dallaway.
+* Freescale I2C driver by Tomas Frydrych.
+* STMicroelectronics STM32 ethernet driver by Jerzy Dyrda.
+* Freescale Kinetis TWR-K70F120M port by Ilija Kocho.
+* Microchip ENC424J600 ethernet driver by Ilija Stanislevik.
 * Cortex-M STM32 F2 processor support with board support for STM3220G-EVAL
   and STM3240G-EVAL, along with many STM32 improvements. Contributed
   by eCosCentric Limited.

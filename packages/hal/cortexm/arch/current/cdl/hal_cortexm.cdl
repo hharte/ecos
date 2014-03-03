@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 2008, 2011 Free Software Foundation, Inc.                  
+## Copyright (C) 2008, 2011, 2014 Free Software Foundation, Inc.                  
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -39,8 +39,9 @@
 ##==========================================================================
 #######DESCRIPTIONBEGIN####
 ##
-## Author(s):    nickg
-## Date:         2008-07-30
+## Author(s):       nickg
+## Contributor(s):  jld
+## Date:            2008-07-30
 ##
 ######DESCRIPTIONEND####
 ##
@@ -55,6 +56,8 @@ cdl_package CYGPKG_HAL_CORTEXM {
     description   "
         This package provides generic support for the ARM Cortex-M architecture.
         It is also necessary to select a variant and platform HAL package."
+
+    implements    CYGINT_PROFILE_HAL_MCOUNT
 
     compile       hal_misc.c context.S cortexm_stub.c
 
@@ -153,6 +156,18 @@ cdl_package CYGPKG_HAL_CORTEXM {
          description     "
              Calculate the maximum exception priority that can be set by interrupts.
              Higher priorities are reserved for the DEBUG and SVC traps."
+    }
+
+    cdl_option CYGBLD_HAL_CORTEXM_MCOUNT {
+        display           "Support call-graph profiling"
+        flavor            bool
+        no_define
+        active_if         CYGPKG_PROFILE_GPROF
+        calculated        CYGPKG_PROFILE_CALLGRAPH
+        compile           mcount.S
+        description       "
+            Calculate whether mcount functions should be built
+            to support call-graph profiling."
     }
 
     cdl_option CYGBLD_LINKER_SCRIPT {
