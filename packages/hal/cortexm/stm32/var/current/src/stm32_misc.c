@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.                        
+// Copyright (C) 2008, 2009, 2011, 2014 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -531,6 +531,7 @@ cyg_uint32 hal_stm32_timer_clock( CYG_ADDRESS base )
 #ifdef CYGFUN_HAL_CORTEXM_STM32_PROFILE_TIMER
 // Use TIM2 for profiling
 #define STM32_TIMER_PROFILE CYGHWR_HAL_STM32_TIM2
+#define STM32_CLOCK_PROFILE CYGHWR_HAL_STM32_TIM2_CLOCK
 #define HAL_INTERRUPT_PROFILE CYGNUM_HAL_INTERRUPT_TIM2
 
 // Profiling timer ISR
@@ -548,6 +549,9 @@ static cyg_uint32 profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 int hal_enable_profile_timer(int resolution)
 {
     CYG_ASSERT(resolution < 0x10000, "Invalid profile timer resolution"); // 16 bits only
+
+    // Enable clock
+    CYGHWR_HAL_STM32_CLOCK_ENABLE(STM32_CLOCK_PROFILE);
 
     // Attach ISR
     HAL_INTERRUPT_ATTACH(HAL_INTERRUPT_PROFILE, &profile_isr, 0x1111, 0);
