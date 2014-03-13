@@ -408,6 +408,7 @@ void ecValueWindow::OnMouseEvent(wxMouseEvent& event)
             m_treeCtrl->SelectItem(item);
             ((ecConfigTreeCtrl*) m_treeCtrl)->GetPropertiesMenu()->SetClientData((void*) TRUE);
             PopupMenu(((ecConfigTreeCtrl*) m_treeCtrl)->GetPropertiesMenu(), event.GetX(), event.GetY());
+            CYG_UNUSED_PARAM(ecConfigItem *, configItem);
         }
         else
         {
@@ -904,6 +905,7 @@ void ecSplitterScrolledWindow::OnUpdateRestoreDefaults(wxUpdateUIEvent& event)
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
         event.Enable( IsChanged(id, TRUE ) );
+        CYG_UNUSED_PARAM(ecConfigItem *, item);
     }
 }
 

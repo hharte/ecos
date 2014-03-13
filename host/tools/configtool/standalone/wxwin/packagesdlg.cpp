@@ -625,6 +625,8 @@ void ecPackagesDialog::OnClickListBox1(wxCommandEvent& event)
         // TODO: check that this works for multiple-selection listboxes
         DisplayDescription(availableList->GetString(sel));
     }
+#else
+    CYG_UNUSED_PARAM(wxListBox *, availableList);
 #endif
     
     ClearSelections(*useList);
@@ -646,6 +648,8 @@ void ecPackagesDialog::OnClickListBox2(wxCommandEvent& event)
         // TODO: check that this works for multiple-selection listboxes
         DisplayDescription(useList->GetString(sel));
     }
+#else
+    CYG_UNUSED_PARAM(wxListBox *, useList);
 #endif
     
     ClearSelections(*availableList);
@@ -781,6 +785,8 @@ void ecPackagesDialog::Insert(const wxString& str, bool added, const wxString& d
         m_added.Add(str);
     
     //(added ? useList : availableList) -> Append(str);
+    CYG_UNUSED_PARAM(wxListBox *, availableList);
+    CYG_UNUSED_PARAM(wxListBox *, useList);
 }
 
 bool ecPackagesDialog::IsAdded(const wxString& str)
@@ -967,6 +973,7 @@ void ecPackagesDialog::UpdatePackageDescription ()
         m_packageDescription = wxEmptyString;
     }
     TransferDataToWindow ();
+    CYG_UNUSED_PARAM(ecConfigToolDoc *, pDoc);
 }
 
 void ecPackagesDialog::UpdateVersionList ()

@@ -355,6 +355,7 @@ bool ecConfigToolDoc::CanGenerateBuildTree()
     }
     else
         return FALSE;
+    CYG_UNUSED_PARAM(int, nCount);
 
     return TRUE;
 }
@@ -1308,6 +1309,7 @@ CdlInferenceCallbackResult ecConfigToolDoc::CdlInferenceHandler (CdlTransaction 
         wxGetApp().UnlockValues();
 
     }
+    CYG_UNUSED_PARAM(ecConfigToolDoc *, pDoc);
     return rc;
 }
 
@@ -1361,6 +1363,7 @@ void ecConfigToolDoc::CdlTransactionHandler (const CdlTransactionCallback & data
         (CdlValueSource_Inferred == source) ? "inferred" :
         (CdlValueSource_Wizard   == source) ? "wizard"   : "user"));
 */
+        CYG_UNUSED_PARAM(CdlValueSource, source);
         pControlView->Refresh (strName);
     }
 
@@ -2247,6 +2250,7 @@ bool ecConfigToolDoc::SwitchMemoryLayout (bool bNewTargetPlatform)
         // copy default MLT save files for the selected target/platform from the repository to the build tree if they do not already exist
         CopyMLTFiles();
     }
+    CYG_UNUSED_PARAM(bool, rc);
 
     if (m_strBuildTree.IsEmpty ()) // load the memory layout from the repository
     {

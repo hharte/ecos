@@ -781,6 +781,8 @@ bool ecApp::InitializeHelpController()
 
             wxGetApp().GetHelpController().SetBookBasePath(htmlDir);
         }
+#else
+        CYG_UNUSED_PARAM(ecConfigToolDoc *, doc);
 #endif
         return TRUE;
     }

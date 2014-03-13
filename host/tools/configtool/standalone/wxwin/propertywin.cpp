@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2008, 2009, 2014 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -296,6 +296,7 @@ void ecPropertyListCtrl::Fill(ecConfigItem *pti)
 
                     // TODO: set the image for a conflict item
                     // CListCtrl::SetItem (nIndex, 0, LVIF_IMAGE, NULL, bConflictItem ? 1 : 0, 0, 0, 0 );
+                    CYG_UNUSED_PARAM(bool, bConflictItem);
                 }
             }
         }
@@ -360,6 +361,7 @@ void ecPropertyListCtrl::RefreshValue()
         
         // TODO
         // CListCtrl::SetItem (nItem, 0, LVIF_IMAGE, NULL, bConflictItem ? 1 : 0, 0, 0, 0 );
+        CYG_UNUSED_PARAM(bool, bConflictItem);
     }
     
 }

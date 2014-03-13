@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2008 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2008, 2014 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -105,7 +105,7 @@ public:
     // enabled/disabled
     int GetStateCount() const { return m_maxStates; };
 
-    void SetStateCount(int count) { m_maxStates; }
+    void SetStateCount(int count) { /* m_maxStates; */ }
     int GetIconId(int state, bool enabled = TRUE) const;
     void SetIconId(int state, bool enabled, int iconId);
 

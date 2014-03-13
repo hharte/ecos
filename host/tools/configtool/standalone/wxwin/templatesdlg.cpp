@@ -385,6 +385,7 @@ void ecTemplatesDialog::OnSelHardwareTemplates(wxCommandEvent& event)
     UpdateDetails (); // display new hardware packages in details box
 
     TransferDataToWindow (); // display new target description
+    CYG_UNUSED_PARAM(wxChoice *, cdlPackageCtrl);
 }
 
 void ecTemplatesDialog::OnSelPackageTemplates(wxCommandEvent& event)
@@ -400,6 +401,7 @@ void ecTemplatesDialog::OnSelPackageTemplates(wxCommandEvent& event)
 	m_template = template_i->c_str();
 	
 	UpdateVersionList (wxT("")); // repopulate template versions combo box and select most recent version
+    CYG_UNUSED_PARAM(wxComboBox *, cdlHardwareCtrl);
 }
 
 void ecTemplatesDialog::OnSelPackageVersion(wxCommandEvent& event)
@@ -452,6 +454,8 @@ void ecTemplatesDialog::UpdateVersionList(const wxString& defaultVersion)
 	
 	// enable the version combo box only if there are multiple versions
 	cdlVersionCtrl->Enable (versions.size () > 1);
+    CYG_UNUSED_PARAM(wxComboBox *, cdlHardwareCtrl);
+    CYG_UNUSED_PARAM(wxChoice *, cdlPackageCtrl);
 }
 
 void ecTemplatesDialog::UpdateDetails()

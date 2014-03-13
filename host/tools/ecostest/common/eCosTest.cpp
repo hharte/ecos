@@ -1250,7 +1250,7 @@ BOOL WINAPI HandlerRoutine(
                            DWORD dwCtrlType   //  control signal type
                            )
 {
-  dwCtrlType; // eliminate compiler warning
+  CYG_UNUSED_PARAM(DWORD, dwCtrlType);
   return TRUE;
 }
 #endif

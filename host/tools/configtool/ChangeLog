@@ -5,6 +5,16 @@
 	  standalone/wxwin/configtree.cpp: Silence "set but unused" variable
 	warnings with recent GCC. [ Bugzilla 1001949 ]
 	* standalone/common/ecosconfig.cxx: Update copyright string.
+	* standalone/wxwin/configtool.cpp,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/configtree.cpp,
+	  standalone/wxwin/configtree.h,
+	  standalone/wxwin/filename.cpp,
+	  standalone/wxwin/packagesdlg.cpp,
+	  standalone/wxwin/propertywin.cpp,
+	  standalone/wxwin/runtestsdlg.cpp,
+	  standalone/wxwin/templatesdlg.cpp: Silence unused variable warnings
+	with recent GCC. [ Bugzilla 1001950 ]
 
 2014-02-28  Andy Jackson  <andy@xylanta.com>
 

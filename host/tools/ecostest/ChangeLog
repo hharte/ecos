@@ -2,6 +2,8 @@
 
 	* common/eCosTest.cpp: Silence "set but unused" variable warnings
 	with recent GCC. [ Bugzilla 1001949 ]
+	* common/eCosTest.cpp: Silence unused variable warnings	with recent
+	GCC. [ Bugzilla 1001950 ]
 
 2012-04-23  John Dallaway  <john@dallaway.org.uk>
 
