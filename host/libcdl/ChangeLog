@@ -1,3 +1,8 @@
+2014-03-13  Andy Jackson  <andy@xylanta.com>
+
+	* build.cxx, expr.cxx: Silence "set but unused" variable
+	warnings with recent GCC. [ Bugzilla 1001949 ]
+
 2008-09-18  John Dallaway  <jld@ecoscentric.com>
 
 	* build.cxx (generate_config_headers): Create Tcl channels for
@@ -1006,7 +1011,7 @@
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1999, 2000, 2001, 2004, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2004, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     

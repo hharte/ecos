@@ -10,7 +10,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.            
+// Copyright (C) 1999, 2000, 2001, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -2994,6 +2994,7 @@ CdlListExpressionBody::update(CdlTransaction transact, CdlNode source, CdlProper
             CYG_ASSERTC(handled);
             handled = pair_i->second->update(transact, source, source_prop, dest, change);
             CYG_ASSERTC(handled);
+            CYG_UNUSED_PARAM(bool, handled);
         }
         
         result = true;

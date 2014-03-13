@@ -10,7 +10,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -639,6 +639,7 @@ CdlBuildableBody::update_all_build_info(CdlBuildInfo_Loadable& build_info, std::
 
         result = CdlBuildableBody::split_custom_build_step(raw_data, target, deps, rules, error_msg);
         CYG_ASSERTC(true == result);
+        CYG_UNUSED_PARAM(bool, result);
 
         // Construct a local object, then copy it into the vector
         CdlBuildInfo_MakeObject local_copy;
@@ -676,6 +677,7 @@ CdlBuildableBody::update_all_build_info(CdlBuildInfo_Loadable& build_info, std::
 
         result = CdlBuildableBody::split_custom_build_step(raw_data, target, deps, rules, error_msg);
         CYG_ASSERTC(true == result);
+        CYG_UNUSED_PARAM(bool, result);
 
         // Construct a local object, then copy it into the vector
         CdlBuildInfo_Make local_copy;

@@ -10,7 +10,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -555,6 +555,7 @@ parse_msg(const char* msg, trace_entry& entry)
             format        += *msg++;
             long_version   = true;
         }
+        CYG_UNUSED_PARAM(bool, short_version);
 
         // The end of the format string has been reached.
         int format_ch  = *msg;

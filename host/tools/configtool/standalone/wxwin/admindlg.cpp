@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2013 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2003, 2013, 2014 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -472,6 +472,7 @@ bool ecAdminDialog::PopulatePackageTree (const wxString& packageDatabase)
     
     // Add a root item
     wxTreeItemId rootId = m_treeCtrl->AddRoot(_("Packages"), 0, -1);
+    CYG_UNUSED_PARAM(wxTreeItemId, rootId);
 
     // populate the new package tree
     
@@ -534,6 +535,7 @@ bool ecAdminDialog::EvalTclFile(int nargc, const wxString& Argv, const wxString&
     pszStatus = Tcl_SetVar (interp, "argv", (char*) argv.c_str(), 0);
     pszStatus = Tcl_SetVar (interp, "argc", (char*) argc.c_str(), 0);
     pszStatus = Tcl_SetVar (interp, "gui_mode", "1", 0); // return errors in result string
+    CYG_UNUSED_PARAM(const char *, pszStatus);
     int nStatus = Tcl_EvalFile (interp, (char*) argv0.c_str());
     const char* result = Tcl_GetStringResult (interp);
 

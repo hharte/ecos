@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -137,6 +137,9 @@ extern Time Now();
 // do not use macros, which would lead to double argument evaluation:
 extern int MIN(int a, int b);
 extern int MAX(int a, int b);
+
+// Get the CYG_UNUSED_PARAM() macro.
+#include <cyg/infra/cyg_type.h>
 
 #include <string.h>
 

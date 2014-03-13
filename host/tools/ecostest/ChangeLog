@@ -1,3 +1,8 @@
+2014-03-13  Andy Jackson  <andy@xylanta.com>
+
+	* common/eCosTest.cpp: Silence "set but unused" variable warnings
+	with recent GCC. [ Bugzilla 1001949 ]
+
 2012-04-23  John Dallaway  <john@dallaway.org.uk>
 
 	* common/eCosTestPlatform.cpp: Include limits.h for PATH_MAX

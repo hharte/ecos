@@ -1,3 +1,11 @@
+2014-03-13  Andy Jackson  <andy@xylanta.com>
+
+	* standalone/wxwin/admindlg.cpp,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/configtree.cpp: Silence "set but unused" variable
+	warnings with recent GCC. [ Bugzilla 1001949 ]
+	* standalone/common/ecosconfig.cxx: Update copyright string.
+
 2014-02-28  Andy Jackson  <andy@xylanta.com>
 
 	* standalone/wxwin/standalone/wxwin/finddlg.cpp,

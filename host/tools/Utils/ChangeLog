@@ -1,3 +1,8 @@
+2014-03-13  Andy Jackson  <andy@xylanta.com>
+
+	* common/eCosStd.h: Silence "set but unused" variable warnings with
+	recent GCC. [ Bugzilla 1001949 ]
+
 2006-03-29  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosSocket.h: Specify CeCosSerial as a friend class to

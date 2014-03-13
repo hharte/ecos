@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2009 Free Software Foundation, Inc.            
+// Copyright (C) 1998, 1999, 2000, 2009, 2014 Free Software Foundation, Inc.            
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -869,6 +869,7 @@ void CeCosTest::ConnectSocketToSerialThreadFunc()
   }
   TRACE(_T("ConnectSocketToSerial : done\n"));
   CeCosSocket::CloseSocket(m_nAuxListenSock);
+  CYG_UNUSED_PARAM(bool, rc);
 }
 
 static bool CALLBACK DerefBool(void *pParam)
@@ -935,6 +936,7 @@ void CeCosTest::AcceptThreadFunc()
       SetExecutable(m_strExecutable); // to set stripped length and title
       RunLocal();
       _tunlink(m_strExecutable);
+      CYG_UNUSED_PARAM(bool, bCanRun);
     }
     sendResult();
     m_pSock->recvInteger(n); // receive an ack

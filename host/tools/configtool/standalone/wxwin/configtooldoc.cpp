@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2003, 2005, 2006, 2008, 2009, 2010, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -382,6 +382,7 @@ bool ecConfigToolDoc::GenerateBuildTree()
             // copy new MLT files to the build tree as necessary
             bool rc = generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree.CygPath()), ecUtils::UnicodeToStdStr(m_strInstallTree.CygPath()));
             rc = TRUE;
+            CYG_UNUSED_PARAM(bool, rc);
         }
 
     }

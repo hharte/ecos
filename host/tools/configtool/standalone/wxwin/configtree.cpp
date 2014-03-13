@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2008, 2009 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2008, 2009, 2014 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -717,6 +717,7 @@ void ecSplitterScrolledWindow::OnProperties(wxCommandEvent& event)
         // or not
         menu = (wxMenu*) obj;
     }
+    CYG_UNUSED_PARAM(wxMenu *, menu);
 
     ecConfigTreeCtrl* treeCtrl = (ecConfigTreeCtrl*) FindWindow(ecID_TREE_CTRL);
     wxASSERT (treeCtrl != NULL) ;
