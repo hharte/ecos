@@ -1,3 +1,8 @@
+2014-03-13  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* tests/tm_basic.c: Increase resolution of time measurement for platforms
+	featuring HAL_CLOCK_READ_NS. [Bugzilla 1001958]
+
 2013-06-13  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* tests/kintr0.c, tests/kcache1.c: Fix compiler warnings.

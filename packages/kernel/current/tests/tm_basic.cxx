@@ -225,15 +225,26 @@ wait_for_tick(void)
     }
 }
 
+#ifdef HAL_CLOCK_READ_NS
+#define READ_CLOCK(__x) HAL_CLOCK_READ_NS(__x)
+#define NSTICK (1)
+#else
+#define READ_CLOCK(__x) HAL_CLOCK_READ(__x)
+#define NSTICK (1000)
+#endif
 // Display a number of ticks as microseconds
-// Note: for improved calculation significance, values are kept in ticks*1000
+// Note: for improved calculation significance, values are kept in ticks*NSTICK
 void
 show_ticks_in_us(cyg_uint32 ticks)
 {
     long long ns;
     ns = (ns_per_system_clock * (long long)ticks) / CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
+#ifdef HAL_CLOCK_READ_NS
+    diag_printf("%4d.%03d", (int)(ns/1000), (int)(ns%1000));
+#else
     ns += 5;  // for rounding to .01us
     diag_printf("%5d.%02d", (int)(ns/1000), (int)((ns%1000)/10));
+#endif
 }
 
 //
@@ -325,7 +336,7 @@ show_times_detail(fun_times ft[], int nsamples, char *title, bool ignore_first)
         }
         delta -= overhead;
         if (delta < 0) delta = 0;
-        delta *= 1000;
+        delta *= NSTICK;
         total += delta;
         if (delta < min) min = delta;
         if (delta > max) max = delta;
@@ -342,7 +353,7 @@ show_times_detail(fun_times ft[], int nsamples, char *title, bool ignore_first)
         }
         delta -= overhead;
         if (delta < 0) delta = 0;
-        delta *= 1000;
+        delta *= NSTICK;
         delta = delta - ave;
         if (delta < 0) delta = -delta;
         ave_dev += delta;
@@ -359,7 +370,7 @@ show_times_detail(fun_times ft[], int nsamples, char *title, bool ignore_first)
         }
         delta -= overhead;
         if (delta < 0) delta = 0;
-        delta *= 1000;
+        delta *= NSTICK;
         if ((delta <= (ave+ave_dev)) && (delta >= (ave-ave_dev))) con_ave++;
         if ((delta <= (min+ave_dev)) && (delta >= (min-ave_dev))) con_min++;
     }
@@ -445,9 +456,9 @@ test2(cyg_uint32 indx)
     int i;
     for (i = 0;  i < nthread_switches;  i++) {
         if (indx == 0) {
-            HAL_CLOCK_READ(&test2_ft[i].start);
+            READ_CLOCK(&test2_ft[i].start);
         } else {
-            HAL_CLOCK_READ(&test2_ft[i].end);
+            READ_CLOCK(&test2_ft[i].end);
         }
         cyg_thread_yield();
     }
@@ -466,7 +477,7 @@ mutex_test(cyg_uint32 indx)
     for (i = 0;  i < nmutexes;  i++) {
         cyg_semaphore_wait(&synchro);
         wait_for_tick(); // Wait until the next clock tick to minimize aberations
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_unlock(&test_mutexes[0]);
         cyg_mutex_lock(&test_mutexes[0]);
         cyg_semaphore_post(&synchro);
@@ -481,7 +492,7 @@ mbox_test(cyg_uint32 indx)
     void *item;
     do {
         item = cyg_mbox_get(test_mbox_handles[0]);
-        HAL_CLOCK_READ(&mbox_ft[(int)item].end);
+        READ_CLOCK(&mbox_ft[(int)item].end);
         cyg_semaphore_post(&synchro);
     } while ((int)item != (nmboxes-1));
     cyg_thread_exit();
@@ -494,7 +505,7 @@ semaphore_test(cyg_uint32 indx)
     int i;
     for (i = 0;  i < nsemaphores;  i++) {
         cyg_semaphore_wait(&test_semaphores[0]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
         cyg_semaphore_post(&synchro);
     }
     cyg_thread_exit();
@@ -513,7 +524,7 @@ run_thread_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_create(10,              // Priority - just a number
                           test0,           // entry
                           i,               // index
@@ -523,63 +534,63 @@ run_thread_tests(void)
                           &threads[i],     // Handle
                           &test_threads[i] // Thread data structure
             );
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Create thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_yield();
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Yield thread [all suspended]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_suspend(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Suspend [suspended] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_resume(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Resume thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_set_priority(threads[i], 11);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Set priority");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_get_priority(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Get priority");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_kill(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Kill [suspended] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_yield();
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Yield [no other] thread");
 
@@ -601,42 +612,42 @@ run_thread_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_resume(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Resume [suspended low prio] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_resume(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Resume [runnable low prio] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_suspend(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Suspend [runnable] thread");
 
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_yield();
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Yield [only low prio] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_suspend(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Suspend [runnable->not runnable]");
     for (i = 0;  i < ntest_threads;  i++) {
@@ -645,17 +656,17 @@ run_thread_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_kill(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Kill [runnable] thread");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_delete(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Destroy [dead] thread");
 
@@ -675,9 +686,9 @@ run_thread_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_delete(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Destroy [runnable] thread");
 
@@ -702,9 +713,9 @@ run_thread_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ntest_threads;  i++) {
-        HAL_CLOCK_READ(&thread_ft[i].start);
+        READ_CLOCK(&thread_ft[i].start);
         cyg_thread_resume(threads[i]);
-        HAL_CLOCK_READ(&thread_ft[i].end);
+        READ_CLOCK(&thread_ft[i].end);
     }
     show_times(thread_ft, ntest_threads, "Resume [high priority] thread");
     cyg_semaphore_wait(&synchro);  // Wait for all threads to finish
@@ -754,41 +765,41 @@ run_mutex_tests(void)
     // Mutex primitives
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_init(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Init mutex");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_lock(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Lock [unlocked] mutex");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_unlock(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Unlock [locked] mutex");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_trylock(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Trylock [unlocked] mutex");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_trylock(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Trylock [locked] mutex");
 
@@ -799,9 +810,9 @@ run_mutex_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
-        HAL_CLOCK_READ(&mutex_ft[i].start);
+        READ_CLOCK(&mutex_ft[i].start);
         cyg_mutex_destroy(&test_mutexes[i]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
     }
     show_times(mutex_ft, nmutexes, "Destroy mutex");
     run_mutex_circuit_test();
@@ -832,7 +843,7 @@ run_mutex_circuit_test(void)
     for (i = 0;  i < nmutexes;  i++) {
         cyg_semaphore_post(&synchro);
         cyg_mutex_lock(&test_mutexes[0]);
-        HAL_CLOCK_READ(&mutex_ft[i].end);
+        READ_CLOCK(&mutex_ft[i].end);
         cyg_mutex_unlock(&test_mutexes[0]);
         cyg_semaphore_wait(&synchro);
     }
@@ -847,131 +858,131 @@ run_mbox_tests(void)
     // Mailbox primitives
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_create(&test_mbox_handles[i], &test_mboxes[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Create mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_peek(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [empty] mbox");
 
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_put(test_mbox_handles[i], (void *)i);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Put [first] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_peek(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [1 msg] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_put(test_mbox_handles[i], (void *)i);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Put [second] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_peek(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek [2 msgs] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_get(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Get [first] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_get(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Get [second] mbox");
 #endif // ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_tryput(test_mbox_handles[i], (void *)i);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Tryput [first] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_peek_item(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek item [non-empty] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_tryget(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Tryget [non-empty] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_peek_item(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Peek item [empty] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_tryget(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Tryget [empty] mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_waiting_to_get(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Waiting to get mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_waiting_to_put(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Waiting to put mbox");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmboxes;  i++) {
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_delete(test_mbox_handles[i]);
-        HAL_CLOCK_READ(&mbox_ft[i].end);
+        READ_CLOCK(&mbox_ft[i].end);
     }
     show_times(mbox_ft, nmboxes, "Delete mbox");
 
@@ -1001,7 +1012,7 @@ run_mbox_circuit_test(void)
     cyg_thread_resume(mbox_test_thread_handle);
     for (i = 0;  i < nmboxes;  i++) {
         wait_for_tick(); // Wait until the next clock tick to minimize aberations
-        HAL_CLOCK_READ(&mbox_ft[i].start);
+        READ_CLOCK(&mbox_ft[i].start);
         cyg_mbox_put(test_mbox_handles[0], (void *)i);
         cyg_semaphore_wait(&synchro);
     }
@@ -1018,58 +1029,58 @@ run_semaphore_tests(void)
     // Semaphore primitives
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_init(&test_semaphores[i], 0);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Init semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_post(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Post [0] semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_wait(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Wait [1] semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_trywait(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Trywait [0] semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
         cyg_semaphore_post(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_trywait(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Trywait [1] semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_peek(&test_semaphores[i], &sem_val);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Peek semaphore");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nsemaphores;  i++) {
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_destroy(&test_semaphores[i]);
-        HAL_CLOCK_READ(&semaphore_ft[i].end);
+        READ_CLOCK(&semaphore_ft[i].end);
     }
     show_times(semaphore_ft, nsemaphores, "Destroy semaphore");
 
@@ -1098,7 +1109,7 @@ run_semaphore_circuit_test(void)
     cyg_thread_resume(semaphore_test_thread_handle);
     for (i = 0;  i < nsemaphores;  i++) {
         wait_for_tick(); // Wait until the next clock tick to minimize aberations
-        HAL_CLOCK_READ(&semaphore_ft[i].start);
+        READ_CLOCK(&semaphore_ft[i].start);
         cyg_semaphore_post(&test_semaphores[0]);
         cyg_semaphore_wait(&synchro);
     }
@@ -1114,41 +1125,41 @@ run_counter_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_create(&counters[i], &test_counters[i]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Create counter");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         val = cyg_counter_current_value(counters[i]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Get counter value");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_set_value(counters[i], val);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Set counter value");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_tick(counters[i]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Tick counter");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_delete(counters[i]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Delete counter");
     end_of_test_group();
@@ -1161,17 +1172,17 @@ run_flag_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_init(&test_flags[i]);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Init flag");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_destroy(&test_flags[i]);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Destroy flag");
 
@@ -1182,62 +1193,62 @@ run_flag_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_maskbits(&test_flags[i], 0);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Mask bits in flag");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Set bits in flag [no waiters]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_AND);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Wait for flag [AND]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_OR);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Wait for flag [OR]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_AND|CYG_FLAG_WAITMODE_CLR);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Wait for flag [AND/CLR]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Wait for flag [OR/CLR]");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nflags;  i++) {
         cyg_flag_setbits(&test_flags[i], 0x11);
-        HAL_CLOCK_READ(&flag_ft[i].start);
+        READ_CLOCK(&flag_ft[i].start);
         cyg_flag_peek(&test_flags[i]);
-        HAL_CLOCK_READ(&flag_ft[i].end);
+        READ_CLOCK(&flag_ft[i].end);
     }
     show_times(flag_ft, nflags, "Peek on flag");
 
@@ -1262,7 +1273,7 @@ alarm_cb2(cyg_handle_t alarm, cyg_addrword_t indx)
 {
     if (alarm_cnt == nscheds) return;
     sched_ft[alarm_cnt].start = 0;
-    HAL_CLOCK_READ(&sched_ft[alarm_cnt++].end);
+    READ_CLOCK(&sched_ft[alarm_cnt++].end);
     if (alarm_cnt == nscheds) {
         cyg_semaphore_post(&synchro);
     }
@@ -1294,7 +1305,7 @@ alarm_test2(cyg_uint32 id)
 {
     cyg_handle_t me = cyg_thread_self();
     while (true) {
-        HAL_CLOCK_READ(&sched_ft[alarm_cnt++].end);
+        READ_CLOCK(&sched_ft[alarm_cnt++].end);
         cyg_thread_suspend(me);
     }
 }
@@ -1311,44 +1322,44 @@ run_alarm_tests(void)
         cyg_counter_create(&counters[i], &test_counters[i]);
     }
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_alarm_create(counters[0], alarm_cb, 0, &alarms[i], &test_alarms[i]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     show_times(alarm_ft, nalarms, "Create alarm");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     init_val = 0;  step_val = 0;
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_alarm_initialize(alarms[i], init_val, step_val);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     show_times(alarm_ft, nalarms, "Initialize alarm");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     init_val = 0;  step_val = 0;
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_alarm_disable(alarms[i]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     show_times(alarm_ft, nalarms, "Disable alarm");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     init_val = 0;  step_val = 0;
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_alarm_enable(alarms[i]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     show_times(alarm_ft, nalarms, "Enable alarm");
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_alarm_delete(alarms[i]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     show_times(alarm_ft, nalarms, "Delete alarm");
 
@@ -1359,9 +1370,9 @@ run_alarm_tests(void)
     cyg_alarm_initialize(alarms[0], init_val, step_val);
     cyg_alarm_enable(alarms[0]);
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_tick(counters[0]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Tick counter [1 alarm]");
 
@@ -1374,9 +1385,9 @@ run_alarm_tests(void)
         cyg_alarm_enable(alarms[i]);
     }
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_tick(counters[0]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Tick counter [many alarms]");
 
@@ -1387,9 +1398,9 @@ run_alarm_tests(void)
     cyg_alarm_initialize(alarms[0], init_val, step_val);
     cyg_alarm_enable(alarms[0]);
     for (i = 0;  i < ncounters;  i++) {
-        HAL_CLOCK_READ(&counter_ft[i].start);
+        READ_CLOCK(&counter_ft[i].start);
         cyg_counter_tick(counters[0]);
-        HAL_CLOCK_READ(&counter_ft[i].end);
+        READ_CLOCK(&counter_ft[i].end);
     }
     show_times(counter_ft, ncounters, "Tick & fire counter [1 alarm]");
 
@@ -1402,9 +1413,9 @@ run_alarm_tests(void)
         cyg_alarm_enable(alarms[i]);
     }
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_counter_tick(counters[0]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     for (i = 0;  i < nalarms;  i++) {
         cyg_alarm_delete(alarms[i]);
@@ -1420,9 +1431,9 @@ run_alarm_tests(void)
         cyg_alarm_enable(alarms[i]);
     }
     for (i = 0;  i < nalarms;  i++) {
-        HAL_CLOCK_READ(&alarm_ft[i].start);
+        READ_CLOCK(&alarm_ft[i].start);
         cyg_counter_tick(counters[0]);
-        HAL_CLOCK_READ(&alarm_ft[i].end);
+        READ_CLOCK(&alarm_ft[i].end);
     }
     for (i = 0;  i < nalarms;  i++) {
         cyg_alarm_delete(alarms[i]);
@@ -1537,9 +1548,9 @@ run_sched_tests(void)
 
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nscheds;  i++) {
-        HAL_CLOCK_READ(&sched_ft[i].start);
+        READ_CLOCK(&sched_ft[i].start);
         cyg_scheduler_lock();
-        HAL_CLOCK_READ(&sched_ft[i].end);
+        READ_CLOCK(&sched_ft[i].end);
         cyg_scheduler_unlock();
     }
     show_times(sched_ft, nscheds, "Scheduler lock");
@@ -1547,9 +1558,9 @@ run_sched_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nscheds;  i++) {
         cyg_scheduler_lock();
-        HAL_CLOCK_READ(&sched_ft[i].start);
+        READ_CLOCK(&sched_ft[i].start);
         cyg_scheduler_unlock();
-        HAL_CLOCK_READ(&sched_ft[i].end);
+        READ_CLOCK(&sched_ft[i].end);
     }
     show_times(sched_ft, nscheds, "Scheduler unlock [0 threads]");
 
@@ -1569,9 +1580,9 @@ run_sched_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nscheds;  i++) {
         cyg_scheduler_lock();
-        HAL_CLOCK_READ(&sched_ft[i].start);
+        READ_CLOCK(&sched_ft[i].start);
         cyg_scheduler_unlock();
-        HAL_CLOCK_READ(&sched_ft[i].end);
+        READ_CLOCK(&sched_ft[i].end);
     }
     show_times(sched_ft, nscheds, "Scheduler unlock [1 suspended]");
     for (i = 0;  i < 1;  i++) {
@@ -1594,9 +1605,9 @@ run_sched_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nscheds;  i++) {
         cyg_scheduler_lock();
-        HAL_CLOCK_READ(&sched_ft[i].start);
+        READ_CLOCK(&sched_ft[i].start);
         cyg_scheduler_unlock();
-        HAL_CLOCK_READ(&sched_ft[i].end);
+        READ_CLOCK(&sched_ft[i].end);
     }
     show_times(sched_ft, nscheds, "Scheduler unlock [many suspended]");
     for (i = 0;  i < ntest_threads;  i++) {
@@ -1620,9 +1631,9 @@ run_sched_tests(void)
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nscheds;  i++) {
         cyg_scheduler_lock();
-        HAL_CLOCK_READ(&sched_ft[i].start);
+        READ_CLOCK(&sched_ft[i].start);
         cyg_scheduler_unlock();
-        HAL_CLOCK_READ(&sched_ft[i].end);
+        READ_CLOCK(&sched_ft[i].end);
     }
     show_times(sched_ft, nscheds, "Scheduler unlock [many low prio]");
     for (i = 0;  i < ntest_threads;  i++) {
@@ -1666,7 +1677,7 @@ _run_all_tests(CYG_ADDRESS id)
 
     wait_for_tick();
     for (i = 0;  i < nsamples;  i++) {
-        HAL_CLOCK_READ(&tv[i]);
+        READ_CLOCK(&tv[i]);
     }
     tv0 = 0;
     for (i = 1;  i < nsamples;  i++) {
@@ -1685,17 +1696,17 @@ _run_all_tests(CYG_ADDRESS id)
             tick1 = cyg_current_time();
             if (tick0 != tick1) break;
         }
-        HAL_CLOCK_READ(&tv[i]);
+        READ_CLOCK(&tv[i]);
     }
     tv1 = 0;
     for (i = 0;  i < nsamples;  i++) {
-        tv1 += tv[i] * 1000;
+        tv1 += tv[i] * NSTICK;
     }
     tv1 = tv1 / nsamples;
     tv1 -= overhead;  // Adjust out the cost of getting the timer value
     diag_printf("Clock interrupt took");
     show_ticks_in_us(tv1);
-    diag_printf(" microseconds (%d raw clock ticks)\n", tv1/1000);
+    diag_printf(" microseconds (%d raw clock ticks)\n", tv1/NSTICK);
     enable_clock_latency_measurement();
 
     ticks = cyg_current_time();
@@ -1726,10 +1737,10 @@ _run_all_tests(CYG_ADDRESS id)
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
     // Display latency figures in same format as all other numbers
     disable_clock_latency_measurement();
-    clock_ave = (total_clock_latency*1000) / total_clock_interrupts;
+    clock_ave = (total_clock_latency*NSTICK) / total_clock_interrupts;
     show_ticks_in_us(clock_ave);
-    show_ticks_in_us(min_clock_latency*1000);
-    show_ticks_in_us(max_clock_latency*1000);
+    show_ticks_in_us(min_clock_latency*NSTICK);
+    show_ticks_in_us(max_clock_latency*NSTICK);
     show_ticks_in_us(0);
     diag_printf("            Clock/interrupt latency\n\n");
     enable_clock_latency_measurement();    
@@ -1737,10 +1748,10 @@ _run_all_tests(CYG_ADDRESS id)
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY) && defined(HAL_CLOCK_LATENCY)
     disable_clock_latency_measurement();    
-    clock_ave = (total_clock_dsr_latency*1000) / total_clock_dsr_calls;
+    clock_ave = (total_clock_dsr_latency*NSTICK) / total_clock_dsr_calls;
     show_ticks_in_us(clock_ave);
-    show_ticks_in_us(min_clock_dsr_latency*1000);
-    show_ticks_in_us(max_clock_dsr_latency*1000);
+    show_ticks_in_us(min_clock_dsr_latency*NSTICK);
+    show_ticks_in_us(max_clock_dsr_latency*NSTICK);
     show_ticks_in_us(0);
     diag_printf("            Clock DSR latency\n\n");
     enable_clock_latency_measurement();
