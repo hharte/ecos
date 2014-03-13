@@ -1,7 +1,7 @@
 // ####ECOSHOSTGPLCOPYRIGHTBEGIN####                                        
 // -------------------------------------------                              
 // This file is part of the eCos host tools.                                
-// Copyright (C) 1998, 1999, 2000, 2004 Free Software Foundation, Inc.      
+// Copyright (C) 1998, 1999, 2000, 2004, 2014 Free Software Foundation, Inc.      
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
@@ -638,7 +638,7 @@ bool CSubprocess::PSExtract(CSubprocess::PInfoArray &arPinfo)
             
             if(dwPidSize/sizeof(DWORD)<dwMaxPids){
               rc=true;
-              for( DWORD dwIndex = 0 ; (signed)dwIndex < dwPidSize/sizeof(DWORD); dwIndex++ ) {
+              for( DWORD dwIndex = 0 ; dwIndex < dwPidSize/sizeof(DWORD); dwIndex++ ) {
                 // Regardless of OpenProcess success or failure, we
                 // still call the enum func with the ProcID.
                 DWORD pid=arPids[dwIndex];
