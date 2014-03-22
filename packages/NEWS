@@ -1,3 +1,5 @@
+* PowerPC call-graph profiling support by John Dallaway.
+* ARM call-graph profiling support by John Dallaway.
 * Cortex-M call-graph profiling support by John Dallaway.
 * Complex number math library port from newlib by Ilija Kocho.
 * Single-precision floating point math library port from newlib by

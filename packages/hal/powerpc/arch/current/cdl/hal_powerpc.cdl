@@ -8,7 +8,7 @@
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
 ## -------------------------------------------                              
 ## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007 Free Software Foundation, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2007, 2014 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under    
 ## the terms of the GNU General Public License as published by the Free     
@@ -41,7 +41,7 @@
 #
 # Author(s):      jskov
 # Original data:  bartv
-# Contributors:
+# Contributors:   jld
 # Date:           1999-11-02
 #
 #####DESCRIPTIONEND####
@@ -65,6 +65,8 @@ cdl_package CYGPKG_HAL_POWERPC {
         no_define
         requires 1 == CYGINT_HAL_POWERPC_VARIANT
     }
+
+    implements    CYGINT_PROFILE_HAL_MCOUNT
 
     compile       hal_misc.c context.S ppc_stub.c hal_intr.c
 
@@ -251,6 +253,18 @@ cdl_package CYGPKG_HAL_POWERPC {
             description   "
                 This option specifies the set of tests for the PowerPC HAL."
         }
+    }
+
+    cdl_option CYGBLD_HAL_POWERPC_MCOUNT {
+        display           "Support call-graph profiling"
+        flavor            bool
+        no_define
+        active_if         CYGPKG_PROFILE_GPROF
+        calculated        CYGPKG_PROFILE_CALLGRAPH
+        compile           mcount.S
+        description       "
+            Calculate whether mcount functions should be built
+            to support call-graph profiling."
     }
 
     cdl_option CYGBLD_LINKER_SCRIPT {

@@ -1,3 +1,9 @@
+2014-03-20  John Dallaway  <john@dallaway.org.uk>
+
+	* src/mcount.S: Add mcount functions for call-graph profiling.
+	* cdl/hal_powerpc.cdl: Add option to build mcount functions.
+	[ Bugzilla 1001961 ]
+
 2011-01-02  Sergei Gavrikov  <sergei.gavrikov@gmail.com>
 
 	* cdl/hal_powerpc.cdl: Eliminate some warnings. [ Bugzilla
@@ -1946,7 +1952,7 @@ Mon Aug 17 16:23:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // ####GPLCOPYRIGHTBEGIN####                                                
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2006, 2007, 2008, 2014 Free Software Foundation, Inc.
 //
 // This program is free software; you can redistribute it and/or modify     
 // it under the terms of the GNU General Public License as published by     
