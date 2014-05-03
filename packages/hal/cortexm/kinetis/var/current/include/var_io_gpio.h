@@ -118,6 +118,20 @@ typedef volatile struct cyghwr_hal_kinetis_gpio_s {
 #define CYGHWR_HAL_KINETIS_GPIO_PIN_DDR_IN(__port, __pin)  \
   CYGHWR_HAL_KINETIS_GPIO(__port, pddr) &= ~BIT_(__pin)
 
+
+__externC void hal_gpio_pin_ddr_out(cyg_uint32 pin);
+__externC void hal_gpio_pin_ddr_in(cyg_uint32 pin);
+
+__externC cyg_uint32 hal_gpio_get_pin(cyg_uint32 pin);
+
+__externC void hal_gpio_port_clear(cyg_uint32 port_i, cyg_uint32 mask);
+__externC void hal_gpio_port_set(cyg_uint32 port_i, cyg_uint32 mask);
+__externC void hal_gpio_port_toggle(cyg_uint32 port_i, cyg_uint32 mask);
+
+__externC void hal_gpio_pin_clear(cyg_uint32 pin);
+__externC void hal_gpio_pin_set(cyg_uint32 pin);
+__externC void hal_gpio_pin_toggle(cyg_uint32 pin);
+
 //-----------------------------------------------------------------------------
 // end of var_io_gpio.h
 #endif // CYGONCE_HAL_VAR_IO_GPIO_H

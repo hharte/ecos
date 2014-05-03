@@ -58,7 +58,7 @@ cdl_package CYGPKG_HAL_CORTEXM_KINETIS {
         based Kinetis microcontroller family.
         It is also necessary to select a variant and platform HAL package."
 
-    compile       hal_diag.c kinetis_misc.c kinetis_clocking.c
+    compile       hal_diag.c kinetis_misc.c kinetis_clocking.c kinetis_gpio.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK

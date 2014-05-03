@@ -1,3 +1,11 @@
+2014-05-05  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* cdl/hal_cortexm_kinetis.cdl:
+	* include/var_io_gpio.h:
+	* src/kinetis_gpio.c:    New
+	Add functions for Kinetis GPIO pin configuration and manipulation.
+	[ Bugzilla 1001981 ]
+
 2014-02-13  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* cortexm/kinetis/var/current/include/var_intr.h:
