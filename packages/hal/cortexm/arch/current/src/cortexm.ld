@@ -42,7 +42,7 @@
 STARTUP(vectors.o)
 ENTRY(reset_vector)
 INPUT(extras.o)
-GROUP(libtarget.a libgcc.a libsupc++.a)
+GROUP(CYGBLD_HAL_LINKER_GROUPED_LIBS)
 
 #if defined(__ARMEB__)
 OUTPUT_FORMAT(elf32-bigarm)

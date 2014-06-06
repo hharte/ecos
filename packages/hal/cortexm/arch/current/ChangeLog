@@ -1,3 +1,8 @@
+2014-05-06  Ilija Kocho  <ilijak@siva.com.mk>
+
+	* src/cortexm.ld: Use CYGBLD_HAL_LINKER_GROUPED_LIBS macro.
+	[ Bugzilla 1001989 ]
+
 2014-02-28  John Dallaway  <john@dallaway.org.uk>
 
 	* src/mcount.S: Add mcount functions for call-graph profiling.
