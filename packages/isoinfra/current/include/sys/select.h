@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2014 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -102,19 +102,17 @@ typedef	struct fd_set {
 #define	FD_CLR(__n, __p)   ((__p)->fds_bits[(__n)/__NFDBITS] &= ~(1 << ((__n) % __NFDBITS)))
 #define	FD_ISSET(__n, __p) ((__p)->fds_bits[(__n)/__NFDBITS] & (1 << ((__n) % __NFDBITS)))
 
-#define	FD_COPY(__f, __t)                                       \
-{                                                               \
+#define	FD_COPY(__f, __t) CYG_MACRO_START                       \
     unsigned int _i;                                            \
     for( _i = 0; _i < __howmany(FD_SETSIZE, __NFDBITS) ; _i++ ) \
         (__t)->fds_bits[_i] = (__f)->fds_bits[_i];              \
-}
+CYG_MACRO_END
 
-#define	FD_ZERO(__p)                                            \
-{                                                               \
+#define	FD_ZERO(__p) CYG_MACRO_START                            \
     unsigned int _i;                                            \
     for( _i = 0; _i < __howmany(FD_SETSIZE, __NFDBITS) ; _i++ ) \
         (__p)->fds_bits[_i] = 0;                                \
-}
+CYG_MACRO_END
 
 #   endif /* CYGONCE_ISO_SYS_SELECT_FD_SETS */
 
