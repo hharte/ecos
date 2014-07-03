@@ -8,7 +8,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2014 Free Software Foundation, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -40,7 +40,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jlarmour
-// Contributors: 
+// Contributors: jld
 // Date:         2000-04-20
 // Purpose:     
 // Description: 
@@ -77,5 +77,9 @@ sprintf( char *s, const char *format, ... ) __THROW
 
     return rc;
 } // sprintf()
+
+externC int
+__sprintf_chk( char *s, const char *format, ... ) __THROW
+    CYGBLD_ATTRIB_ALIAS( sprintf );
 
 // EOF sprintf.cxx
