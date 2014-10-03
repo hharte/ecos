@@ -197,6 +197,9 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.ctors*))) __CTOR_END__ = ABSOLUTE(.);                        \
      __DTOR_LIST__ = ABSOLUTE(.);                                            	\
        KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                    	\
+      /* In gcc 4.7, constructors moved from .ctors to .init_array . */         \
+     . = ALIGN(8); __init_array_start__ = ABSOLUTE(.);                          \
+      KEEP(*(SORT(.init_array*))) __init_array_end__ = ABSOLUTE(.);             \
     . = ALIGN(32);                                                              \
     KEEP(*( SORT (.ecos.table.*)));                                             \
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);              \

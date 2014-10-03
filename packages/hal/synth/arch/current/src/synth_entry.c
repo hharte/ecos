@@ -68,10 +68,27 @@ cyg_bool cyg_hal_stop_constructors;
 typedef void (*pfunc) (void);
 extern pfunc __CTOR_LIST__[];
 extern pfunc __CTOR_END__[];
+extern pfunc __init_array_start__[];
+extern pfunc __init_array_end__[];
 
 void
 cyg_hal_invoke_constructors (void)
 {
+    /* Note: We appear to be running the constructors twice here, but
+     * this is not actually the case.
+     * gcc 4.7 changed the way static constructors are linked:
+     * - Prior to gcc 4.7, they appeared in the .ctors section of the
+     *   ELF * image.
+     * - Since gcc 4.7, they moved to .init_array and in the reverse
+     *   order.
+     *
+     * For us to look for both (both here and in synth.ld) is harmless,
+     * because the constructors are only linked once, and we are not
+     * too worried about squeezing every last byte of code size out of
+     * the synth target.
+     *
+     * - wry, 2014-10-01
+     */
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
     static pfunc *p = &__CTOR_END__[-1];
     
@@ -83,10 +100,19 @@ cyg_hal_invoke_constructors (void)
             break;
         }
     }
+    for (p = &__init_array_start__[0]; p != (__init_array_end__); p++) {
+        (*p) ();
+        if (cyg_hal_stop_constructors) {
+            p++;
+            break;
+        }
+    }
 #else
     pfunc *p;
 
     for (p = &__CTOR_END__[-1]; p >= __CTOR_LIST__; p--)
+        (*p) ();
+    for (p = &__init_array_start__[0]; p != (__init_array_end__); p++)
         (*p) ();
 #endif
 }
