@@ -382,7 +382,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
             _timeout = timeout > MIN_TIMEOUT ? MIN_TIMEOUT : timeout;
             mon_set_read_char_timeout(_timeout);
             while (timeout > 0) {
-                res = mon_read_char_with_timeout(&c);
+                res = mon_read_char_with_timeout((unsigned char *)&c);
                 if (res) {
                     // Got a character
                     do_idle(false);
@@ -395,7 +395,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
                 return _GETS_TIMEOUT;  // Input timed out
             }
         } else {
-            mon_read_char(&c);
+            mon_read_char((unsigned char *)&c);
         }
         *eol = '\0';
 #define CTRL(c) ((c)&0x1F)

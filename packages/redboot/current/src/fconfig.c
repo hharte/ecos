@@ -425,7 +425,7 @@ get_config(char *dp, char *title, int list_opt, char *newvalue )
 		diag_printf("    %s\n", name);
             return CONFIG_BAD;
 	}
-        strcpy((unsigned char *)val_ptr, line);
+        strcpy(val_ptr, line);
 	break;
 #endif
 #endif
