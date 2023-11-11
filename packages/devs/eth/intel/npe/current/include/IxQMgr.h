@@ -98,10 +98,10 @@
 #    ifdef NO_INLINE_APIS
 #        undef NO_INLINE_APIS
 #    endif
-#    define IX_QMGR_INLINE  /* Empty Define */
+#    define IX_QMGR_INLINE
 #else
 #    ifndef NO_INLINE_APIS
-#       define IX_QMGR_INLINE __inline__ extern
+#       define IX_QMGR_INLINE inline __attribute__((always_inline)) extern
 #    else
 #       define IX_QMGR_INLINE /* Empty Define */
 #    endif

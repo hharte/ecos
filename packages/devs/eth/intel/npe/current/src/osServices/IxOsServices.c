@@ -37,6 +37,10 @@
  * -- End Intel Copyright Notice --
  */
 
+#if defined(__ECOS)
+#undef __linux
+#endif /* defined(__ECOS) */`
+
 #ifdef __vxworks
 
 #include <vxWorks.h>

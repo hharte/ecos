@@ -228,7 +228,7 @@
  * function to walk through the mbuf chain of a netBufLib pool to count
  * the buffers currently available in the pool
  */
-static __inline__ int
+static inline __attribute__((always_inline)) int
 get_free_mblk_count(NET_POOL *poolPtr)
 {
     int i = 0;

@@ -18,6 +18,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 current ;
+    package -hardware CYGPKG_DEVS_ETH_INTEL_NPE current ;
+    package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_NPE current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -87,7 +89,7 @@ cdl_component CYGSEM_REDBOOT_BSP_SYSCALLS {
 };
 
 cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT {
-    inferred_value 0x6000000
+    inferred_value 0x00080000
 };
 
 cdl_option CYGHWR_HAL_IXP425_PCI_NP_WORKAROUND {
@@ -133,5 +135,4 @@ cdl_option CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE {
 cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
     user_value 1
 };
-
 
