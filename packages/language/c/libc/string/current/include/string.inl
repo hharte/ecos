@@ -59,11 +59,13 @@
 
 // FUNCTIONS
 
+#if __GNUC__ < 12
 extern __inline__ int
 strcoll( const char *s1, const char *s2 )
 {
     return strcmp(s1, s2);
 } // strcoll()
+#endif
 
 
 #endif // CYGONCE_LIBC_STRING_STRING_INL multiple inclusion protection
