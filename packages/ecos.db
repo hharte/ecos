@@ -1,57 +1,3 @@
-#=============================================================================
-#
-#    ecos.db
-#
-#    This file is a temporary database for eCos package information.
-#    It replaces the old packages and targets files, and will in turn
-#    be subsumed by another file containing more inormation.
-#
-#=============================================================================
-## ####ECOSGPLCOPYRIGHTBEGIN####                                            
-## -------------------------------------------                              
-## This file is part of eCos, the Embedded Configurable Operating System.   
-## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
-##
-## eCos is free software; you can redistribute it and/or modify it under    
-## the terms of the GNU General Public License as published by the Free     
-## Software Foundation; either version 2 or (at your option) any later      
-## version.                                                                 
-##
-## eCos is distributed in the hope that it will be useful, but WITHOUT      
-## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
-## for more details.                                                        
-##
-## You should have received a copy of the GNU General Public License        
-## along with eCos; if not, write to the Free Software Foundation, Inc.,    
-## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
-##
-## As a special exception, if other files instantiate templates or use      
-## macros or inline functions from this file, or you compile this file      
-## and link it with other works to produce a work based on this file,       
-## this file does not by itself cause the resulting work to be covered by   
-## the GNU General Public License. However the source code for this file    
-## must still be made available in accordance with section (3) of the GNU   
-## General Public License v2.                                               
-##
-## This exception does not invalidate any other reasons why a work based    
-## on this file might be covered by the GNU General Public License.         
-## -------------------------------------------                              
-## ####ECOSGPLCOPYRIGHTEND####                                              
-#=============================================================================
-######DESCRIPTIONBEGIN####
-#
-# Author(s):	bartv
-# Date:		1999-06-13
-#
-# This file contains three lots of information. It details the packages
-# in the component repository, the target boards supported by those
-# packages, and a set of templates that can be used to instantiate
-# configuration.
-# 
-#####DESCRIPTIONEND####
-#===============================================================================
-
 package CYGPKG_HAL {
         alias		{ "eCos common HAL" hal hal_common }
 	directory	hal/common
@@ -139,7 +85,6 @@ package CYGPKG_DEVS_CAN_LOOP {
     script	      can_loop.cdl	
     description       "Loopback CAN device driver."
 }
-
 
 package CYGPKG_IO_PCMCIA {
 	alias 		{ "PCMCIA & Compact Flash support" pcmcia io_pcmcia cf }
@@ -864,6 +809,7 @@ package CYGPKG_DEVS_FLASH_ATLAS {
            This package contains hardware support for FLASH memory
 	   on the MIPS Atlas platform."
 }
+
 package CYGPKG_DEVS_FLASH_SYNTH {
     alias               { "Synthetic FLASH memory support (legacy)" synth_flash flash_synth }
     directory           devs/flash/synth
@@ -1021,7 +967,6 @@ package CYGPKG_IO_SERIAL_ARM_XSCALE_PXA2X0 {
     script        ser_arm_xscale_pxa2x0.cdl
     description       "Intel XScale/PXA2X0 serial device drivers"
 }
-
 
 package CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310 {
     alias 	      { "Intel XScale IOP310 serial driver"
@@ -1743,7 +1688,7 @@ package CYGPKG_NET_SNTP {
         description "
 This package provides a SNTP client which can recieve broadcast time 
 information and set the system clock."
-}  
+}
 
 package CYGPKG_PPP {
 	alias 		{ "PPP support" ppp }
@@ -1778,7 +1723,6 @@ package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
         description     "Ethernet driver for Samsung ks32c5000/S3c4510."
 }
 
-
 package CYGPKG_DEVS_ETH_ARM_AAED2000 {
 	alias 		{ "Ethernet driver for Agilent AAED2000 board" aaed2000_eth_driver }
 	hardware
@@ -1787,6 +1731,7 @@ package CYGPKG_DEVS_ETH_ARM_AAED2000 {
         description     "Ethernet driver for Agilent AAED2000
                          development boards."
 }
+
 package CYGPKG_DEVS_ETH_AMD_PCNET {
 	alias 		{ "AMD PCNET ethernet driver" pcnet_eth_driver }
 	hardware
@@ -2145,8 +2090,6 @@ package CYGPKG_DEVS_ETH_MIPS_REFIDT334 {
         description     "Ethernet driver for MIPS IDT 79RC32334 reference platform."
 }
 
-# Not sure whether this should be "hardware"; if so, it should be mentioned
-# in all targets that can use it.
 package CYGPKG_DEVS_ETH_CF {
 	alias 		{ "PCMCIA (Compact Flash) ethernet drivers" cf_eth_drivers }
 	directory	devs/eth/cf
@@ -2188,7 +2131,6 @@ package CYGPKG_DEVS_ETH_MCF5272 {
         description     "Ethernet driver for the MCF5272."
 }
 
-
 package CYGPKG_DEVS_ETH_ECOSYNTH {
         alias           { "Synthetic target ethernet driver" ecosyntheth ecosynth_eth_driver }
         directory       devs/eth/synth/ecosynth
@@ -2204,7 +2146,7 @@ package CYGPKG_DEVS_ETH_ENC424J600 {
         description     "Driver for Microchip ENC424J600 and ENC624J600 Ethernet controllers."
 }
 
-package CYGPKG_IO_PCI	{
+package CYGPKG_IO_PCI {
 	alias		{ "PCI configuration library" io_pci }
 	directory	io/pci
 	script		io_pci.cdl
@@ -2574,7 +2516,6 @@ package CYGPKG_DEVS_I2C_FREESCALE_I2C {
         This package provides a driver for the I2C unit of the Freescale chips, such as the Kinetis MCU family."
 }
 
-
 package CYGPKG_DEVS_ADC_ARM_LPC24XX {
     alias           { "LPC24xx ADC driver" }
     hardware
@@ -2685,7 +2626,7 @@ package CYGPKG_CRC {
         description "
 This package provides support for CRC functions, including the 
 POSIX 1003 defined CRC algorithm."
-}  
+}
 
 package CYGPKG_CPULOAD {
         alias           { "cpuload support" cpuload }
@@ -2695,7 +2636,7 @@ package CYGPKG_CPULOAD {
 This package measures the CPU load over the last 100ms, 1second 
 and 10 second. All loads are returned as a percentage, ie 0-100.
 This is only a rough measure."
-}     
+}
 
 package CYGPKG_PROFILE_GPROF {
         alias           { "Application profile support" profile_gprof gprof_profile }
@@ -2704,15 +2645,15 @@ package CYGPKG_PROFILE_GPROF {
         description "
 This package instruments applications to collect profiling data,
 using a methodology compatible with the gprof utility."
-}     
-                  
+}
+
 package CYGPKG_EZXML {
         alias           { "ezXML" XML ezxml }
         directory       services/ezxml
         script          ezxml.cdl
         description     "ezXML, Simple XML Parser"
 }
-                 
+
 package CYGPKG_PDCURSES {
 	alias 		{ "PDCurses" pdcurses }
 	directory	services/curses/pdcurses
@@ -2881,6 +2822,7 @@ on the POSIX style naming e.g. EINVAL etc. This package also provides
 the standard strerror() function to convert error codes to textual
 representation, as well as an implementation of the errno idiom."
 }
+
 package CYGPKG_CYGMON {
     alias           { "CygMon support via eCos" cygmon }
     directory       cygmon
@@ -2916,8 +2858,6 @@ package CYGPKG_HAL_SH_SH7750_DREAMCAST {
            eCos on SEGA Dreamcast."
 }
 
-# --------------------------------------------------------------------------
-# ARM packages
 package CYGPKG_HAL_ARM {
 	alias		{ "ARM common HAL" hal_arm arm_hal arm_arch_hal }
 	directory	hal/arm/arch
@@ -3077,7 +3017,7 @@ package CYGPKG_HAL_ARM_AT91_PHYCORE {
         description "
 	The phyCORE HAL package provides the support needed to run eCos on 
         an PHYTEC evaluation board (phyCORE AT91M55800A based on HD200)."
-} 
+}
 
 package CYGPKG_HAL_ARM_LPC2XXX {
         alias           { "Philips LPC2XXX variant HAL" hal_arm_lpc2xxx arm_lpc2xxx_hal }
@@ -3229,7 +3169,6 @@ package CYGPKG_HAL_ARM_ARM9 {
         eCos on a ARM9 based systems."
 }
 
-
 package CYGPKG_HAL_ARM_ARM9_AAED2000 {
 	alias		{ "Agilent AAED2000 unit" hal_arm_arm9_aaed }
 	directory	hal/arm/arm9/aaed2000
@@ -3353,7 +3292,6 @@ package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
 	script		smsc_lan91cxx_eth_drivers.cdl
         description     "Ethernet driver for SMSC LAN91CXX (LAN9000) controller."
 }
-
 
 package CYGPKG_HAL_ARM_SA11X0_NANO {
 	alias		{ "Intel SA1110 nanoEngine eval board" hal_arm_sa11x0_nano }
@@ -3565,8 +3503,6 @@ package CYGPKG_HAL_ARM_XSCALE_MPC50 {
         eCos on a MPC 5.0."
 }
 
-# --------------------------------------------------------------------------
-# SH packages
 package CYGPKG_HAL_SH {
 	alias		{ "SH common HAL" hal_sh sh_hal sh_arch_hal }
 	directory	hal/sh/arch
@@ -3639,7 +3575,6 @@ package CYGPKG_HAL_SH_SH7750_CQ7750 {
            eCos on a CqREEK SH7750 board."
 }
 
-
 package CYGPKG_HAL_SH_SH7729_HS7729PCI {
 	alias		{ "Hitachi HS7729PCI board" hal_sh_sh7729_hs7729pci sh_sh7729_hs7729pci_hal }
 	directory	hal/sh/hs7729pci
@@ -3680,8 +3615,6 @@ package CYGPKG_HAL_SH_SH4_202_MD {
         support for the SuperH SH4-202 MicroDev CPU board."
 }
 
-# --------------------------------------------------------------------------
-# H8/300 packages
 package CYGPKG_HAL_H8300 {
 	alias		{ "Hitachi H8300 common HAL" hal_h8300 h8300_hal}
 	directory	hal/h8300/arch
@@ -3769,9 +3702,6 @@ package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
            eCos on a Hitachi Micro System Europe EDOSK-2674 Evalution board." 
 }
 
-# ==========================================================================
-# --------------------------------------------------------------------------
-# i386 packages
 package CYGPKG_HAL_I386 {
 	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
 	directory	hal/i386/arch
@@ -3795,6 +3725,7 @@ package CYGPKG_HAL_I386_GENERIC {
             Pentium/Athlon."
 	    
 }
+
 package CYGPKG_HAL_I386_PCMB {
 	alias		{ "i386 PC Motherboard" hal_i386_pcmb }
 	directory	hal/i386/pcmb
@@ -3806,6 +3737,7 @@ package CYGPKG_HAL_I386_PCMB {
     	    PC motherboard. This is a support package for various
             actual platform specific targets."
 }
+
 package CYGPKG_HAL_I386_PC {
 	alias		{ "i386 PC target" hal_i386_pc }
 	directory	hal/i386/pc
@@ -3817,8 +3749,6 @@ package CYGPKG_HAL_I386_PC {
     	    PC."
 }
 
-# --------------------------------------------------------------------------
-# Synthetic target.
 package CYGPKG_HAL_SYNTH {
 	alias		{ "Linux synthetic target" linux }
 	directory	hal/synth/arch
@@ -3839,8 +3769,6 @@ package CYGPKG_HAL_SYNTH_I386 {
             i386 processor-specific support for the Linux synthetic target"
 }
 
-# --------------------------------------------------------------------------
-# SPARClite packages
 package CYGPKG_HAL_SPARCLITE {
 	alias		{ "SPARClite common HAL" hal_sparclite sparclite_hal sparclite_arch_hal }
 	directory	hal/sparclite/arch
@@ -3872,8 +3800,6 @@ package CYGPKG_HAL_SPARCLITE_SIM {
     	    with the SPARClite simulator."
 }
 
-# --------------------------------------------------------------------------
-# SPARC V7/V8 packages
 package CYGPKG_HAL_SPARC {
 	alias		{ "SPARC V7/V8 common HAL" hal_sparc sparc_hal sparc_arch_hal }
 	directory	hal/sparc/arch
@@ -3905,8 +3831,6 @@ package CYGPKG_HAL_SPARC_LEON {
     	    with both real hardware and the TSIM/LEON simulator."
 }
 
-# --------------------------------------------------------------------------
-# PowerPC packages
 package CYGPKG_HAL_POWERPC {
 	alias		{ "PowerPC common HAL" hal_powerpc powerpc_hal powerpc_arch_hal }
 	directory	hal/powerpc/arch
@@ -4034,6 +3958,7 @@ package CYGPKG_HAL_POWERPC_FADS {
             The FADS HAL package provides the support needed to run
             eCos on a Motorola FADS board equipped with a PowerPC processor."
 }
+
 package CYGPKG_HAL_POWERPC_MBX {
 	alias		{ "Motorola MBX860/821 board" hal_powerpc_mbx powerpc_mbx_hal }
 	directory	hal/powerpc/mbx
@@ -4099,9 +4024,6 @@ package CYGPKG_HAL_POWERPC_SIM {
             board. In particular it is not possible to simulate any of
             the I/O devices, so device drivers cannot be used."
 }
-
-# --------------------------------------------------------------------------
-# MIPS packages
 
 package CYGPKG_HAL_MIPS {
 	alias		{ "MIPS common HAL" hal_mips mips_hal mips_arch_hal }
@@ -4186,6 +4108,7 @@ package CYGPKG_HAL_MIPS_ATLAS {
            The Atlas HAL package should be used when targetting the
            actual hardware. "
 }
+
 package CYGPKG_HAL_MIPS_MALTA {
 	alias		{ "MIPS Malta board" hal_malta malta_hal }
 	directory	hal/mips/malta
@@ -4248,6 +4171,7 @@ package CYGPKG_HAL_MIPS_VR4300 {
            for this processor architecture. It is also necessary to
            select a specific target platform HAL package."
 }
+
 package CYGPKG_HAL_MIPS_VR4300_VRC4373 {
 	alias		{ "NEC VRC4373 board" hal_vrc4373 vrc4373_hal }
 	directory	hal/mips/vrc4373
@@ -4311,9 +4235,6 @@ package CYGPKG_HAL_MIPS_IDT32334_REFIDT334 {
            actual hardware."
 }
 
-# --------------------------------------------------------------------------
-# MN10300 packages
-
 package CYGPKG_HAL_MN10300 {
 	alias		{ "MN10300 common HAL" hal_mn10300 mn10300_hal mn10300_arch_hal }
 	directory	hal/mn10300/arch
@@ -4363,6 +4284,7 @@ package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
            an accurate simulation of the full hardware including I/O
            devices."
 }
+
 package CYGPKG_HAL_MN10300_AM33 {
 	alias		{ "MN10300 AM33 variant HAL" hal_mn10300_am33 mn10300_am33_hal }
 	directory	hal/mn10300/am33
@@ -4406,8 +4328,6 @@ package CYGPKG_HAL_MN10300_AM33_ASB2305 {
            actual hardware for the AM33 ASB2305 evaluation board."
 }
 
-# --------------------------------------------------------------------------
-# NEC packages
 package CYGPKG_HAL_V85X {
 	alias		{ "NEC V85x common HAL" hal_v85x nec_arch_hal }
 	directory	hal/v85x/arch
@@ -4438,9 +4358,6 @@ package CYGPKG_HAL_V85X_V850_CEB {
 The CEB-V850/SA1 HAL package provides the support needed to run eCos on a Cosmo CEB-V850/SA1
 evaluation board."
 }
-
-# --------------------------------------------------------------------------
-# m68k packages
 
 package CYGPKG_HAL_M68K {
     alias       { "M68K common HAL" hal_m68k m68k_hal m68k_arch_hal }
@@ -4504,9 +4421,6 @@ package CYGPKG_DEVS_SERIAL_MCFxxxx {
             provided by MCFxxxx ColdFire processors."
 }
 
-# --------------------------------------------------------------------------
-# CalmRISC16 packages
-
 package CYGPKG_HAL_CALM16 {
 	alias		{ "CalmRISC16 common HAL" hal_calm16 calm16_hal calm16_arch_hal }
 	directory	hal/calmrisc16/arch/
@@ -4539,8 +4453,6 @@ package CYGPKG_HAL_CALM16_CEB {
            The CalmRISC16 HAL package should be used when targetting the
            actual hardware. "
 }
-# --------------------------------------------------------------------------
-# CalmRISC32 packages
 
 package CYGPKG_HAL_CALM32 {
 	alias		{ "CalmRISC32 common HAL" hal_calm32 calm32_hal calm32_arch_hal }
@@ -4571,9 +4483,6 @@ package CYGPKG_HAL_CALM32_CEB {
            actual hardware. "
 }
 
-
-# --------------------------------------------------------------------------
-# FUJITSU packages
 package CYGPKG_HAL_FRV {
 	alias		{ "FR-V (Fujitsu) common HAL" hal_frv frv_hal frv_arch_hal }
 	directory	hal/frv/arch
@@ -4645,8 +4554,6 @@ package CYGPKG_DEVS_ETH_FRV_CB70 {
                          Davicom DM9000 ethernet interface."
 }
 
-# FR30 packages
-
 package CYGPKG_HAL_FR30 {
     alias       { "Fujitsu FR30 architecture (FR30/FR50/FR60)" hal_fr30
                     fr30_hal }
@@ -4710,13 +4617,6 @@ package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
         description     "Ethernet driver for the LPC2xxx/LPC17xx family of chips"
 }
 
-
-# --------------------------------------------------------------------------
-
-# ==========================================================================
-
-# --------------------------------------------------------------------------
-# FRV targets
 target frv400 {
 	alias { "Fujitsu development board (FR-V 400)" FRV400 }
 	packages { CYGPKG_HAL_FRV
@@ -4763,8 +4663,6 @@ The MB93093 target provides the packages needed to run eCos on a Fujitsu
 MB93090-PD00 Portable Development Kit."
 }
 
-# FR30 Targets
-
 target skmb91302 {
     alias { "Fujitsu Starterkit MB91302 board" }
     packages { CYGPKG_HAL_FR30
@@ -4779,9 +4677,6 @@ eCos on the Fujitsu Starterkit MB91302 board. It contains a MB91302
 Microcontroller from Fujitsu with a FR60 Core. So FR30 support is
 included."
 }
-
-# --------------------------------------------------------------------------
-# ARM Targets
 
 target pid {
 	alias { "ARM development board (PID)" PID }
@@ -5126,7 +5021,6 @@ target olpch2294 {
             eCos on Olimex LPC-H2294 header board."
 }
 
-
 target olpce2294 {
         alias { "Olimex LPC-E2294 development board" }
         packages { CYGPKG_HAL_ARM
@@ -5206,7 +5100,6 @@ target ebsa285 {
         The ebsa285 target provides the packages needed to run
         eCos on an Intel EBSA285 StrongARM board."
 }
-
 
 target aaed2000 {
 	alias { "Agilent AAED2000 unit" aaed }
@@ -5359,7 +5252,6 @@ target ipaq {
         The IPAQ target provides the packages needed to run
         eCos on an Intel StrongARM SA1110 Pocket PC (Compaq iPAQ)."
 }
-
 
 target nano {
 	alias { "nanoEngine StrongARM SA1110 board" nanoEngine }
@@ -5583,7 +5475,6 @@ The cma230 target provides the packages needed to run eCos on a Cogent
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
     }
 
-
 target snds {
       alias { "Samsung SNDS" SNDS snds100 }
       packages { CYGPKG_HAL_ARM 
@@ -5615,7 +5506,6 @@ target aim711 {
         ARM Industrial Module AIM 711."
  }
 
-
 target mpc50 {
 	alias { "MICROPLEX Printer Controller 5.0" }
 	packages {
@@ -5629,9 +5519,6 @@ target mpc50 {
         description "
         MICROPLEX Printer Controller 5.0"
 }
-
-# --------------------------------------------------------------------------
-# SH targets
 
 target sh7708 {
 	alias       { "Hitachi EDK/SH7708 board" edk7708 }
@@ -5649,6 +5536,7 @@ target sh7708 {
            The sh7708 target provides the packages needed to run
            eCos on a Hitachi EDK/SH7708 board."
 }
+
 target cq7708 {
         alias { "CqREEK SH7708 board" }
         packages { CYGPKG_HAL_SH
@@ -5762,8 +5650,6 @@ target sh4_202_md {
            eCos on a SuperH SH4-202 MicroDev CPU board."
 }
 
-# --------------------------------------------------------------------------
-# i386 targets
 target pc_i82559 {
         alias		{ "i386 PC target with i82559 ethernet" pc }
 	packages        { CYGPKG_HAL_I386
@@ -5823,7 +5709,6 @@ target pc_vmWare {
             on a standard i386 PC under wmWare."
 }
 
-
 target pc_usb_d12 {
         alias		{ "i386 PC target with SoRo PC/104 D12 USB Slave" }
 	packages        { CYGPKG_HAL_I386
@@ -5846,8 +5731,6 @@ target pc_usb_d12 {
 	    Philips D12 chip."
 }
 
-# --------------------------------------------------------------------------
-# Synthetic targets.
 target linux {
         alias		{ "Linux synthetic target" i386linux }
 	packages        { CYGPKG_HAL_SYNTH
@@ -5865,9 +5748,6 @@ target linux {
     	    packages needed to run eCos binaries on top of the i386
     	    Linux kernel."
 }
-
-# --------------------------------------------------------------------------
-# SPARClite targets
 
 target sleb {
 	alias		{ "Fujitsu MB86800-MA01 board" }
@@ -5890,9 +5770,6 @@ target sparclite_sim {
             on the SPARClite simulator."
 }
 
-# --------------------------------------------------------------------------
-# SPARC V7/V8 targets
-
 target sparc_erc32 {
 	alias		{ "ERC32 processor" erc32 }
 	packages        { CYGPKG_HAL_SPARC 
@@ -5913,8 +5790,6 @@ target sparc_leon {
             on the LEON processor or TSIM/LEON simulator."
 }
 
-# --------------------------------------------------------------------------
-# PowerPC targets
 target cme555 {
         alias           { "Axiom's CME555 board" }
         packages        { CYGPKG_HAL_POWERPC
@@ -6045,9 +5920,6 @@ target psim {
             eCos in the PSIM simulator."
 }
 
-##-------------------------------------------------------------------------------------------
-## Cogent CSB281 (PowerPC 8245) packages
-##
 package CYGPKG_HAL_POWERPC_CSB281 {
 	alias		{ "Cogent PowerPC 8245 board" hal_powerpc_csb281 }
 	directory	hal/powerpc/csb281
@@ -6093,10 +5965,6 @@ target csb281 {
             The csb281 target provides the packages needed to run
             eCos on the Cogent CSB281 (8245) board."
 }
-##-------------------------------------------------------------------------------------------
-
-# --------------------------------------------------------------------------
-# MIPS targets
 
 target jmr3904 {
         alias		{ "Toshiba JMR-TX3904 board" jmr tx39 }
@@ -6144,6 +6012,7 @@ target atlas_mips64_5kc {
            The atlas_mips32_5Kc target provides the packages needed to run
            eCos on a MIPS Atlas board with a Mips64 5Kc processor."
 }
+
 target malta_mips32_4kc {
         alias		{ "MIPS Malta board with Mips32 4Kc processor" }
 	packages        { CYGPKG_HAL_MIPS
@@ -6177,6 +6046,7 @@ target malta_mips64_5kc {
            The malta_mips64_5Kc target provides the packages needed to run
            eCos on a MIPS Malta board with a Mips64 5Kc processor."
 }
+
 target tx39_sim {
         alias		{ "TX39 minimal simulator" }
 	packages        { CYGPKG_HAL_MIPS
@@ -6191,6 +6061,7 @@ target tx39_sim {
            use any of the eCos device drivers when the simulator
            is running in this mode."
 }
+
 target ref4955 {
         alias		{ "Toshiba TX4955 reference platform" tx49 }
 	packages        { CYGPKG_HAL_MIPS
@@ -6238,6 +6109,7 @@ target vrc4373 {
            The vrc4373 target provides the packages needed to run
            eCos on an NEC VRC4373 board."
 }
+
 target vrc4375 {
         alias		{ "NEC VRC4375 board" }
 	packages        { CYGPKG_HAL_MIPS
@@ -6273,9 +6145,6 @@ target refidt334 {
            eCos on a MIPS IDT IDT79S334A reference board."
 }
 
-# --------------------------------------------------------------------------
-# MN10300 targets
-
 target am31_sim {
         alias		{ "MN10300 AM31 minimal simulator" }
 	packages        { CYGPKG_HAL_MN10300
@@ -6303,6 +6172,7 @@ target stdeval1 {
            be used when running in the full simulator, since the simulator provides an
            accurate simulation of the hardware including I/O devices."
 }
+
 target stb {
         alias		{ "Matsushita STB board" }
 	packages        { CYGPKG_HAL_MN10300
@@ -6345,9 +6215,6 @@ target asb2305 {
            eCos on a Matsushita ASB2305 board."
 }
 
-# --------------------------------------------------------------------------
-# NEC targets
-
 target ceb_v850 {
 	alias { "Cosmo CEB-V850 board" CEB ceb_v850_sa1 }
 	packages { CYGPKG_HAL_V85X
@@ -6359,9 +6226,6 @@ target ceb_v850 {
 The ceb_v850 target provides the packages needed to run eCos on a
 Cosmo CEB-V850 evaluation board fitted with a NEC V850/SA1 or NEC V850/SB1."
 }
-
-# --------------------------------------------------------------------------
-# m68k targets
 
 target m5272c3 {
     alias { "Freescale m5272c3 evaluation board" }
@@ -6378,9 +6242,6 @@ target m5272c3 {
     description   "The m5272c3 target provides  the packages  needed to  run
                 eCos on the Freescale m5272c3 evaluation board."
 }
-
-# --------------------------------------------------------------------------
-# H8 targets
 
 target h8300h_sim {
         alias		{ "H8/300H minimal simulator" }
@@ -6451,9 +6312,6 @@ target edosk2674 {
            eCos in the Hitachi Micro System Europe EDOSK-2674 Evalution board."
 }
 
-# --------------------------------------------------------------------------
-# CalmRISC16 targets
-
 target calm16_ceb {
         alias		{ "CalmRISC16 Core Eval Board" }
 	packages        { CYGPKG_HAL_CALM16
@@ -6464,8 +6322,6 @@ target calm16_ceb {
            The calm16_ceb target provides the packages needed to run
            eCos on the CalmRISC16 Core Evaluation Board."
 }
-# --------------------------------------------------------------------------
-# CalmRISC32 targets
 
 target calm32_ceb {
         alias		{ "CalmRISC32 Core Eval Board" }
@@ -6477,8 +6333,6 @@ target calm32_ceb {
            The calm32_ceb target provides the packages needed to run
            eCos on the CalmRISC32 Core Evaluation Board."
 }
-
-# --------------------------------------------------------------------------
 
 package CYGPKG_HAL_POWERPC_TS1000 {
 	alias		{ "Allied Telesyn TS1000 board" hal_powerpc_ts1000 }
@@ -6524,8 +6378,6 @@ target ts1000 {
             The ts1000 target provides the packages needed to run
             eCos on a Allied Telesyn TS1000 (PPC855T) board."
 }
-
-# --------------------------------------------------------------------------
 
 package CYGPKG_DEVS_FLASH_UE250 {
 	alias 		{ "FLASH memory support for uE250" flash_uE250 }
@@ -6573,8 +6425,6 @@ target uE250 {
         eCos on an NMI uEngine uE250 board."
 }
 
-# --------------------------------------------------------------------------
-
 package CYGPKG_DEVS_FLASH_PICASSO {
 	alias 		{ "FLASH memory support for picasso" flash_picasso }
 	directory	devs/flash/arm/picasso
@@ -6620,8 +6470,6 @@ target picasso {
         The picasso target provides the packages needed to run
         eCos on an NMI uEngine picasso board."
 }
-
-# --------------------------------------------------------------------------
 
 package CYGPKG_HAL_POWERPC_ADDER {
 	alias		{ "A&M Adder PPC85x board" hal_powerpc_adder powerpc_adder_hal }
@@ -6693,8 +6541,6 @@ target adderII {
             eCos on a A&M Adder PPC852T board."
 }
 
-# --------------------------------------------------------------------------
-
 package CYGPKG_HAL_POWERPC_RATTLER {
 	alias		{ "A&M Rattler MPC8250 board" hal_powerpc_rattler powerpc_rattler_hal }
 	directory	hal/powerpc/rattler
@@ -6740,9 +6586,6 @@ target rattler {
             eCos on an Analogue & Micro Rattler (MPC8250) board."
 }
 
-##-------------------------------------------------------------------------------------------
-## TAMS MOAB (PowerPC 405GPr) packages
-##
 package CYGPKG_HAL_POWERPC_MOAB {
 	alias		{ "TAMS PowerPC 405GP board" hal_powerpc_moab }
 	directory	hal/powerpc/moab
@@ -6803,11 +6646,7 @@ target moab {
             The moab target provides the packages needed to run
             eCos on the TAMS MOAB (405GPr) board."
 }
-##-------------------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------
-
-# Realtek 8139 (PCI) Ethernet driver
 package CYGPKG_DEVS_ETH_RLTK_8139 {
 	alias 		{ "Realtek 8139 ethernet driver" rltk8139_eth_driver }
 	hardware
@@ -6851,8 +6690,6 @@ target pc_rltk8139 {
             on a standard i386 PC motherboard, using a Realtek 8139 network card."
 }
 
-# --------------------------------------------------------------------------
-
 package CYGPKG_HAL_ARM_GPS4020 {
 	alias		{ "GPS4020" hal_gps4020 }
 	directory	hal/arm/gps4020
@@ -6895,16 +6732,12 @@ target gps4020 {
             eCos on a GPS-4020 board."
 }
 
-# --------------------------------------------------------------------------
-
 package CYGPKG_VNC_SERVER {
     alias       { "VNC server" vnc_server }
     directory   net/vnc_server
     script      vnc-server.cdl
     description "VNC server."
 }
-
-# --------------------------------------------------------------------------
 
 package CYGPKG_DEVS_DISK_V85X_EDB_V850 {
     alias           { "Elatec v850 development board disk driver" edb_v850_disk }
@@ -6972,9 +6805,6 @@ package CYGPKG_FS_FAT {
         This package contains a FAT filesystem implementation."
 }
 
-
-# --------------------------------------------------------------------------
-
 package CYGPKG_IO_FRAMEBUF {
         alias	   { "Frame buffer support" framebuf framebuffer io_framebuf framebuf_io }
         directory  io/framebuf
@@ -6996,8 +6826,6 @@ package CYGPKG_DEVS_FRAMEBUF_SYNTH {
         synthetic target."
 }
 
-# --------------------------------------------------------------------------
-
 package CYGPKG_NET_LWIP {
 	alias		{"lwIP networking stack" lwip}
 	directory	net/lwip_tcpip
@@ -7011,10 +6839,6 @@ package CYGPKG_ATHTTPD {
 	script		httpd.cdl
     description "Another Tiny HTTP server."
 }
-
-
-# ==========================================================================
-# Cortex-M architecture support
 
 package CYGPKG_HAL_CORTEXM {
 	alias		{ "Cortex-M common HAL" hal_cortexm cortexm_hal cortexm_arch_hal }
@@ -7540,7 +7364,6 @@ package CYGPKG_DEVS_ETH_CORTEXM_A2F200_EVAL {
     description   "Ethernet driver specifics for Actel Smartfusion evaluation boards (A2F200 EVAL)."
 }
 
-
 target smartfusion {
         alias { "Actel SmartFusion evaluation board (A2F200_EVAL)" smartfusion }
         packages { CYGPKG_HAL_CORTEXM
@@ -7563,6 +7386,39 @@ target smartfusion {
         to run eCos on the Actel A2F200 EVAL (Smartfusion) board."
 }
 
+package CYGPKG_DEVS_ETH_INTEL_NPE {
+	alias 		{ "Intel NPE ethernet driver"
+			   devs_eth_intel_npe npe_eth_driver intel_npe }
+	hardware
+	directory	devs/eth/intel/npe
+	script		intel_npe_eth_drivers.cdl
+        description     "Ethernet driver for Intel Network Processor Engine."
+}
 
-# ==========================================================================
-# End of ecos.db
+package CYGPKG_DEVS_ETH_ARM_IXDP425_NPE {
+	alias 		{ "IXDP425 / NPE ethernet driver"
+			   devs_eth_arm_ixdp425_npe ixdp425_npe }
+	hardware
+	directory	devs/eth/arm/ixdp425/npe
+	script		ixdp425_npe_eth_driver.cdl
+        description     "Ethernet driver for IXDP425 with builtin NPE MAC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_GRG_NPE {
+	alias 		{ "GRG / NPE ethernet driver"
+			   devs_eth_arm_grg_npe grg_npe }
+	hardware
+	directory	devs/eth/arm/grg/npe
+	script		grg_npe_eth_driver.cdl
+        description     "Ethernet driver for GRG builtin NPE MAC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_PRPMC1100_NPE {
+	alias 		{ "PrPMC1100 / NPE ethernet driver"
+			   devs_eth_arm_prmc1100_npe prpmc1100_npe }
+	hardware
+	directory	devs/eth/arm/prpmc1100/npe
+	script		prpmc1100_npe_eth_driver.cdl
+        description     "Ethernet driver for PrPMC1100 builtin NPE MAC."
+}
+
