@@ -18,6 +18,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_FLASH_STRATA_V2 current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 current ;
+    package -hardware CYGPKG_DEVS_ETH_INTEL_NPE current ;
+    package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_NPE current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;

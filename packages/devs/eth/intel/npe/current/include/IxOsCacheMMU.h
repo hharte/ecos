@@ -44,6 +44,10 @@
 #define IxCacheMMU_H
 #endif /* __doxygen_hide */
 
+#if defined(__ECOS)
+#undef __linux
+#endif /* defined(__ECOS) */
+
 #ifdef __vxworks
 
 #include <vxWorks.h>
@@ -211,7 +215,7 @@
 #define IX_ACC_DRV_DMA_MALLOC(size)   ix_dma_alloc(size)
 #define IX_ACC_DRV_DMA_FREE(ptr,size) ix_dma_free(ptr,size)
 
-static inline void *ix_dma_alloc(int size)
+static inline __attribute__((always_inline)) void *ix_dma_alloc(int size)
 {
     struct page *page;
     unsigned long order;
@@ -227,7 +231,7 @@ static inline void *ix_dma_alloc(int size)
     return page_address(page);
 }
 
-static inline void ix_dma_free(void *ptr, int size)
+static inline __attribute__((always_inline)) void ix_dma_free(void *ptr, int size)
 {
     unsigned long order;
 

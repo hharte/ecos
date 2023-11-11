@@ -130,7 +130,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
             flavor  data
             no_define
             default_value { CYGBLD_GLOBAL_WARNFLAGS . CYGBLD_ARCH_CFLAGS .
-                            "-mcpu=xscale -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -mapcs-frame" }
+                            "-mcpu=xscale -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -mapcs-frame -Wl,--allow-multiple-definition" }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define

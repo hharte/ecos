@@ -51,7 +51,7 @@
  *@{
  */
 
-#define INLINE __inline__
+#define INLINE inline __attribute__((always_inline))
 
 #ifdef NDEBUG
 

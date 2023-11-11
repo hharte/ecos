@@ -144,11 +144,11 @@ static IxNpeDlNpeMgrUtilsStats ixNpeDlNpeMgrUtilsStats;
 /*
  * static function prototypes.
  */
-PRIVATE __inline__ void
+PRIVATE void
 ixNpeDlNpeMgrWriteCommandIssue (UINT32 npeBaseAddress, UINT32 cmd,
 				UINT32 addr, UINT32 data);
 
-PRIVATE __inline__ UINT32
+PRIVATE UINT32
 ixNpeDlNpeMgrReadCommandIssue (UINT32 npeBaseAddress, UINT32 cmd, UINT32 addr);
 
 PRIVATE UINT32

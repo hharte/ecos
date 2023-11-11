@@ -50,6 +50,10 @@
 #ifndef IxOsBuffMgt_inc
 #define IxOsBuffMgt_inc
 
+#if defined(__ECOS)
+#undef __linux
+#endif /* defined(__ECOS) */
+
 #if defined __vxworks
 
 #include <vxWorks.h>

@@ -65,6 +65,10 @@
 #ifndef _OS_DATATYPES_H
 #define _OS_DATATYPES_H
 
+#if defined(__ECOS)
+#undef __linux
+#endif /* defined(__ECOS) */
+
 #ifdef __vxworks
 
 #include "time.h"

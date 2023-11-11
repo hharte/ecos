@@ -67,7 +67,7 @@
 #endif
 #else
 #ifndef IX_QMGR_AQMIF_INLINE
-#define IX_QMGR_AQMIF_INLINE __inline__ extern
+#define IX_QMGR_AQMIF_INLINE inline __attribute__((always_inline)) extern
 #endif
 #endif
 

@@ -48,6 +48,9 @@
 #if !defined(__IX_OS_TYPE_H__)
 #define __IX_OS_TYPE_H__
 
+#if defined(__ECOS)
+#undef __linux
+#endif /* defined(__ECOS) */
 
 #if defined(__cplusplus)
 extern "C"

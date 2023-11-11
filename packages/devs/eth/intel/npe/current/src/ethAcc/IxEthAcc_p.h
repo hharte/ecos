@@ -71,7 +71,7 @@
 #include <IxEthAccDataPlane_p.h>
 
 
-#define INLINE __inline__
+#define INLINE inline __attribute__((always_inline))
 
 #ifndef DEBUG
 
