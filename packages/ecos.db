@@ -6865,5 +6865,41 @@ target stm3210e_eval {
         to run eCos on the STM3210E EVAL board."
 }
 
+package CYGPKG_DEVS_ETH_INTEL_NPE {
+	alias 		{ "Intel NPE ethernet driver"
+			   devs_eth_intel_npe npe_eth_driver intel_npe }
+	hardware
+	directory	devs/eth/intel/npe
+	script		intel_npe_eth_drivers.cdl
+        description     "Ethernet driver for Intel Network Processor Engine."
+}
+
+package CYGPKG_DEVS_ETH_ARM_IXDP425_NPE {
+	alias 		{ "IXDP425 / NPE ethernet driver"
+			   devs_eth_arm_ixdp425_npe ixdp425_npe }
+	hardware
+	directory	devs/eth/arm/ixdp425/npe
+	script		ixdp425_npe_eth_driver.cdl
+        description     "Ethernet driver for IXDP425 with builtin NPE MAC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_GRG_NPE {
+	alias 		{ "GRG / NPE ethernet driver"
+			   devs_eth_arm_grg_npe grg_npe }
+	hardware
+	directory	devs/eth/arm/grg/npe
+	script		grg_npe_eth_driver.cdl
+        description     "Ethernet driver for GRG builtin NPE MAC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_PRPMC1100_NPE {
+	alias 		{ "PrPMC1100 / NPE ethernet driver"
+			   devs_eth_arm_prmc1100_npe prpmc1100_npe }
+	hardware
+	directory	devs/eth/arm/prpmc1100/npe
+	script		prpmc1100_npe_eth_driver.cdl
+        description     "Ethernet driver for PrPMC1100 builtin NPE MAC."
+}
+
 # ==========================================================================
 # End of ecos.db
