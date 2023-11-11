@@ -602,18 +602,22 @@ do_go(int argc, char *argv[])
 
 #ifdef CYGPKG_IO_ETH_DRIVERS
     if (stop_net)
-	eth_drv_stop();
+        eth_drv_stop();
 #endif
 	
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_SYNC();
     if (!cache_enabled) {
-	HAL_ICACHE_DISABLE();
-	HAL_DCACHE_DISABLE();
-	HAL_DCACHE_SYNC();
+        HAL_ICACHE_DISABLE();
+        HAL_DCACHE_DISABLE();
+        HAL_DCACHE_SYNC();
     }
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
+    if (!cache_enabled) {
+        HAL_L2_CACHE_DISABLE();
+        HAL_L2_CACHE_SYNC();
+    }
     trampoline_stack_sp = (CYG_ADDRESS)workspace_end;
     // set up a temporary context that will take us to the trampoline
     HAL_THREAD_INIT_CONTEXT(trampoline_stack_sp, entry, trampoline, 0);
@@ -625,8 +629,8 @@ do_go(int argc, char *argv[])
 
     // undo the changes we made before switching context
     if (!cache_enabled) {
-	HAL_ICACHE_ENABLE();
-	HAL_DCACHE_ENABLE();
+        HAL_ICACHE_ENABLE();
+        HAL_DCACHE_ENABLE();
     }
 
     CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_DISABLE_LINE_FLUSH);
