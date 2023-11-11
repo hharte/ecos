@@ -76,6 +76,11 @@
 extern void breakpoint(void);
 #endif
 
+// Dummy raise implementation.
+int raise(int sig) {
+        return 0;
+}
+
 // Builtin Self Test (BIST)
 externC void bist(void);
 
