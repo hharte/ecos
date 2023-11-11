@@ -329,7 +329,7 @@ cdl_package CYGPKG_REDBOOT {
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
                     @sh -c "mkdir -p $(dir $@)"
-                    $(CC) -c $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $(PREFIX)/lib/version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
+		    $(CC) -c $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -DCYGDAT_REDBOOT_CUSTOM_VERSION="$(shell git describe --always --dirty --tags && echo "(" && $(CC) --version|head -1 && echo -n ", " && $(COMMAND_PREFIX)ld --version|head -1 && echo ")")" -o $(PREFIX)/lib/version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
                     $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(PREFIX)/lib/version.o
         }
 
