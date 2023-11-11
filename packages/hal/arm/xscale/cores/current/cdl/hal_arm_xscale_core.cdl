@@ -40,10 +40,11 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      msalter
-# Original data:  msalter
+# Original data:  msalter, dmoseley, cbruns
 # Contributors:
 # Date:           2002-10-18
 #
+# Copyright:    (C) 2003-2004 Intel Corporation.
 #####DESCRIPTIONEND####
 #
 # ====================================================================
@@ -74,5 +75,14 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_CORE {
             CPUS which will lead to problems with thumb branches
             if the BTB is on. Normal ARM programs are not affected
             by this errata."
+    }
+    cdl_option CYGNUM_HAL_ARM_XSCALE_CORE_GENERATION {
+        display       "XScale core generation"
+        flavor        data
+        legal_values  1 2 3
+        default_value 1
+        description   "
+            This option selects the XScale generation for the core
+            being used in a particular IOP."
     }
 }
