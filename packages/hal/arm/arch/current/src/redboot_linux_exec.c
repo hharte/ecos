@@ -365,6 +365,9 @@ do_exec(int argc, char *argv[])
 
     // Set up parameters to pass to kernel
 
+// This code evokes an bug in gcc-12.1.  Remove once the compiler is updated.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
     // CORE tag must be present & first
     params->hdr.size = (sizeof(struct tag_core) + sizeof(struct tag_header))/sizeof(long);
     params->hdr.tag = ATAG_CORE;
@@ -393,12 +396,13 @@ do_exec(int argc, char *argv[])
     // Mark end of parameter list
     params->hdr.size = 0;
     params->hdr.tag = ATAG_NONE;
+#pragma GCC diagnostic push
 
     if (wait_time_set) {
         int script_timeout_ms = wait_time * 1000;
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-        unsigned char *hold_script = script;
-        script = (unsigned char *)0;
+        char *hold_script = script;
+        script = '\0';
 #endif
         diag_printf("About to start execution of image at %p, entry point %p - abort with ^C within %d seconds\n",
                     (void *)target, (void *)entry, wait_time);
@@ -437,6 +441,9 @@ do_exec(int argc, char *argv[])
     HAL_DCACHE_SYNC();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
+    HAL_L2_CACHE_DISABLE();
+    HAL_L2_CACHE_SYNC();
+
 
     // Tricky code. We are currently running with the MMU on and the
     // memory map possibly convoluted from 1-1.  The trampoline code
@@ -472,7 +479,7 @@ do_exec(int argc, char *argv[])
 	    "2:\n"
 	    " mov r0,#0;\n"       // Set board type
 	    " mov r1,%3;\n"       // Machine type
-	    " mov r2,%6;\n"       // Kernel parameters
+//	    " mov r2,%6;\n"       // Kernel parameters  - hharte: fixme: Passing atags crashes the kernel.
 	    " mov pc,%0;\n"       // Jump to kernel
 	    "__xtramp_end__:\n"
 	    : : 
@@ -508,7 +515,7 @@ do_exec(int argc, char *argv[])
         "2:\n"
         " mov r0,#0;\n"       // Set board type
         " mov r1,%3;\n"       // Machine type
-        " mov r2,%6;\n"       // Kernel parameters
+//	    " mov r2,%6;\n"       // Kernel parameters  - hharte: fixme: Passing atags crashes the kernel.
         " mov pc,%0;\n"       // Jump to kernel
         "__tramp_end__:\n"
         : : 
