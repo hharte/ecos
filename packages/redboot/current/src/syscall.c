@@ -617,7 +617,7 @@ __do_syscall(CYG_ADDRWORD func,                 // syscall function number
         break;
 
     case SYS_timer_frequency:
-        sys_profile_frequency( (int)arg1, (unsigned int *)arg2 );
+        sys_profile_frequency( (int)arg1, (int *)arg2 );
         break;
 
     case SYS_timer_reset:

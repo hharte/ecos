@@ -179,14 +179,14 @@ _decompress_stream(char *buf, int len, int *err)
     while (len > 0) {
         if (p->in_avail == 0) {
             p->in_buf = &getc_info._buffer[0];
-            res = (*getc_info.raw_fun)(p->in_buf, CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER, 
+            res = (*getc_info.raw_fun)((char *)p->in_buf, CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER,
                                        &getc_info.err);
             if ((p->in_avail = res) <= 0) {
                 // No more data
                 return total;
             }
         }
-        p->out_buf = buf;
+        p->out_buf = (unsigned char *)buf;
         p->out_size = 0;
         p->out_max = len;
         res = (*_dc_inflate)(p);
@@ -223,7 +223,7 @@ redboot_getc_init(connection_info_t *info, getc_io_funcs_t *funcs,
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     if (decompress) {
         _pipe_t* p = &getc_info.load_pipe;
-        p->out_buf = &getc_info.buf[0];
+        p->out_buf = (unsigned char *)&getc_info.buf[0];
         p->out_size = 0;
         p->in_avail = 0;
         getc_info.raw_fun = getc_info.fun;
