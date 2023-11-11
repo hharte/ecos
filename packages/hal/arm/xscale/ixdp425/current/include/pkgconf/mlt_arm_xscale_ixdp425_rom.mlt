@@ -1,6 +1,6 @@
 version 0
 region ram 0 10000000 0 !
-region rom 50000000 40000 1 !
+region rom 50000000 60000 1 !
 section fixed_vectors 0 1 0 1 1 0 1 0 20 20 !
 section data 0 1 1 1 1 1 0 0 8000 bss !
 section bss 0 4 0 1 0 1 0 1 heap1 heap1 !
