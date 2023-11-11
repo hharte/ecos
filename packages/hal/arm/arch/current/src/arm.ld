@@ -129,6 +129,7 @@ OUTPUT_FORMAT(elf32-bigarm)
  * definition and so, for now, are not expected to be listed
  * separately in mlt files.
  */
+#define CYGPKG_LIBSTDCXX
 #ifdef CYGPKG_LIBSTDCXX
 #define SECTION_ARM_extab(_region_, _vma_, _lma_) \
     .ARM.extab _vma_ : _lma_ \
